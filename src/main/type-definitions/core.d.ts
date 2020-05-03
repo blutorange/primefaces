@@ -582,6 +582,63 @@ declare namespace PrimeFaces.ajax {
         (this: Request, data: any, status: JQuery.Ajax.SuccessTextStatus, xhr: pfXHR) => boolean | undefined;
 
     /**
+     * Represents the data of a PrimeFaces AJAX request. This is the value that is returned by
+     * {@link PrimeFaces.ajax.ab} and {@link PrimeFaces.ajax.Request.handle}.
+     */
+    export interface ResponseData {
+        /**
+         * The XML document that was returned by the server. This may include several elements such as `update` for DOM
+         * updates that need to be performed, `executeScript` for running JavaScript code. A typical response might look
+         * as follows:
+         * ```xml
+         * <?xml version="1.0" encoding="UTF-8"?>
+         * <partial-response>
+         *    <changes>
+         *       <update id="content:msgs"><![CDATA[
+         *           <span id="content:msgs" class="ui-growl-pl" data-widget="widget_content_msgs" data-summary="data-summary" data-detail="data-detail" data-severity="all,error" data-redisplay="true"></span>
+         *           <script id="content:msgs_s" type="text/javascript">PrimeFaces.cw("Growl","widget_content_msgs",{id:"content:msgs",sticky:false,life:6000,escape:true,keepAlive:false,msgs:[{summary:"Executed",detail:"Using RemoteCommand.",severity:'info',severityText:'Information'}]});</script>
+         *       ]]></update>
+         *       <update id="content:javax.faces.ViewState:0"><![CDATA[3644438980748093603:2519460806875181703]]></update>
+         *    </changes>
+         * </partial-response>
+         * ```
+         */
+        document: XMLDocument;
+
+        /**
+         * The jQuery XHR request object that was used for the request.
+         */
+        jqXHR: JQuery.jqXHR;
+
+        /**
+         * A string describing the type of success. Usually the HTTP status text.
+         */
+        textStatus: JQuery.Ajax.SuccessTextStatus;
+    }
+
+    /**
+     * Represents the data passed to the exception handler of the promise returned by {@link PrimeFaces.ajax.ab} and
+     * {@link PrimeFaces.ajax.Request.handle}.
+     */
+    export interface FailedRequestData {
+        /**
+         * An optional exception message, if an error occurred.
+         */
+        errorThrown: string;
+
+        /**
+         * The jQuery XHR request object that was used for the request. May not be available when no HTTP request was
+         * sent, such as when validation failed. 
+         */
+        jqXHR?: JQuery.jqXHR;
+
+        /**
+         * A string describing the type of error that occurred.
+         */
+        textStatus: JQuery.Ajax.SuccessTextStatus;
+    }
+
+    /**
      * Describes a server callback parameter for an AJAX call. For example, when you call a
      * `<p:remoteCommand name="myCommand" />` from the client, you may pass additional parameters to the backing
      * bean like this:
@@ -758,6 +815,14 @@ declare namespace PrimeFaces.ajax {
          * A (client-side) PrimeFaces search expression for the components to process in the AJAX request.
          */
         process: string;
+
+        /**
+         * A promise object that is resolved when the AJAX request is complete. You can use this option to register
+         * a custom callback. Please note that usually you do not have to set this option explicitly, you can use the
+         * return value of {@link PrimeFaces.ajax.ab} or {@link PrimeFaces.ajax.Request.handle}. It will create a new
+         * promise object when none was provided, and return that.
+         */
+        promise: Promise<PrimeFaces.ajax.ResponseData>;
 
         /**
          * `true` if the AJAX request is a reset request that resets the value of all form elements to their
