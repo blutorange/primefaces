@@ -388,7 +388,7 @@ if (!PrimeFaces.ajax) {
              * @return {Promise<PrimeFaces.ajax.ResponseData>} A promise that resolves once the AJAX requests is done.
              * Use this to run custom JavaScript logic. When the AJAX request succeeds, the promise is fulfilled.
              * Otherwise, when the AJAX request fails, the promise is rejected. If the promise is rejected, the
-             * rejection handler receives an object of type {@link PrimeFaces.ajax.FailedRequestData}. 
+             * rejection handler receives an object of type {@link PrimeFaces.ajax.FailedRequestData}.
              */
             handle: function(cfg, ext) {
                 cfg.ext = ext;

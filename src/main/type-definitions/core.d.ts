@@ -509,7 +509,10 @@ declare namespace PrimeFaces {
 declare namespace PrimeFaces.ajax {
 
     /**
-     * Additional arguments on a {@link JQuery.jqXHR} request that are mainly used by PrimeFaces internally.
+     * An entry on the {@link JQuery.jqXHR} request object with additional values added by PrimeFaces. For example, when
+     * you call `PrimeFaces.current().ajax().addCallbackParam(...)` on the server in a bean method, the added parameters
+     * are available in this object. This is also how you can access pass values from the server to the client after
+     * calling a remote command. See {@link PrimeFaces.ajax.pfXHR} and {@link PrimeFaces.ab}.
      */
     export type PrimeFacesArgs = Record<string, any>;
 
@@ -517,22 +520,6 @@ declare namespace PrimeFaces.ajax {
      * Additional settings on a {@link JQuery.jqXHR} request, such as portlet forms and nonces.
      */
     export type PrimeFacesSettings = Record<string, any>;
-
-    /**
-     * The XHR request object used by PrimeFaces. It extends the `jqXHR` object as used by JQuery, but adds additional
-     * properties specific to PrimeFaces.
-     */
-    export type pfXHR = JQuery.jqXHR & {
-        /**
-         * Additional arguments used by PrimeFaces internally.
-         */
-        pfArgs?: PrimeFacesArgs;
-
-        /**
-         * Additional settings, such as portlet forms and nonces.
-         */
-        pfSettings?: PrimeFacesSettings;
-    };
 
     /**
      * Callback for an AJAX request that is always called after the request completes, irrespective of whether it
@@ -582,21 +569,41 @@ declare namespace PrimeFaces.ajax {
         (this: Request, data: any, status: JQuery.Ajax.SuccessTextStatus, xhr: pfXHR) => boolean | undefined;
 
     /**
+     * The XHR request object used by PrimeFaces. It extends the `jqXHR` object as used by JQuery, but adds additional
+     * properties specific to PrimeFaces.
+     */
+    export interface pfXHR extends JQuery.jqXHR {
+        /**
+         * An object with additional values added by PrimeFaces. For example, when you call
+         * `PrimeFaces.current().ajax().addCallbackParam(...)` on the server in a bean method, the added parameters are
+         * available in this object. This is also how you can access pass values from the server to the client after
+         * calling a remote command.  See {@link PrimeFaces.ajax.pfXHR} and {@link PrimeFaces.ab}.
+         */
+        pfArgs?: PrimeFacesArgs;
+
+        /**
+         * Additional settings, such as portlet forms and nonces.
+         */
+        pfSettings?: PrimeFacesSettings;
+    }
+
+    /**
      * Represents the data of a PrimeFaces AJAX request. This is the value that is returned by
-     * {@link PrimeFaces.ajax.ab} and {@link PrimeFaces.ajax.Request.handle}.
+     * {@link PrimeFaces.ab} and {@link PrimeFaces.ajax.Request.handle}.
      */
     export interface ResponseData {
         /**
          * The XML document that was returned by the server. This may include several elements such as `update` for DOM
          * updates that need to be performed, `executeScript` for running JavaScript code. A typical response might look
          * as follows:
+         * 
          * ```xml
          * <?xml version="1.0" encoding="UTF-8"?>
          * <partial-response>
          *    <changes>
          *       <update id="content:msgs"><![CDATA[
-         *           <span id="content:msgs" class="ui-growl-pl" data-widget="widget_content_msgs" data-summary="data-summary" data-detail="data-detail" data-severity="all,error" data-redisplay="true"></span>
-         *           <script id="content:msgs_s" type="text/javascript">PrimeFaces.cw("Growl","widget_content_msgs",{id:"content:msgs",sticky:false,life:6000,escape:true,keepAlive:false,msgs:[{summary:"Executed",detail:"Using RemoteCommand.",severity:'info',severityText:'Information'}]});</script>
+         *           <span id="content:msgs" class="ui-growl-pl">...</span>
+         *           <script id="content:msgs_s" type="text/javascript">...</script>
          *       ]]></update>
          *       <update id="content:javax.faces.ViewState:0"><![CDATA[3644438980748093603:2519460806875181703]]></update>
          *    </changes>
@@ -607,8 +614,11 @@ declare namespace PrimeFaces.ajax {
 
         /**
          * The jQuery XHR request object that was used for the request.
+         * 
+         * __Note__: This object has a `pfArgs` entry that contains the values added to the response by the server. See
+         * {@link PrimeFaces.ajax.pfXHR.pfArgs}.  
          */
-        jqXHR: JQuery.jqXHR;
+        jqXHR: PrimeFaces.ajax.pfXHR;
 
         /**
          * A string describing the type of success. Usually the HTTP status text.
@@ -617,7 +627,7 @@ declare namespace PrimeFaces.ajax {
     }
 
     /**
-     * Represents the data passed to the exception handler of the promise returned by {@link PrimeFaces.ajax.ab} and
+     * Represents the data passed to the exception handler of the promise returned by {@link PrimeFaces.ab} and
      * {@link PrimeFaces.ajax.Request.handle}.
      */
     export interface FailedRequestData {
@@ -630,7 +640,7 @@ declare namespace PrimeFaces.ajax {
          * The jQuery XHR request object that was used for the request. May not be available when no HTTP request was
          * sent, such as when validation failed. 
          */
-        jqXHR?: JQuery.jqXHR;
+        jqXHR?: PrimeFaces.ajax.pfXHR;
 
         /**
          * A string describing the type of error that occurred.
@@ -819,8 +829,8 @@ declare namespace PrimeFaces.ajax {
         /**
          * A promise object that is resolved when the AJAX request is complete. You can use this option to register
          * a custom callback. Please note that usually you do not have to set this option explicitly, you can use the
-         * return value of {@link PrimeFaces.ajax.ab} or {@link PrimeFaces.ajax.Request.handle}. It will create a new
-         * promise object when none was provided, and return that.
+         * return value of {@link PrimeFaces.ab} or {@link PrimeFaces.ajax.Request.handle}. It will create a new promise
+         * object when none was provided, and return that.
          */
         promise: Promise<PrimeFaces.ajax.ResponseData>;
 
@@ -930,7 +940,7 @@ declare namespace JQuery {
          * Triggered on the document before an AJAX request made by {@link PrimeFaces.ajax} starts.
          * 
          * Usually the following arguments are passed to the callback:
-         * - {@link JQuery.jqXHR}: The AJAX request that is about to be sent.
+         * - {@link PrimeFaces.ajax.pfXHR}: The AJAX request that is about to be sent.
          * - {@link JQuery.AjaxSettings}: The settings of the AJAX request.
          */
         pfAjaxSend: JQuery.TriggeredEvent<TDelegateTarget, TData, TCurrentTarget, TTarget>;
@@ -946,7 +956,7 @@ declare namespace JQuery {
          * Triggered on the document when an AJAX request made by {@link PrimeFaces.ajax} fails.
          * 
          * Usually the following arguments are passed to the callback:
-         * - {@link JQuery.jqXHR}: The AJAX request that failed.
+         * - {@link PrimeFaces.ajax.pfXHR}: The AJAX request that failed.
          * - {@link JQuery.AjaxSettings}: The settings of the AJAX request.
          * - A string: The error that occurred.
          */
@@ -956,7 +966,7 @@ declare namespace JQuery {
          * Triggered on the document when an AJAX request made by {@link PrimeFaces.ajax} succeeds.
          * 
          * Usually the following arguments are passed to the callback:
-         * - {@link JQuery.jqXHR}: The AJAX request that was successful.
+         * - {@link PrimeFaces.ajax.pfXHR}: The AJAX request that was successful.
          * - {@link JQuery.AjaxSettings}: The settings of the AJAX request.
          */
         pfAjaxSuccess: JQuery.TriggeredEvent<TDelegateTarget, TData, TCurrentTarget, TTarget>;
@@ -965,7 +975,7 @@ declare namespace JQuery {
          * Triggered on the document when an AJAX request completes (both success and failure). Only when `global` is set to `true`.
          * 
          * Usually the following arguments are passed to the callback:
-         * - {@link JQuery.jqXHR}: The AJAX request that completed
+         * - {@link PrimeFaces.ajax.pfXHR}: The AJAX request that completed
          * - {@link JQuery.AjaxSettings}: The settings of the AJAX request.
          */
         pfAjaxComplete: JQuery.TriggeredEvent<TDelegateTarget, TData, TCurrentTarget, TTarget>;
