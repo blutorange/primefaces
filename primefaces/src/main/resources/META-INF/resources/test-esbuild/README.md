@@ -23,9 +23,9 @@ The other point of this demo was to check how using esbuild affects the size of 
 are below. In summary, it's pretty much the same. esbuild's output is sometimes marginally larger, sometimes even
 smaller, and after zipping, the different all but disappears completely.
 
-(note: for fair results, I changed the `language_out` for closure compiler to `ECMASCRIPT_2016`).
+(note: for fair results, I changed the `language_out` options of closure compiler to `ECMASCRIPT_2016`).
 
-| file              | closure-compile (zipped) | esbuild (zipped) |
+| file              | closure-compiler (zipped)| esbuild (zipped) |
 |-------------------|--------------------------|------------------|
 | core.js           | 95K (27K)                | 97K (27K)        |
 | components.js     | 532K (111K)              | 504K (107K)      |
