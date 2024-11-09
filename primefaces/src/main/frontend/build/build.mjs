@@ -63,7 +63,7 @@ const LinkedLibraries = {
     quill: ["quill/"],
     raphael: ["raphael/"],
     scrollPanel: ["jscrollpane/"],
-    timeline: ["vis-timeline/", "vis-data/", "vis-util/"],
+    timeline: ["moment/dist/locale/", "vis-timeline/", "vis-data/", "vis-util/"],
     touchSwipe: ["jquery-touchswipe/"],
     webcamJs: ["webcamjs/"],
 };
