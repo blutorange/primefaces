@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces ProgressBar widget__
  * 
@@ -23,7 +25,7 @@
  * @prop {number} cfg.interval Duration in milliseconds between two AJAX polling requests, when `ajax` is set to `true`.
  * @prop {string} cfg.labelTemplate Template of the progress label.
  */
-PrimeFaces.widget.ProgressBar = class ProgressBar extends PrimeFaces.widget.BaseWidget {
+export class ProgressBar extends BaseWidget {
 
     /**
      * @override

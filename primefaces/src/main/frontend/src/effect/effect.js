@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Effect Widget__
  * 
@@ -25,7 +27,7 @@
  * @prop {string} cfg.event Event that triggers the effect. Defaults to `load` (page load).
  * @prop {PrimeFaces.widget.Effect.EffectCallback} cfg.fn Function that runs the effect when invoked.
  */
-PrimeFaces.widget.Effect = class Effect extends PrimeFaces.widget.BaseWidget {
+export class Effect extends BaseWidget {
 
     /**
      * @override

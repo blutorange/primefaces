@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Password Widget__
  * 
@@ -27,7 +29,7 @@
  * @prop {string} cfg.hideEvent Event hiding the feedback overlay. Default is 'blur'.
  * @prop {boolean} cfg.unmaskable Whether or not this password can be unmasked/remasked.
  */
-PrimeFaces.widget.Password = class Password extends PrimeFaces.widget.BaseWidget {
+export class Password extends BaseWidget {
 
     /**
      * @override

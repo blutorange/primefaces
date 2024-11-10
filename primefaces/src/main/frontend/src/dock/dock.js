@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Dock Widget__
  * 
@@ -15,7 +17,7 @@
  * @prop {string} cfg.animationDuration The duration for the opening and closing animation in milliseconds.
  * @prop {boolean} cfg.blockScroll Whether to block scrolling of the document. 
  */
-PrimeFaces.widget.Dock = class Dock extends PrimeFaces.widget.BaseWidget {
+export class Dock extends BaseWidget {
 
     /**
      * @override

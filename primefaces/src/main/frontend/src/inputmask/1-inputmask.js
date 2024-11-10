@@ -1,3 +1,7 @@
+import "inputmask/lib/jquery.inputmask.js";
+
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces InputMask Widget__
  * 
@@ -12,7 +16,7 @@
  * @prop {string} cfg.mask The mask template to use.
  * @prop {boolean} hasFloatLabel Is this component wrapped in a float label.
  */
-PrimeFaces.widget.InputMask = class InputMask extends PrimeFaces.widget.BaseWidget {
+export class InputMask extends BaseWidget {
 
     /**
      * @override

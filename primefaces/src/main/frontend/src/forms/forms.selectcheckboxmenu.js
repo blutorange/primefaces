@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces SelectCheckboxMenu Widget__
  * 
@@ -111,7 +113,7 @@
  * @prop {boolean} cfg.updateLabel When enabled, the selected items are displayed on the label.
  * @prop {boolean} cfg.renderPanelContentOnClient Renders panel content on client.
  */
-PrimeFaces.widget.SelectCheckboxMenu = class SelectCheckboxMenu extends PrimeFaces.widget.BaseWidget {
+export class SelectCheckboxMenu extends BaseWidget {
 
     /**
      * @override

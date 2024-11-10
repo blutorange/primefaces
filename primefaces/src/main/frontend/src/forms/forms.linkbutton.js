@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces LinkButton Widget__
  * 
@@ -10,7 +12,7 @@
  * configuration is usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
  */
-PrimeFaces.widget.LinkButton = class LinkButton extends PrimeFaces.widget.BaseWidget {
+export class LinkButton extends BaseWidget {
 
     /**
      * @override

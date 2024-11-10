@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces PickList Widget__
  *
@@ -78,7 +80,7 @@
  * @prop {boolean} cfg.showTargetControls Specifies visibility of reorder buttons of target list.
  * @prop {string} cfg.tabindex Position of the element in the tabbing order.
  */
-PrimeFaces.widget.PickList = class PickList extends PrimeFaces.widget.BaseWidget {
+export class PickList extends BaseWidget {
 
     /**
      * @override

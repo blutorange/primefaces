@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Panel Widget__
  * 
@@ -33,7 +35,7 @@
  * @prop {PrimeFaces.widget.Panel.ToggleOrientation} cfg.toggleOrientation Defines the orientation of the toggling.
  * @prop {number} cfg.toggleSpeed Speed of toggling in milliseconds.
  */
-PrimeFaces.widget.Panel = class Panel extends PrimeFaces.widget.BaseWidget {
+export class Panel extends BaseWidget {
 
     /**
      * @override

@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Growl Widget__
  *
@@ -16,7 +18,7 @@
  * refreshed.
  * @prop {boolean} cfg.sticky Specifies if the message should stay instead of hidden automatically.
  */
-PrimeFaces.widget.Growl = class Growl extends PrimeFaces.widget.BaseWidget {
+export class Growl extends BaseWidget {
 
     /**
      * @override

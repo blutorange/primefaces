@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces SelectBooleanButton Widget__
  * 
@@ -19,7 +21,7 @@
  * @prop {string} cfg.offLabel Label to display when button is unselected.
  * @prop {string} cfg.offIcon Icon to display when button is unselected.
  */
-PrimeFaces.widget.SelectBooleanButton = class SelectBooleanButton extends PrimeFaces.widget.BaseWidget {
+export class SelectBooleanButton extends BaseWidget {
 
     /**
      * @override

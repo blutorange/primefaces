@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces NotificationBar Widget__
  *
@@ -24,7 +26,7 @@
  * is shown or hidden.
  * @prop {PrimeFaces.widget.NotificationBar.Position} cfg.position Position of the bar, either top or bottom.
  */
-PrimeFaces.widget.NotificationBar = class NotificationBar extends PrimeFaces.widget.BaseWidget {
+export class NotificationBar extends BaseWidget {
 
     /**
      * @override

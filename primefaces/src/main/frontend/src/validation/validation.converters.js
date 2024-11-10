@@ -1,6 +1,9 @@
 // see #7395
 // we always add validation/beanvalidation.js on each page, also if no PrimeFaces component is available
 // so... just check if primefaces.js was rendered
+
+import moment from "moment";
+
 if (window.PrimeFaces) {
 
     PrimeFaces.converter['javax.faces.Integer'] = {
@@ -280,10 +283,6 @@ if (window.PrimeFaces) {
             datePattern = null,
             timePattern = null;
             
-            if (typeof moment === 'undefined') {
-                PrimeFaces.error("Moment.js is not loaded! Please enable 'primefaces.CLIENT_SIDE_VALIDATION' in web.xml!");
-            }
-
             try {
                 if (javaPattern) {
                     var patternTokens = javaPattern.split(" ");

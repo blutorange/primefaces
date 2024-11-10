@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces AjaxStatus Widget__
  * 
@@ -70,7 +72,7 @@
  * @prop {PrimeFaces.widget.AjaxStatus.PfAjaxSuccessCallback | jsf.ajax.OnEventCallback} cfg.success Client-side
  * callback for when the AJAX  behavior completes successfully, i.e. when the request succeeds.
  */
-PrimeFaces.widget.AjaxStatus = class AjaxStatus extends PrimeFaces.widget.BaseWidget {
+export class AjaxStatus extends BaseWidget {
 
     /**
      * @override

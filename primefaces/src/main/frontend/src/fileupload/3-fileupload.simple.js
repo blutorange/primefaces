@@ -1,3 +1,8 @@
+import "blueimp-file-upload";
+import "blueimp-file-upload/js/jquery.iframe-transport.js";
+
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Simple FileUpload Widget__
  *
@@ -20,7 +25,7 @@
  * @forcedProp {number} [ajaxCount] Number of concurrent active Ajax requests.
  * @prop {boolean} cfg.displayFilename Wheter the filename should be displayed.
  */
-PrimeFaces.widget.SimpleFileUpload = class SimpleFileUpload extends PrimeFaces.widget.BaseWidget {
+export class SimpleFileUpload extends BaseWidget {
 
     /**
      * @override

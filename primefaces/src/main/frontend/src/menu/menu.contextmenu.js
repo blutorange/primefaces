@@ -1,3 +1,7 @@
+import "jquery-touchswipe";
+
+import { TieredMenu } from "./menu.tieredmenu.js";
+
 /**
  * __PrimeFaces ContextMenu Widget__
  * 
@@ -51,7 +55,7 @@
  * @prop {string} cfg.targetWidgetVar Widget variable of the target widget.
  * @prop {boolean} cfg.disabled If true, prevents menu from being shown.
  */
-PrimeFaces.widget.ContextMenu = class ContextMenu extends PrimeFaces.widget.TieredMenu {
+export class ContextMenu extends TieredMenu {
 
     /**
      * @override

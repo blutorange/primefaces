@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Spotlight Widget__
  * 
@@ -14,7 +16,7 @@
  * @prop {boolean} cfg.blockScroll `true` to block scrolling when the spotlight is turned on, or `false` otherwise.
  * @prop {string} cfg.target The search expression for the target component to highlight.
  */
-PrimeFaces.widget.Spotlight = class Spotlight extends PrimeFaces.widget.BaseWidget {
+export class Spotlight extends BaseWidget {
 
     /**
      * @override

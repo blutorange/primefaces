@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Fieldset Widget__
  * 
@@ -21,7 +23,7 @@
  * @prop {boolean} cfg.dynamic `true` to load the content via AJAX when the fieldset panel is opened, `false` to load
  * the content immediately.
  */
-PrimeFaces.widget.Fieldset = class Fieldset extends PrimeFaces.widget.BaseWidget {
+export class Fieldset extends BaseWidget {
 
     /**
      * @override

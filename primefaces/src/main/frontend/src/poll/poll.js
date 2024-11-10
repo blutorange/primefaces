@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Poll Widget__
  * 
@@ -23,7 +25,7 @@
  * depending on the configure `intervalType`.
  * @prop {PrimeFaces.widget.Poll.PollingAction} cfg.fn Callback that performs the polling action.
  */
-PrimeFaces.widget.Poll = class Poll extends PrimeFaces.widget.BaseWidget {
+export class Poll extends BaseWidget {
 
     /**
      * @override

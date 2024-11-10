@@ -1,3 +1,11 @@
+import "jquery-ui/ui/keycode.js";
+import "jquery-ui/ui/widgets/datepicker.js";
+import "jquery-ui-timepicker-addon";
+
+import "../../src/calendar/2-jquery.ui.pfextensions.js";
+
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Calendar Widget__
  *
@@ -97,7 +105,7 @@
  * @prop {string} cfg.yearRange Year range for the navigator, default is `c-10:c+10`.
  * @prop {string} cfg.shortYearCutoff The cutoff year for determining the century for a date. Default is `+10`.
  */
-PrimeFaces.widget.Calendar = class Calendar extends PrimeFaces.widget.BaseWidget {
+export class Calendar extends BaseWidget {
 
     /**
      * @override

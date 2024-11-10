@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces SelectManyButton Widget__
  * 
@@ -14,7 +16,7 @@
  * configuration is usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
  */
-PrimeFaces.widget.SelectManyButton = class SelectManyButton extends PrimeFaces.widget.BaseWidget {
+export class SelectManyButton extends BaseWidget {
 
     /**
      * @override

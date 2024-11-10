@@ -1,3 +1,5 @@
+import { DeferredWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces SelectOneMenu Widget__
  *
@@ -86,7 +88,7 @@
  * @prop {boolean} cfg.syncTooltip Updates the title of the component with the description of the selected item.
  * @prop {boolean} cfg.renderPanelContentOnClient Renders panel content on client.
  */
-PrimeFaces.widget.SelectOneMenu = class SelectOneMenu extends PrimeFaces.widget.DeferredWidget {
+export class SelectOneMenu extends DeferredWidget {
 
 	/**
 	 * @override

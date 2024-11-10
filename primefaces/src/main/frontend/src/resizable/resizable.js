@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Resizable Widget__
  * 
@@ -42,7 +44,7 @@
  * @prop {JQueryUI.ResizableEvent} cfg.stop Callback passed to JQuery UI for when a resizing event ends.
  * @prop {string} cfg.target ID of the target widget or element to be resized. 
  */
-PrimeFaces.widget.Resizable = class Resizable extends PrimeFaces.widget.BaseWidget {
+export class Resizable extends BaseWidget {
 
     /**
      * @override

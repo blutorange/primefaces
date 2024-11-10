@@ -1,3 +1,5 @@
+import { Menu } from "./menu.base.js";
+
 /**
  * __PrimeFaces SlideMenu Widget__
  * 
@@ -18,7 +20,7 @@
  * configuration is usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.MenuCfg} cfg
  */
-PrimeFaces.widget.SlideMenu = class SlideMenu extends PrimeFaces.widget.Menu {
+export class SlideMenu extends Menu {
 
     /**
      * @override

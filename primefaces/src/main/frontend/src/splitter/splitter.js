@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Splitter Widget__
  *
@@ -46,7 +48,7 @@
  * @prop {string} cfg.stateKey Defines storage identifier of a stateful Splitter.
  * @prop {PrimeFaces.widget.Splitter.StateStorage} cfg.stateStorage Defines where a stateful splitter keeps its state.
  */
-PrimeFaces.widget.Splitter = class Splitter extends PrimeFaces.widget.BaseWidget {
+export class Splitter extends BaseWidget {
 
     /**
      * @override

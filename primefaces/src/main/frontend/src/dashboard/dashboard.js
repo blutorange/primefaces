@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Dashboard Widget__
  * 
@@ -19,7 +21,7 @@
  * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
  * @extends {JQueryUI.SortableOptions} cfg
  */
-PrimeFaces.widget.Dashboard = class Dashboard extends PrimeFaces.widget.BaseWidget {
+export class Dashboard extends BaseWidget {
 
     /**
      * @override

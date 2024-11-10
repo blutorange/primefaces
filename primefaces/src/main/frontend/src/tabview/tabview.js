@@ -1,3 +1,7 @@
+import "jquery-touchswipe";
+
+import { DeferredWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces TabView Widget__
  *
@@ -62,7 +66,7 @@
  * @prop {boolean} cfg.focusOnError Whether to focus the first tab that has an error associated to it.
  * @prop {boolean} cfg.focusOnLastActiveTab Whether to focus on the last active tab that a user selected.
  */
-PrimeFaces.widget.TabView = class TabView extends PrimeFaces.widget.DeferredWidget {
+export class TabView extends DeferredWidget {
 
     /**
      * @override

@@ -1,19 +1,11 @@
 import * as ChartJs from "chart.js";
 import * as ChartJsHelpers from "chart.js/helpers";
-import "chartjs-adapter-moment";
-import zoomPlugin from "chartjs-plugin-zoom";
 import Hammer from "hammerjs";
 import "../../src/chart/9-chartjs-widget.js";
 
-// Register all ChartJS components
-const Chart = ChartJs.Chart
-Chart.register(...ChartJs.registerables);
-
-// Zoom plugin must be registered manually
-ChartJs.Chart.register(zoomPlugin);
-
 // Expose some more globals
 // Not needed for our code, but may already be used by external code
+const Chart = ChartJs.Chart;
 const platforms = Object.freeze({
     __proto__: null,
     BasePlatform: ChartJs.BasePlatform,

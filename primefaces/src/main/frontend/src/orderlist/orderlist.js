@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces OrderList Widget__
  * 
@@ -16,7 +18,7 @@
  * @prop {boolean} cfg.disabled Whether this widget is disabled initially.
  * @prop {string} cfg.effect Name of animation to display.
  */
-PrimeFaces.widget.OrderList = class OrderList extends PrimeFaces.widget.BaseWidget {
+export class OrderList extends BaseWidget {
 
     /**
      * @override

@@ -1,3 +1,5 @@
+import { SelectListbox } from "./forms.selectlistbox.js";
+
 /**
  * __PrimeFaces SelectManyMenu Widget__
  * 
@@ -19,7 +21,7 @@
  * items.
  * @prop {boolean} cfg.showCheckbox When set to `true`, a checkbox is displayed next to each item.
  */
-PrimeFaces.widget.SelectManyMenu = class SelectManyMenu extends PrimeFaces.widget.SelectListbox {
+export class SelectManyMenu extends SelectListbox {
 
     /**
      * @override

@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces OutputPanel Widget__
  * 
@@ -19,7 +21,7 @@
  * @prop {boolean} cfg.global When the content is loaded via AJAX, whether AJAX request triggers the global
  * `ajaxStatus`.
  */
-PrimeFaces.widget.OutputPanel = class OutputPanel extends PrimeFaces.widget.BaseWidget {
+export class OutputPanel extends BaseWidget {
 
     /**
      * @override

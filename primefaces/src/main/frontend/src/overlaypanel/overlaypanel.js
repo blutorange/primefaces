@@ -1,3 +1,5 @@
+import { DynamicOverlayWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces OverlayPanel Widget__
  * 
@@ -52,7 +54,7 @@
  * @prop {string} cfg.showEvent Event on target to hide the panel.
  * @prop {string} cfg.target Search expression for target component to display panel next to.
  */
-PrimeFaces.widget.OverlayPanel = class OverlayPanel extends PrimeFaces.widget.DynamicOverlayWidget {
+export class OverlayPanel extends DynamicOverlayWidget {
 
     /**
      * @override

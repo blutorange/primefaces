@@ -1,6 +1,8 @@
 import $ from "jquery";
 import Quill from "quill";
 
+import { DeferredWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces TextEditor Widget__
  * 
@@ -21,7 +23,7 @@ import Quill from "quill";
  * @prop {boolean} cfg.disabled Whether this text editor is initially disabled.
  * @prop {boolean} cfg.toolbarVisible Whether the editor toolbar should be displayed.
  */
-PrimeFaces.widget.TextEditor = class TextEditor extends PrimeFaces.widget.DeferredWidget {
+export class TextEditor extends DeferredWidget {
 
     /**
      * The default HTML template for the toolbar of the editor. Use the appropriate CSS classes to insert a toolbar

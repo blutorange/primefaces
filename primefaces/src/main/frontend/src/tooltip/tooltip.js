@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Tooltip Widget__
  * 
@@ -54,7 +56,7 @@
  * @prop {string} cfg.target Search expression for the component to which the tooltip is attached.
  * @prop {boolean} cfg.trackMouse Whether the tooltip position should follow the mouse or pointer.
  */
-PrimeFaces.widget.Tooltip = class Tooltip extends PrimeFaces.widget.BaseWidget {
+export class Tooltip extends BaseWidget {
 
     /**
      * @override

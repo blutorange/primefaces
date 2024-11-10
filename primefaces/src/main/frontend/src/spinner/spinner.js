@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Spinner Widget__
  *
@@ -29,7 +31,7 @@
  * digits.
  * @prop {boolean} cfg.modifyValueOnWheel Increment or decrement the element value with the mouse wheel if true.
  */
-PrimeFaces.widget.Spinner = class Spinner extends PrimeFaces.widget.BaseWidget {
+export class Spinner extends BaseWidget {
 
     /**
      * @override

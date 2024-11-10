@@ -1,3 +1,7 @@
+import "./0-jquery.idletimer.js";
+
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces IdleMonitor Widget__
  * 
@@ -26,7 +30,7 @@
  * idle.
  * @prop {number} cfg.timeout Time to wait in milliseconds until deciding if the user is idle. Default is 5 minutes.
  */
-PrimeFaces.widget.IdleMonitor = class IdleMonitor extends PrimeFaces.widget.BaseWidget {
+export class IdleMonitor extends BaseWidget {
 
     /**
      * @override

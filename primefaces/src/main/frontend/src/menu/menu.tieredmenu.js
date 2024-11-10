@@ -1,3 +1,5 @@
+import { Menu } from "./menu.base.js";
+
 /**
  * __PrimeFaces TieredMenu Widget__
  * 
@@ -28,7 +30,7 @@
  * @prop {number} cfg.hideDelay Number of milliseconds before hiding menu, if 0 not hidden until document.click.
  * @prop {PrimeFaces.widget.TieredMenu.ToggleEvent} cfg.toggleEvent Event to toggle the submenus.
  */
-PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
+export class TieredMenu extends Menu {
 
     /**
      * @override

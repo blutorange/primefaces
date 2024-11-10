@@ -1,5 +1,7 @@
 import Coloris from "@melloware/coloris";
 
+import { BaseWidget } from "../core/core.widget.js";
+
 // Ensure Coloris is only initialized once
 let colorisInitialized = false;
 
@@ -40,7 +42,7 @@ let colorisInitialized = false;
  * @prop {PrimeFaces.widget.ColorPicker.DisplayMode} cfg.mode Whether the color picker is displayed inline or as a popup.
  * @prop {string} cfg.instance The instance of for configuring in popup mode
  */
-PrimeFaces.widget.ColorPicker = class ColorPicker extends PrimeFaces.widget.BaseWidget {
+export class ColorPicker extends BaseWidget {
 
     /**
      * @override

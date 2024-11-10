@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Messages Widget__
  * 
@@ -9,7 +11,7 @@
  * configuration is usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
  */
-PrimeFaces.widget.Messages = class Messages extends PrimeFaces.widget.BaseWidget {
+export class Messages extends BaseWidget {
 
     /**
      * @override

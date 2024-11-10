@@ -1,5 +1,7 @@
 import Webcam from "webcamjs";
 
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces PhotoCam Widget__
  *
@@ -29,7 +31,7 @@ import Webcam from "webcamjs";
  * @prop {number} cfg.width Width of the camera viewport in pixels.
  * @prop {PrimeFaces.widget.PhotoCam.onCameraError} cfg.onCameraError Custom Webcam.js error handler
  */
-PrimeFaces.widget.PhotoCam = class PhotoCam extends PrimeFaces.widget.BaseWidget {
+export class PhotoCam extends BaseWidget {
     /**
      * Whether the camera is currently attached and can take photos.
      * @type {boolean}

@@ -1,211 +1,8 @@
-/**
- * __PrimeFaces Knob Widget__
- * 
- * Knob is an input component to insert numeric values in a range.
- * 
- * @typedef PrimeFaces.widget.Knob.OnChangeCallback Client side callback to invoke when value changes. See also
- * {@link KnobCfg.onchange}.
- * @param {number} PrimeFaces.widget.Knob.OnChangeCallback.currentValue Current numerical value of the knob.
- * 
- * @interface {PrimeFaces.widget.Knob.ColorTheme} ColorTheme A color theme for the knob, consisting of the color for the
- * filled and unfilled part of the knob.
- * @prop {string} ColorTheme.fgColor The foreground color, i.e. the color of the filled part of the knob. Must be a CSS
- * color, e.g., `#ff0000`.
- * @prop {string} ColorTheme.bgColor The background color, i.e. the color of the unfilled part of the knob. Must be a
- * CSS color, e.g., `#ff0000`.
- * 
- * @prop {string} colorTheme Name of the color theme to use. You can use on of the keys defined in
- * `PrimeFaces.widget.Knob.ColorThemes`.
- * @prop {JQuery} input The DOM Element for the hidden input that stores the value of this widget.
- * @prop {JQuery} knob The DOM element on which the JQuery knob plugin was initialized.
- * @prop {number} min Minimum allowed value for this knob.
- * @prop {number} max Maximum allowed value for this knob.
- * @prop {number} step Step size for incrementing or decrementing the value of this knob.
- * @prop {PrimeFaces.widget.Knob.ColorTheme} themeObject Color theme data to be used.
- * 
- * @interface {PrimeFaces.widget.KnobCfg} cfg The configuration for the {@link  Knob| Knob widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
- * 
- * @prop {string} cfg.colorTheme Theme of the knob.
- * @prop {string} cfg.bgColor Foreground color of the component.
- * @prop {string} cfg.fgColor Background color of the component.
- * @prop {string} cfg.labelTemplate Template of the progress value e.g. `{value}%`.
- * @prop {PrimeFaces.widget.Knob.OnChangeCallback} cfg.onchange Client side callback to invoke when value changes.
- * @prop {string} cfg.styleClass Style class of the component.
- */
-PrimeFaces.widget.Knob = class Knob extends PrimeFaces.widget.BaseWidget {
+import "./1-jquery.knob.cjs";
 
-    /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
-     */
-    init(cfg) {
-        super.init(cfg);
+import { BaseWidget } from "../core/core.widget.js";
 
-        this.colorTheme = this.cfg.colorTheme;
-        this.input = $(this.jqId + "_hidden");
-        this.min = parseInt(this.jq.data('min'), 10);
-        this.max = parseInt(this.jq.data('max'), 10);
-        this.step = parseInt(this.jq.data('step'), 10);
-
-        this.createKnob();
-
-    }
-
-    /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
-     */
-    refresh(cfg) {
-        if (this.knob) {
-            this.knob.children('canvas').remove();
-            this.input.remove();
-            this.knob.children('input').unwrap();
-        }
-        
-        this.init(cfg);
-    }
-    
-    /**
-     * Creates the knob widget and sets up all event listeners.
-     * @private
-     */
-    createKnob() {
-        var $this = this;
-
-        this.themeObject = PrimeFaces.widget.Knob.colorThemes[this.colorTheme || 'aristo'];
-
-        this.jq.data('fgcolor', this.cfg.fgColor || this.themeObject.fgColor);
-        this.jq.data('bgcolor', this.cfg.bgColor || this.themeObject.bgColor);
-
-        /* PrimeFaces Github #4085 */
-        this.jq.css({
-            'pointer-events': 'none',
-            '-moz-user-select': 'none'
-        });
-
-        this.knob = this.jq.knob({
-            release: function (value) {
-                $this.input.val(value);
-
-                if ($this.cfg.onchange) {
-                    $this.cfg.onchange(value);
-                }
-
-                if ($this.hasBehavior('change')) {
-                    var ext = {
-                        params: [
-                            {name: $this.id + '_hidden', value: value}
-                        ]
-                    };
-
-                    $this.callBehavior('change', ext);
-                }
-            },
-            format: function (value) {
-                return $this.cfg.labelTemplate.replace('{value}', value);
-            },
-            draw: function () {
-
-                // "tron" case
-                if (this.$.data('skin') == 'tron') {
-
-                    this.cursorExt = 0.3;
-
-                    var a = this.arc(this.cv) // Arc
-                            , pa // Previous arc
-                            , r = 1;
-
-                    this.g.lineWidth = this.lineWidth;
-
-                    if (this.o.displayPrevious) {
-                        pa = this.arc(this.v);
-                        this.g.beginPath();
-                        this.g.strokeStyle = this.pColor;
-                        this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, pa.s, pa.e, pa.d);
-                        this.g.stroke();
-                    }
-
-                    this.g.beginPath();
-                    this.g.strokeStyle = r ? this.o.fgColor : this.fgColor;
-                    this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, a.s, a.e, a.d);
-                    this.g.stroke();
-
-                    this.g.lineWidth = 2;
-                    this.g.beginPath();
-                    this.g.strokeStyle = this.o.fgColor;
-                    this.g.arc(this.xy, this.xy, this.radius - this.lineWidth + 1 + this.lineWidth * 2 / 3, 0, 2 * Math.PI, false);
-                    this.g.stroke();
-
-                    return false;
-                }
-            }
-        });
-        
-        this.knob.addClass(this.cfg.styleClass);
-    }
-
-    /**
-     * Sets the value of this knob widget to the given value.
-     * @param {number} value Value to set on this knob.
-     */
-    setValue(value) {
-        this.input.val(value);
-        this.jq.val(value).trigger('change');
-    }
-
-    /**
-     * Retrieves the current value of this knob, as a number.
-     * @return {number} The current numerical value of this knob.
-     */
-    getValue() {
-        return parseInt(this.jq.val());
-    }
-
-    /**
-     * Increments the value of this knob by the current step size.
-     */
-    increment() {
-        var value = this.getValue() + this.step;
-        value = value <= this.max ? value : this.max;
-        this.setValue(value);
-    }
-
-    /**
-     * Decrements the value of this knob by the current step size.
-     */
-    decrement() {
-        var value = this.getValue() - this.step;
-        value = value >= this.min ? value : this.min;
-        this.setValue(value);
-    }
-
-    /**
-     * Disables this input so that the user cannot enter a value anymore.
-     */
-    disable() {
-        PrimeFaces.utils.disableInputWidget(this.jq, this.input);
-    }
-
-    /**
-     * Enables this input so that the user can enter a value.
-     */
-    enable() {
-        PrimeFaces.utils.enableInputWidget(this.jq, this.input);
-    }
-}
-
-/**
- * Interface for the list of available builtin color themes for the {@link Knob} widget.
- * @interface {PrimeFaces.widget.Knob.ColorThemes} .
- * @constant {PrimeFaces.widget.Knob.colorThemes} . Contains a list with the available builtin color themes for the
- * {@link Knob} widget.
- */
-PrimeFaces.widget.Knob.colorThemes = {
+const ColorThemes = {
     /**
      * The default afterdark theme.
      * @type {PrimeFaces.widget.Knob.ColorTheme}
@@ -509,5 +306,210 @@ PrimeFaces.widget.Knob.colorThemes = {
     vader: {
         fgColor: 'white',
         bgColor: '#AEAEAE'
+    },
+}
+
+/**
+ * __PrimeFaces Knob Widget__
+ * 
+ * Knob is an input component to insert numeric values in a range.
+ * 
+ * @typedef PrimeFaces.widget.Knob.OnChangeCallback Client side callback to invoke when value changes. See also
+ * {@link KnobCfg.onchange}.
+ * @param {number} PrimeFaces.widget.Knob.OnChangeCallback.currentValue Current numerical value of the knob.
+ * 
+ * @interface {PrimeFaces.widget.Knob.ColorTheme} ColorTheme A color theme for the knob, consisting of the color for the
+ * filled and unfilled part of the knob.
+ * @prop {string} ColorTheme.fgColor The foreground color, i.e. the color of the filled part of the knob. Must be a CSS
+ * color, e.g., `#ff0000`.
+ * @prop {string} ColorTheme.bgColor The background color, i.e. the color of the unfilled part of the knob. Must be a
+ * CSS color, e.g., `#ff0000`.
+ * 
+ * @prop {string} colorTheme Name of the color theme to use. You can use on of the keys defined in
+ * `PrimeFaces.widget.Knob.ColorThemes`.
+ * @prop {JQuery} input The DOM Element for the hidden input that stores the value of this widget.
+ * @prop {JQuery} knob The DOM element on which the JQuery knob plugin was initialized.
+ * @prop {number} min Minimum allowed value for this knob.
+ * @prop {number} max Maximum allowed value for this knob.
+ * @prop {number} step Step size for incrementing or decrementing the value of this knob.
+ * @prop {PrimeFaces.widget.Knob.ColorTheme} themeObject Color theme data to be used.
+ * 
+ * @interface {PrimeFaces.widget.KnobCfg} cfg The configuration for the {@link  Knob| Knob widget}.
+ * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
+ * configuration is usually meant to be read-only and should not be modified.
+ * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
+ * 
+ * @prop {string} cfg.colorTheme Theme of the knob.
+ * @prop {string} cfg.bgColor Foreground color of the component.
+ * @prop {string} cfg.fgColor Background color of the component.
+ * @prop {string} cfg.labelTemplate Template of the progress value e.g. `{value}%`.
+ * @prop {PrimeFaces.widget.Knob.OnChangeCallback} cfg.onchange Client side callback to invoke when value changes.
+ * @prop {string} cfg.styleClass Style class of the component.
+ */
+export class Knob extends BaseWidget {
+    /**
+     * List of available builtin color themes for the {@link Knob} widget.
+     */
+    static colorThemes = ColorThemes;
+
+    /**
+     * @override
+     * @inheritdoc
+     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
+     */
+    init(cfg) {
+        super.init(cfg);
+
+        this.colorTheme = this.cfg.colorTheme;
+        this.input = $(this.jqId + "_hidden");
+        this.min = parseInt(this.jq.data('min'), 10);
+        this.max = parseInt(this.jq.data('max'), 10);
+        this.step = parseInt(this.jq.data('step'), 10);
+
+        this.createKnob();
+
     }
-};
+
+    /**
+     * @override
+     * @inheritdoc
+     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
+     */
+    refresh(cfg) {
+        if (this.knob) {
+            this.knob.children('canvas').remove();
+            this.input.remove();
+            this.knob.children('input').unwrap();
+        }
+        
+        this.init(cfg);
+    }
+    
+    /**
+     * Creates the knob widget and sets up all event listeners.
+     * @private
+     */
+    createKnob() {
+        var $this = this;
+
+        this.themeObject = Knob.colorThemes[this.colorTheme || 'aristo'];
+
+        this.jq.data('fgcolor', this.cfg.fgColor || this.themeObject.fgColor);
+        this.jq.data('bgcolor', this.cfg.bgColor || this.themeObject.bgColor);
+
+        /* PrimeFaces Github #4085 */
+        this.jq.css({
+            'pointer-events': 'none',
+            '-moz-user-select': 'none'
+        });
+
+        this.knob = this.jq.knob({
+            release: function (value) {
+                $this.input.val(value);
+
+                if ($this.cfg.onchange) {
+                    $this.cfg.onchange(value);
+                }
+
+                if ($this.hasBehavior('change')) {
+                    var ext = {
+                        params: [
+                            {name: $this.id + '_hidden', value: value}
+                        ]
+                    };
+
+                    $this.callBehavior('change', ext);
+                }
+            },
+            format: function (value) {
+                return $this.cfg.labelTemplate.replace('{value}', value);
+            },
+            draw: function () {
+
+                // "tron" case
+                if (this.$.data('skin') == 'tron') {
+
+                    this.cursorExt = 0.3;
+
+                    var a = this.arc(this.cv) // Arc
+                            , pa // Previous arc
+                            , r = 1;
+
+                    this.g.lineWidth = this.lineWidth;
+
+                    if (this.o.displayPrevious) {
+                        pa = this.arc(this.v);
+                        this.g.beginPath();
+                        this.g.strokeStyle = this.pColor;
+                        this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, pa.s, pa.e, pa.d);
+                        this.g.stroke();
+                    }
+
+                    this.g.beginPath();
+                    this.g.strokeStyle = r ? this.o.fgColor : this.fgColor;
+                    this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, a.s, a.e, a.d);
+                    this.g.stroke();
+
+                    this.g.lineWidth = 2;
+                    this.g.beginPath();
+                    this.g.strokeStyle = this.o.fgColor;
+                    this.g.arc(this.xy, this.xy, this.radius - this.lineWidth + 1 + this.lineWidth * 2 / 3, 0, 2 * Math.PI, false);
+                    this.g.stroke();
+
+                    return false;
+                }
+            }
+        });
+        
+        this.knob.addClass(this.cfg.styleClass);
+    }
+
+    /**
+     * Sets the value of this knob widget to the given value.
+     * @param {number} value Value to set on this knob.
+     */
+    setValue(value) {
+        this.input.val(value);
+        this.jq.val(value).trigger('change');
+    }
+
+    /**
+     * Retrieves the current value of this knob, as a number.
+     * @return {number} The current numerical value of this knob.
+     */
+    getValue() {
+        return parseInt(this.jq.val());
+    }
+
+    /**
+     * Increments the value of this knob by the current step size.
+     */
+    increment() {
+        var value = this.getValue() + this.step;
+        value = value <= this.max ? value : this.max;
+        this.setValue(value);
+    }
+
+    /**
+     * Decrements the value of this knob by the current step size.
+     */
+    decrement() {
+        var value = this.getValue() - this.step;
+        value = value >= this.min ? value : this.min;
+        this.setValue(value);
+    }
+
+    /**
+     * Disables this input so that the user cannot enter a value anymore.
+     */
+    disable() {
+        PrimeFaces.utils.disableInputWidget(this.jq, this.input);
+    }
+
+    /**
+     * Enables this input so that the user can enter a value.
+     */
+    enable() {
+        PrimeFaces.utils.enableInputWidget(this.jq, this.input);
+    }
+}

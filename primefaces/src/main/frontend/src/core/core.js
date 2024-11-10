@@ -1,4 +1,5 @@
 import Cookies from "js-cookie";
+import { loadWidget } from "./core.widget.registry.js";
 
 (function(window) {
 
@@ -731,34 +732,35 @@ import Cookies from "js-cookie";
          */
         createWidget : function(widgetName, widgetVar, cfg) {
             cfg.widgetVar = widgetVar;
+            loadWidget(widgetName, result => {
+                if (result.status === 'rejected') {
+                    PrimeFaces.error(String(result.reason));
+                    return;
+                }
 
-            if(this.widget[widgetName]) {
-                var widget = this.widgets[widgetVar];
+                const widget = this.widgets[widgetVar];
+                const widgetType = result.value;
 
                 //ajax update
-                if(widget && (widget.constructor === this.widget[widgetName])) {
+                if(widget && (widget.constructor === widgetType)) {
                     widget.refresh(cfg);
                     if (cfg.postRefresh) {
                         cfg.postRefresh.call(widget, widget);
                     }
                 }
+
                 //page init
                 else {
                     if (cfg.preConstruct) {
                         cfg.preConstruct.call(null, cfg);
                     }
-                    var newWidget = new this.widget[widgetName](cfg);
+                    var newWidget = new widgetType(cfg);
                     this.widgets[widgetVar] = newWidget;
                     if (cfg.postConstruct) {
                        cfg.postConstruct.call(newWidget, newWidget);
                     }
                 }
-            }
-            // widget script not loaded
-            else {
-                // should be loaded by our dynamic resource handling, log a error
-                PrimeFaces.error("Widget class '" + widgetName + "' not found!");
-            }
+            });
         },
 
         /**
@@ -1764,7 +1766,8 @@ import Cookies from "js-cookie";
      * Note to typescript users: You should define a method that takes a widget variables and widget constructor, and
      * check whether the widget is of the given type. If so, you can return the widget and cast it to the desired type:
      * ```typescript
-     * function getWidget<T extends PrimeFaces.widget.BaseWidget>(widgetVar, widgetClass: new() => T): T | undefined {
+     * import { BaseWidget } from "@primefaces/primefaces";
+     * function getWidget<T extends BaseWidget>(widgetVar, widgetClass: new() => T): T | undefined {
      *   const widget = PrimeFaces.widget[widgetVar];
      *   return widget !== undefined && widget instanceof constructor ? widgetClass : undefined;
      * }

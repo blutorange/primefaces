@@ -1,4 +1,5 @@
 import { jsPlumb } from "jsplumb";
+import { DeferredWidget } from "../core/core.widget.js";
 
 /**
  * __PrimeFaces Diagram Widget__
@@ -49,7 +50,7 @@ import { jsPlumb } from "jsplumb";
  * @prop {number} cfg.maxConnections Maximum number of allowed connections (per node).
  * @prop {import("jsplumb").PaintStyle} cfg.paintStyle Paint style to use when not hovering.
  */
-PrimeFaces.widget.Diagram = class Diagram extends PrimeFaces.widget.DeferredWidget {
+export class Diagram extends DeferredWidget {
 
     /**
      * @override

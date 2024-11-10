@@ -1,3 +1,5 @@
+import { DeferredWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Google Maps Widget__
  * 
@@ -44,7 +46,7 @@
  * @prop {(google.maps.Rectangle & PrimeFaces.widget.GMap.IdProviding)[]} cfg.rectangles List of overlay rectangular
  * shapes added to this map.
  */
-PrimeFaces.widget.GMap = class GMap extends PrimeFaces.widget.DeferredWidget {
+export class GMap extends DeferredWidget {
 
     /**
      * @override

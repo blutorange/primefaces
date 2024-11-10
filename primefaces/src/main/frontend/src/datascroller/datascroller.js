@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces DataScroller Widget__
  *
@@ -40,7 +42,7 @@
  * @prop {number} cfg.totalSize The total number of items that can be displayed.
  * @prop {boolean} cfg.virtualScroll Loads data on demand as the scrollbar gets close to the bottom.
  */
-PrimeFaces.widget.DataScroller = class DataScroller extends PrimeFaces.widget.BaseWidget {
+export class DataScroller extends BaseWidget {
 
     /**
      * @override

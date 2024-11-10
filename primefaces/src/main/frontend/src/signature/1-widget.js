@@ -1,3 +1,7 @@
+import "./0-signature.js";
+
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Signature Widget__
  *
@@ -25,7 +29,7 @@
  * changes.
  * @prop {boolean} cfg.readonly Whether the signature widget is readonly.
  */
-PrimeFaces.widget.Signature = class Signature extends PrimeFaces.widget.BaseWidget {
+export class Signature extends BaseWidget {
 
     /**
      * @override

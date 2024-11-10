@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces BreadCrumb Widget__
  * 
@@ -12,7 +14,7 @@
  * 
  * @prop {boolean} cfg.seo Used to produce an Advanced SEO structure on the page. Default is false.
  */
-PrimeFaces.widget.BreadCrumb = class BreadCrumb extends PrimeFaces.widget.BaseWidget {
+export class BreadCrumb extends BaseWidget {
 
     /**
      * @override

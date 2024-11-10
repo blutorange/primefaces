@@ -1,4 +1,14 @@
-import { Chart as ChartJsChart } from "chart.js";
+import { Chart as ChartJsChart, registerables } from "chart.js";
+import zoomPlugin from "chartjs-plugin-zoom";
+import "chartjs-adapter-moment";
+
+import { DeferredWidget } from "../core/core.widget.js";
+
+// Register all ChartJS components
+ChartJsChart.register(...registerables);
+
+// Zoom plugin must be registered manually
+ChartJsChart.register(zoomPlugin);
 
 /**
  * __PrimeFaces Chart Widget__
@@ -31,7 +41,7 @@ import { Chart as ChartJsChart } from "chart.js";
  * @prop {PrimeFaces.widget.Chart.ChartExtender} cfg.extender Extender function allows access to the underlying
  * [chart.js](https://www.chartjs.org/docs/latest/) API.
  */
-PrimeFaces.widget.Chart = class Chart extends PrimeFaces.widget.DeferredWidget {
+export class Chart extends DeferredWidget {
 
     /**
      * @override

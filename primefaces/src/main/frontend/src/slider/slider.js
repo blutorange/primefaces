@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Slider Widget__
  * 
@@ -35,7 +37,7 @@
  * @prop {PrimeFaces.widget.Slider.SliderCallback} cfg.onSlideStart Client side callback that is invoked when a slider
  * handle starts moving.
  */
-PrimeFaces.widget.Slider = class Slider extends PrimeFaces.widget.BaseWidget {
+export class Slider extends BaseWidget {
 
     /**
      * @override

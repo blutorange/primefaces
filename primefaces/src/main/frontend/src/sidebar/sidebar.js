@@ -1,3 +1,5 @@
+import { DynamicOverlayWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Sidebar Widget__
  *
@@ -31,7 +33,7 @@
  *
  * @prop {JQuery} content DOM element of the container for the content of this sidebar.
  */
-PrimeFaces.widget.Sidebar = class Sidebar extends PrimeFaces.widget.DynamicOverlayWidget {
+export class Sidebar extends DynamicOverlayWidget {
 
     /**
      * @override

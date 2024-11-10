@@ -30,7 +30,6 @@ import javax.faces.application.ResourceDependency;
 @ResourceDependency(library = "primefaces", name = "core.js")
 @ResourceDependency(library = "primefaces", name = "hotkey/hotkey.js")
 public class Hotkey extends HotkeyBase {
-
     public static final String COMPONENT_TYPE = "org.primefaces.component.Hotkey";
 
     @Override

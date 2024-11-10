@@ -1,0 +1,23 @@
+Bundled license information:
+
+cropperjs/dist/cropper.js:
+  /*!
+   * Cropper.js v1.6.2
+   * https://fengyuanchen.github.io/cropperjs
+   *
+   * Copyright 2015-present Chen Fengyuan
+   * Released under the MIT license
+   *
+   * Date: 2024-04-21T07:43:05.335Z
+   */
+
+jquery-cropper/dist/jquery-cropper.esm.js:
+  /*!
+   * jQuery Cropper v1.0.0
+   * https://github.com/fengyuanchen/jquery-cropper
+   *
+   * Copyright (c) 2018 Chen Fengyuan
+   * Released under the MIT license
+   *
+   * Date: 2018-04-01T06:20:13.168Z
+   */

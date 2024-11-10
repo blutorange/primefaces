@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces SelectOneRadio Widget__
  *
@@ -23,7 +25,7 @@
  * @prop {boolean} cfg.unselectable Unselectable mode when true clicking a radio again will clear the selection.
  * @prop {boolean} cfg.readonly Whether the radio group is readonly.
  */
-PrimeFaces.widget.SelectOneRadio = class SelectOneRadio extends PrimeFaces.widget.BaseWidget {
+export class SelectOneRadio extends BaseWidget {
 
     /**
      * @override

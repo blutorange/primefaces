@@ -1,3 +1,5 @@
+import { BaseTree } from "./tree.base.js";
+
 /**
  * __PrimeFaces Vertical Tree Widget__
  *
@@ -41,7 +43,7 @@
  * @prop {string} cfg.filterEvent Client side event to invoke filtering. Default is keyup.
  * @prop {number} cfg.filterDelay Delay to wait in milliseconds before sending each filter query. Default is 300.
  */
-PrimeFaces.widget.VerticalTree = class VerticalTree extends PrimeFaces.widget.BaseTree {
+export class VerticalTree extends BaseTree {
 
     /**
      * @override

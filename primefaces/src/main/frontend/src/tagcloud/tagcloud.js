@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces TagCloud Widget__
  * 
@@ -8,7 +10,7 @@
  * configuration is usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
  */
-PrimeFaces.widget.TagCloud = class TagCloud extends PrimeFaces.widget.BaseWidget {
+export class TagCloud extends BaseWidget {
 
     /**
      * @override

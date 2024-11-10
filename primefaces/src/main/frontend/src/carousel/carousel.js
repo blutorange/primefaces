@@ -1,3 +1,7 @@
+import "jquery-touchswipe";
+
+import { DeferredWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Carousel Widget__
  * Carousel is a content slider featuring various customization options.
@@ -47,7 +51,7 @@
  * after being initialized.
  *
  */
-PrimeFaces.widget.Carousel = class Carousel extends PrimeFaces.widget.DeferredWidget {
+export class Carousel extends DeferredWidget {
 
     /**
      * @override

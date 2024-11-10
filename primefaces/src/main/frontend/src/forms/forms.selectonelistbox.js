@@ -1,3 +1,5 @@
+import { SelectListbox } from "./forms.selectlistbox.js";
+
 /**
  * __PrimeFaces SelectOneListbox Widget__
  * 
@@ -14,7 +16,7 @@
  * 
  * @prop {boolean} cfg.disabled Whether this widget is currently disabled.
  */
-PrimeFaces.widget.SelectOneListbox = class SelectOneListbox extends PrimeFaces.widget.SelectListbox {
+export class SelectOneListbox extends SelectListbox {
 
     /**
      * @override

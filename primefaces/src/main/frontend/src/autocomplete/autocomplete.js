@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces AutoComplete Widget__
  *
@@ -104,7 +106,7 @@
  * bean command specified via `completeMethod` on the component.
  * @prop {string} cfg.moreText The text shown in the panel when the number of suggestions is greater than `maxResults`.
  */
-PrimeFaces.widget.AutoComplete = class AutoComplete extends PrimeFaces.widget.BaseWidget {
+export class AutoComplete extends BaseWidget {
 
     /**
      * @override

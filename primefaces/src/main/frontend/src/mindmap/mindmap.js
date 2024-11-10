@@ -1,5 +1,7 @@
 import Raphael from "raphael";
 
+import { DeferredWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Mindmap Widget__
  * 
@@ -32,7 +34,7 @@ import Raphael from "raphael";
  * @prop {PrimeFaces.widget.Mindmap.MindmapNode} cfg.model Root node shown by the mindmap.
  * @prop {number} cfg.width Total width of the canvas.
  */
-PrimeFaces.widget.Mindmap = class Mindmap extends PrimeFaces.widget.DeferredWidget {
+export class Mindmap extends DeferredWidget {
 
     /**
      * @override

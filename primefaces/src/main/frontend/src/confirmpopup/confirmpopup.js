@@ -1,3 +1,5 @@
+import { DynamicOverlayWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces ConfirmPopup Widget__
  * 
@@ -37,7 +39,7 @@
  * @prop {string} cfg.hideEvent Event on target to hide the popup.
  * @prop {boolean} cfg.global When enabled, confirmPopup becomes a shared for other components that require confirmation.
  */
-PrimeFaces.widget.ConfirmPopup = class ConfirmPopup extends PrimeFaces.widget.DynamicOverlayWidget {
+export class ConfirmPopup extends DynamicOverlayWidget {
 
     /**
      * @override

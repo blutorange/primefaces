@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Chips Widget__
  *
@@ -21,7 +23,7 @@
  * @prop {string} cfg.separator Separator character to allow multiple values such if a list is pasted into the input.
  * Default is `,`.
  */
-PrimeFaces.widget.Chips = class Chips extends PrimeFaces.widget.BaseWidget {
+export class Chips extends BaseWidget {
 
     /**
      * @override

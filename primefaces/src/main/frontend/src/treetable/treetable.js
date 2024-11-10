@@ -1,5 +1,8 @@
 import jQBrowser from "jquery.browser";
 
+import { DeferredWidget } from "../core/core.widget.js";
+import { Paginator } from "../paginator/paginator.js";
+
 /**
  * __PrimeFaces TreeTable Widget__
  *
@@ -111,7 +114,7 @@ import jQBrowser from "jquery.browser";
  * @prop {boolean} cfg.saveOnCellBlur Saves the changes in cell editing on blur, when set to false changes are
  * discarded.
  */
-PrimeFaces.widget.TreeTable = class TreeTable extends PrimeFaces.widget.DeferredWidget {
+export class TreeTable extends DeferredWidget {
 
     /**
      * Map between the sort order names and the multiplier for the comparator.
@@ -233,7 +236,7 @@ PrimeFaces.widget.TreeTable = class TreeTable extends PrimeFaces.widget.Deferred
                 $this.handlePagination(newState);
             };
 
-            this.paginator = new PrimeFaces.widget.Paginator(this.cfg.paginator);
+            this.paginator = new Paginator(this.cfg.paginator);
             this.paginator.bindSwipeEvents(this.jq, this.cfg);
         }
     }

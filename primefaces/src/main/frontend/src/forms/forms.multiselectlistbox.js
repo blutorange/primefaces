@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces MultiSelectListbox Widget__
  * 
@@ -16,7 +18,7 @@
  * @prop {boolean} cfg.showHeaders Displays label of a group at header section of the children items.
  * @prop {string} cfg.effect Effect to use when showing a group of items.
  */
-PrimeFaces.widget.MultiSelectListbox = class MultiSelectListbox extends PrimeFaces.widget.BaseWidget {
+export class MultiSelectListbox extends BaseWidget {
 
     /**
      * @override

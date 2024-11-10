@@ -22,7 +22,7 @@
  * @prop {number} cfg.tabindex Position of the input element in the tabbing order.
  * @prop {PrimeFaces.widget.Captcha.Theme} cfg.theme Theme of the captcha.
  */
-PrimeFaces.widget.Captcha = class Captcha extends PrimeFaces.widget.BaseWidget {
+export class Captcha extends BaseWidget {
 
     /**
      * @override

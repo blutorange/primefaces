@@ -1,3 +1,6 @@
+import { DeferredWidget } from "../core/core.widget.js";
+import { Paginator } from "../paginator/paginator.js";
+
 /**
  * __PrimeFaces DataTable Widget__
  *
@@ -202,7 +205,7 @@
  * string containing the width including an unit.
  * @prop {boolean} WidthInfo.isOuterWidth Tells whether the width includes the border-box or not.
  */
-PrimeFaces.widget.DataTable = class DataTable extends PrimeFaces.widget.DeferredWidget {
+export class DataTable extends DeferredWidget {
 
     /**
      * Map between the sort order names and the multiplier for the comparator.
@@ -466,7 +469,7 @@ PrimeFaces.widget.DataTable = class DataTable extends PrimeFaces.widget.Deferred
             }
         };
 
-        this.paginator = new PrimeFaces.widget.Paginator(this.cfg.paginator);
+        this.paginator = new Paginator(this.cfg.paginator);
         this.paginator.bindSwipeEvents(this.jq, this.cfg);
 
         if(this.cfg.clientCache) {

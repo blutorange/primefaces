@@ -64,7 +64,7 @@ public class HotkeyRenderer extends CoreRenderer {
                     ? hotkey.getBindMac()
                     : hotkey.getBind();
 
-            writer.write("$(document).off('" + event + "').on('" + event + "',null,'" + bind + "',function(){");
+            writer.write("PrimeFaces.bindHotKey('" + event + "', '" + bind + "',function(){");
 
             if (hotkey.isAjaxified()) {
                 String request = preConfiguredAjaxRequestBuilder(context, hotkey)
@@ -79,7 +79,7 @@ public class HotkeyRenderer extends CoreRenderer {
             writer.write(";return false;});});");
         }
         else {
-            writer.write("$(document).off('" + event + "')});");
+            writer.write("PrimeFaces.unbindHotKey('" + event + "')});");
         }
 
         writer.endElement("script");

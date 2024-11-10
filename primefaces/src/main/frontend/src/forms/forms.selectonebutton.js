@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces SelectOneButton Widget__
  * 
@@ -19,7 +21,7 @@
  * @prop {PrimeFaces.widget.SelectOneButton.ChangeCallback} cfg.change Callback that is invoked when the value of this
  * widget has changed.
  */
-PrimeFaces.widget.SelectOneButton = class SelectOneButton extends PrimeFaces.widget.BaseWidget {
+export class SelectOneButton extends BaseWidget {
 
     /**
      * @override

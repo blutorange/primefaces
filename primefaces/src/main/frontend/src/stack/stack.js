@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Stack Widget__
  * 
@@ -12,7 +14,7 @@
  * @prop {boolean} cfg.expanded Whether the stack is currently closed or opened.
  * @prop {number} cfg.openSpeed Duration in milliseconds it takes the stack to open.
  */
-PrimeFaces.widget.Stack = class Stack extends PrimeFaces.widget.BaseWidget {
+export class Stack extends BaseWidget {
 
     /**
      * @override

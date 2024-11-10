@@ -1,3 +1,5 @@
+import { Menu } from "./menu.base.js";
+
 /**
  * __PrimeFaces MegaMenu Widget__
  *
@@ -24,7 +26,7 @@
  * @prop {boolean} cfg.vertical `true` if the mega menu is displayed with a vertical layout, `false` if displayed with a
  * horizontal layout.
  */
-PrimeFaces.widget.MegaMenu = class MegaMenu extends PrimeFaces.widget.Menu {
+export class MegaMenu extends Menu {
 
     /**
      * @override

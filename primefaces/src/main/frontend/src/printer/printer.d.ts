@@ -13,65 +13,65 @@ declare namespace JQueryPrint {
         /**
          * Whether or not the styles from the parent document should be included.
          */
-        globalStyles: boolean;
+        globalStyles?: boolean;
 
         /**
          * Whether or not link tags with `media='print'` should be included; overridden by the {@link globalStyles}.
          * option.
          */
-        mediaPrint: boolean;
+        mediaPrint?: boolean;
 
         /**
          * URL of an external stylesheet to be included.
          */
-        stylesheet: string | null;
+        stylesheet?: string | null;
 
         /**
          * A selector for the items that are to be excluded from printing.
          */
-        noPrintSelector: string;
+        noPrintSelector?: string;
 
         /**
          * Whether to print from an iframe instead of a pop-up window; can take the CSS selector of an existing iframe.
          */
-        iframe: string | boolean;
+        iframe?: string | boolean;
 
         /**
          * Adds custom HTML after the selected content.
          */
-        append: string | JQuery<HTMLElement>;
+        append?: string | JQuery<HTMLElement>;
 
         /**
          * Adds custom HTML before the selected content.
          */
-        prepend: string | JQuery<HTMLElement>;
+        prepend?: string | JQuery<HTMLElement>;
 
         /**
          * Should it copy user-updated form input values onto the printed markup (this is done by manually iterating over
          * each form element).
          */
-        manuallyCopyFormValues: boolean;
+        manuallyCopyFormValues?: boolean;
 
         /**
          * A jQuery deferred object that is resolved once the print function is called. Can be used to setup callbacks.
          */
-        deferred: JQuery.Deferred<void>;
+        deferred?: JQuery.Deferred<void>;
 
         /**
          * To change the amount of max time to wait for the content, etc to load before printing the element from the
          * new window or iframe created, as a fallback if the load event for the new window or iframe has not fired yet.
          */
-        timeout: number;
+        timeout?: number;
 
         /**
          * To change the printed title. Must be a single line.
          */
-        title: string | null;
+        title?: string | null;
 
         /**
          * To prepend a doctype to the printed document frame.
          */
-        doctype: string;
+        doctype?: string;
     }
 }
 
@@ -81,7 +81,7 @@ interface JQuery {
      * @param settings Optional settings for printing.
      * @return This jQuery instance for chaining.
      */
-    print(settings?: Partial<JQueryPrint.PrintSettings>): this;
+    print(settings?: JQueryPrint.PrintSettings): this;
 }
 
 interface JQueryStatic {
@@ -91,5 +91,5 @@ interface JQueryStatic {
      * @param settings Optional settings for printing.
      * @return This jQuery instance for chaining.
      */
-    print(selector: string, settings?: Partial<JQueryPrint.PrintSettings>): this;
+    print(selector: string, settings?: JQueryPrint.PrintSettings): this;
 }

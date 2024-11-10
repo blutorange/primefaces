@@ -2,6 +2,8 @@ import { Timeline as VisTimeline } from "vis-timeline/esnext/esm/vis-timeline-gr
 import { DataSet } from "vis-data/esnext/esm/vis-data.js";
 import * as VisUtil from "vis-util/esnext/esm/vis-util.js";
 
+import { DeferredWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Timeline Widget__
  *
@@ -80,7 +82,7 @@ import * as VisUtil from "vis-util/esnext/esm/vis-util.js";
  * frequently, time-consuming fetching of events. Default value is `0`.
  * @prop {string} cfg.scope `scope` option for the jQuery UI droppable overlay when using drag&drop.
  */
-PrimeFaces.widget.Timeline = class Timeline extends PrimeFaces.widget.DeferredWidget {
+export class Timeline extends DeferredWidget {
     /**
      * @override
      * @inheritdoc

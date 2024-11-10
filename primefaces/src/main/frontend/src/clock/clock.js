@@ -1,5 +1,7 @@
 import Raphael from "raphael";
 
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * Code ported from Tim Down's http://www.timdown.co.uk/code/simpledateformat.php
  * 
@@ -436,7 +438,7 @@ class SimpleDateFormat {
  * @prop {number} cfg.syncInterval Defines the sync in ms interval in when `autoSync` is set to `true`.
  * @prop {string} cfg.value The initial time value for the clock to display.
  */
-PrimeFaces.widget.Clock = class Clock extends PrimeFaces.widget.BaseWidget {
+export class Clock extends BaseWidget {
 
     /**
      * @override

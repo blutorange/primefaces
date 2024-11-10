@@ -1,3 +1,8 @@
+import "blueimp-file-upload";
+import "blueimp-file-upload/js/jquery.iframe-transport.js";
+
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces FileUpload Widget__
  *
@@ -103,7 +108,7 @@
  * ...)
  * @prop {string} cfg.resumeContextPath Server-side path which provides information to resume chunked file upload.
  */
-PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWidget {
+export class FileUpload extends BaseWidget {
 
     /**
      * Regular expression that matches image files for which a preview can be shown.

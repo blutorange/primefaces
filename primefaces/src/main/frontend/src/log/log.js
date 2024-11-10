@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Log Widget__
  * 
@@ -27,7 +29,7 @@
  * usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
  */
-PrimeFaces.widget.Log = class Log extends PrimeFaces.widget.BaseWidget {
+export class Log extends BaseWidget {
     
     /**
      * @override

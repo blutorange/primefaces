@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Chip Widget__
  *
@@ -11,7 +13,7 @@
  * configuration is usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
  */
-PrimeFaces.widget.Chip = class Chip extends PrimeFaces.widget.BaseWidget {
+export class Chip extends BaseWidget {
 
     /**
      * @override

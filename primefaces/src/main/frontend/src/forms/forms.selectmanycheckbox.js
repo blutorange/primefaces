@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces SelectManyCheckbox Widget__
  * 
@@ -21,7 +23,7 @@
  * 
  * @prop {boolean} cfg.custom Whether a custom HTML snippet needs to be used for the individual select items.
  */
-PrimeFaces.widget.SelectManyCheckbox = class SelectManyCheckbox extends PrimeFaces.widget.BaseWidget {
+export class SelectManyCheckbox extends BaseWidget {
 
     /**
      * @override

@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces AccordionPanel Widget__
  *
@@ -28,7 +30,7 @@
  * @prop {number} cfg.toggleSpeed Speed of toggling in milliseconds.
  * @prop {number} cfg.scrollIntoView Should the tab scroll into view. One of start, center, end, nearest, or NULL if disabled.
  */
-PrimeFaces.widget.AccordionPanel = class AccordionPanel extends PrimeFaces.widget.BaseWidget {
+export class AccordionPanel extends BaseWidget {
 
     /**
      * @override

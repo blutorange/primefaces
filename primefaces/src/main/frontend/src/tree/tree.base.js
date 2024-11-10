@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Base Tree Widget__
  * 
@@ -66,7 +68,7 @@
  * @prop {PrimeFaces.widget.BaseTree.SelectionMode} cfg.selectionMode How the node of this tree can be selected, if
  * selection is enabled at all.
  */
-PrimeFaces.widget.BaseTree = class BaseTree extends PrimeFaces.widget.BaseWidget {
+export class BaseTree extends BaseWidget {
 
     /**
      * @override

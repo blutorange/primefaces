@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Wizard Widget__
  * 
@@ -36,7 +38,7 @@
  * @prop {string} cfg.effect Animation effect to use when showing and hiding wizard.
  * @prop {number} cfg.effectDuration Duration of the animation effect in milliseconds.
  */
-PrimeFaces.widget.Wizard = class Wizard extends PrimeFaces.widget.BaseWidget {
+export class Wizard extends BaseWidget {
 
     /**
      * @override

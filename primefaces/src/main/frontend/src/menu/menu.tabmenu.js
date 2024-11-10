@@ -1,3 +1,5 @@
+import { Menu } from "./menu.base.js";
+
 /**
  * __PrimeFaces TabMenu Widget__
  * 
@@ -10,7 +12,7 @@
  * configuration is usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.MenuCfg} cfg
  */
-PrimeFaces.widget.TabMenu = class TabMenu extends PrimeFaces.widget.Menu {
+export class TabMenu extends Menu {
 
     /**
      * @override

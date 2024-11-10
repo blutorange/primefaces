@@ -1,3 +1,9 @@
+import "../../src/galleria/0-galleria.js";
+import "../../src/galleria/0-galleriaitem.js";
+import "../../src/galleria/0-galleriathumbnail.js";
+
+import { DeferredWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Galleria Widget__
  *
@@ -30,7 +36,7 @@
  * @prop {string} cfg.indicatorsPosition Position of indicators. Valid values are "bottom", "top", "left" and "right".
  * @prop {{breakpoint:string, numVisible:number}[]} cfg.responsiveOptions A model of options for responsive design.
  */
-PrimeFaces.widget.Galleria = class Galleria extends PrimeFaces.widget.DeferredWidget {
+export class Galleria extends DeferredWidget {
 
     /**
      * @override

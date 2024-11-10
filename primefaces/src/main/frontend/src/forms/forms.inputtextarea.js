@@ -1,4 +1,5 @@
 import autosize from "autosize";
+import { DeferredWidget } from "../core/core.widget.js";
 
 /**
  * __PrimeFaces InputTextarea Widget__
@@ -28,7 +29,7 @@ import autosize from "autosize";
  * @prop {number} cfg.queryDelay Delay in milliseconds before sending each query.
  * @prop {number} cfg.scrollHeight Height of the viewport for autocomplete suggestions.
  */
-PrimeFaces.widget.InputTextarea = class InputTextarea extends PrimeFaces.widget.DeferredWidget {
+export class InputTextarea extends DeferredWidget {
 
     /**
      * @override

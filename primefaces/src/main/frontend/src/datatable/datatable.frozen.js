@@ -1,3 +1,5 @@
+import { DeferredWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces DataTable with Frozen Columns Widget__
  *
@@ -31,7 +33,7 @@
  * configuration is usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.DataTableCfg} cfg
  */
-PrimeFaces.widget.FrozenDataTable = class FrozenDataTable extends PrimeFaces.widget.DataTable {
+export class FrozenDataTable extends DataTable {
 
     /**
      * @override

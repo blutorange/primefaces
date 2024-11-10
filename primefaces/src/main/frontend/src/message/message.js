@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Message Widget__
  * 
@@ -10,7 +12,7 @@
  * 
  * @prop {string} cfg.target Client ID of the target for which to show this message.
  */
-PrimeFaces.widget.Message = class Message extends PrimeFaces.widget.BaseWidget {
+export class Message extends BaseWidget {
 
     /**
      * @override

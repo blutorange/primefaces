@@ -1,3 +1,7 @@
+import "./0-jquery.keyfilter.js";
+
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces KeyFilter Widget__
  * 
@@ -21,7 +25,7 @@
  * @prop {JQueryKeyfilter.TestFunction} cfg.testFunction An optional function which should be used for filtering. The
  * options `testFunction`, `regEx`, `inputRegEx`, and `mask` are mutually exclusive.
  */
-PrimeFaces.widget.KeyFilter = class KeyFilter extends PrimeFaces.widget.BaseWidget {
+export class KeyFilter extends BaseWidget {
 
     /**
      * @override

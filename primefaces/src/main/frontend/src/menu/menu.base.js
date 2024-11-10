@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Menu Widget__
  * 
@@ -27,7 +29,7 @@
  * @prop {string} cfg.tabIndex The default tabIndex of this component. Default to 0.
  * @prop {string | undefined} tabIndex The default tabIndex of this component. Default to 0.
  */
-PrimeFaces.widget.Menu = class Menu extends PrimeFaces.widget.BaseWidget {
+export class Menu extends BaseWidget {
 
     /**
      * @override
@@ -342,8 +344,3 @@ PrimeFaces.widget.Menu = class Menu extends PrimeFaces.widget.BaseWidget {
         menulink.removeClass(cssClass).attr('tabindex', -1);
     }
 }
-
-
-
-
-

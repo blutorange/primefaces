@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces BlockUI Widget__
  *
@@ -22,7 +24,7 @@
  * @prop {number} cfg.delay Delay in milliseconds before displaying the block. Default is `0`, meaning immediate.
  * @prop {PrimeFaces.UnbindCallback} [resizeHandler] Unbind callback for the resize handler.
  */
-PrimeFaces.widget.BlockUI = class BlockUI extends PrimeFaces.widget.BaseWidget {
+export class BlockUI extends BaseWidget {
 
     /**
      * @override

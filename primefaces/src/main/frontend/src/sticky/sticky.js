@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Sticky Widget__
  * 
@@ -23,7 +25,7 @@
  * @prop {number} cfg.margin Margin to the top of the page during fixed scrolling.
  * @prop {string} cfg.target The client ID of the component to be made sticky.
  */
-PrimeFaces.widget.Sticky = class Sticky extends PrimeFaces.widget.BaseWidget {
+export class Sticky extends BaseWidget {
 
     /**
      * @override

@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces InputText Widget__
  *
@@ -14,7 +16,7 @@
  * @prop {string} cfg.counter ID of the label component to display remaining and entered characters.
  * @prop {string} cfg.counterTemplate Template text to display in counter, default value is `{0}`.
  */
-PrimeFaces.widget.InputText = class InputText extends PrimeFaces.widget.BaseWidget {
+export class InputText extends BaseWidget {
 
     /**
      * @override

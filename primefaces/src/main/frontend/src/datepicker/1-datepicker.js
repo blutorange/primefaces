@@ -1,3 +1,7 @@
+import "./0-datepicker.cjs";
+
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces DatePicker Widget__
  *
@@ -53,7 +57,7 @@
  * @prop {string} cfg.timeSeparator Separator for joining hour and minute, defaults to `:`.
  * @prop {string} cfg.triggerButtonIcon Icon of the datepicker element that toggles the visibility in popup mode.
  */
-PrimeFaces.widget.DatePicker = class DatePicker extends PrimeFaces.widget.BaseWidget {
+export class DatePicker extends BaseWidget {
 
     /**
      * @override

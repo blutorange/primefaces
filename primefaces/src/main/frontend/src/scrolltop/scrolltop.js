@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces ScrollTop Widget__
  *
@@ -14,7 +16,7 @@
  * @prop {string} cfg.target Target element of the scroll top widget.
  * @prop {number} cfg.threshold Value of the vertical scroll position of the target to toggle the visibility.
  */
-PrimeFaces.widget.ScrollTop = class ScrollTop extends PrimeFaces.widget.BaseWidget {
+export class ScrollTop extends BaseWidget {
 
     /**
      * @override

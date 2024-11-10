@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces PanelMenu Widget__
  * 
@@ -23,7 +25,7 @@
  * @prop {boolean} cfg.statefulGlobal When enabled, menu state is saved globally across pages. If disabled then state 
  * is stored per view/page.
  */
-PrimeFaces.widget.PanelMenu = class PanelMenu extends PrimeFaces.widget.BaseWidget {
+export class PanelMenu extends BaseWidget {
 
     /**
      * @override

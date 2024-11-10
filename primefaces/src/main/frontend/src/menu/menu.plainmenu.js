@@ -1,3 +1,4 @@
+import { Menu } from "./menu.base.js";
 
 /**
  * __PrimeFaces PlainMenu Widget__
@@ -18,7 +19,7 @@
  * @prop {boolean} cfg.statefulGlobal When enabled, menu state is saved globally across pages. If disabled then state 
  * is stored per view/page.
  */
-PrimeFaces.widget.PlainMenu = class PlainMenu extends PrimeFaces.widget.Menu {
+export class PlainMenu extends Menu {
 
     /**
      * @override

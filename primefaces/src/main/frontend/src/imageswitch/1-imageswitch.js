@@ -1,3 +1,7 @@
+import "./0-jquery-imageswitch.js";
+
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces ImageSwitch Widget__
  *
@@ -15,7 +19,7 @@
  * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
  * @extends {JQueryCycle.Configuration} cfg
  */
-PrimeFaces.widget.ImageSwitch = class ImageSwitch extends PrimeFaces.widget.BaseWidget {
+export class ImageSwitch extends BaseWidget {
 
     /**
      * @override

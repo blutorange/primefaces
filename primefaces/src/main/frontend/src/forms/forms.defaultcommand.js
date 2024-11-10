@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces DefaultCommand Widget__
  * 
@@ -18,7 +20,7 @@
  * @prop {string} cfg.scope Identifier of the ancestor component to enable multiple default commands in a form.
  * @prop {string} cfg.target Identifier of the default command component.
  */
-PrimeFaces.widget.DefaultCommand = class DefaultCommand extends PrimeFaces.widget.BaseWidget {
+export class DefaultCommand extends BaseWidget {
 
     /**
      * @override

@@ -1,0 +1,10 @@
+Bundled license information:
+
+@melloware/coloris/dist/esm/coloris.js:
+  /*!
+  * Copyright (c) 2021-2024 Momo Bassit.
+  * Licensed under the MIT License (MIT)
+  * https://github.com/mdbassit/Coloris
+  * Version: 0.24.0
+  * NPM: https://github.com/melloware/coloris-npm
+  */

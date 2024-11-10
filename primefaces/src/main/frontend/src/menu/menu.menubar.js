@@ -1,3 +1,5 @@
+import { TieredMenu } from "./menu.tieredmenu.js";
+
 /**
  * __PrimeFaces Menubar Widget__
  *
@@ -13,7 +15,7 @@
  * 
  * @prop {number} cfg.delay Delay in milliseconds before displaying the sub menu. Default is 0 meaning immediate.
  */
-PrimeFaces.widget.Menubar = class Menubar extends PrimeFaces.widget.TieredMenu {
+export class Menubar extends TieredMenu {
 
     /**
      * @override

@@ -1,0 +1,90 @@
+Bundled license information:
+
+@egjs/hammerjs/dist/hammer.esm.js:
+  /*! Hammer.JS - v2.0.17-rc - 2019-12-16
+   * http://naver.github.io/egjs
+   *
+   * Forked By Naver egjs
+   * Copyright (c) hammerjs
+   * Licensed under the MIT license */
+
+vis-util/esnext/esm/vis-util.js:
+  /**
+   * vis-util
+   * https://github.com/visjs/vis-util
+   *
+   * utilitie collection for visjs
+   *
+   * @version 5.0.7
+   * @date    2023-11-20T09:06:51.067Z
+   *
+   * @copyright (c) 2011-2017 Almende B.V, http://almende.com
+   * @copyright (c) 2017-2019 visjs contributors, https://github.com/visjs
+   *
+   * @license
+   * vis.js is dual licensed under both
+   *
+   *   1. The Apache 2.0 License
+   *      http://www.apache.org/licenses/LICENSE-2.0
+   *
+   *   and
+   *
+   *   2. The MIT License
+   *      http://opensource.org/licenses/MIT
+   *
+   * vis.js may be distributed under either license.
+   */
+
+vis-data/esnext/esm/vis-data.js:
+  /**
+   * vis-data
+   * http://visjs.org/
+   *
+   * Manage unstructured data using DataSet. Add, update, and remove data, and listen for changes in the data.
+   *
+   * @version 7.1.9
+   * @date    2023-11-24T17:53:34.179Z
+   *
+   * @copyright (c) 2011-2017 Almende B.V, http://almende.com
+   * @copyright (c) 2017-2019 visjs contributors, https://github.com/visjs
+   *
+   * @license
+   * vis.js is dual licensed under both
+   *
+   *   1. The Apache 2.0 License
+   *      http://www.apache.org/licenses/LICENSE-2.0
+   *
+   *   and
+   *
+   *   2. The MIT License
+   *      http://opensource.org/licenses/MIT
+   *
+   * vis.js may be distributed under either license.
+   */
+
+vis-timeline/esnext/esm/vis-timeline-graph2d.js:
+  /**
+   * vis-timeline and vis-graph2d
+   * https://visjs.github.io/vis-timeline/
+   *
+   * Create a fully customizable, interactive timeline with items and ranges.
+   *
+   * @version 7.7.3
+   * @date    2023-10-27T17:57:57.604Z
+   *
+   * @copyright (c) 2011-2017 Almende B.V, http://almende.com
+   * @copyright (c) 2017-2019 visjs contributors, https://github.com/visjs
+   *
+   * @license
+   * vis.js is dual licensed under both
+   *
+   *   1. The Apache 2.0 License
+   *      http://www.apache.org/licenses/LICENSE-2.0
+   *
+   *   and
+   *
+   *   2. The MIT License
+   *      http://opensource.org/licenses/MIT
+   *
+   * vis.js may be distributed under either license.
+   */

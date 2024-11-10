@@ -1,3 +1,6 @@
+import { BaseWidget } from "../core/core.widget.js";
+import { Paginator } from "../paginator/paginator.js";
+
 /**
  * __PrimeFaces DataGrid Widget__
  * 
@@ -19,7 +22,7 @@
  * @prop {Partial<PrimeFaces.widget.PaginatorCfg>} cfg.paginator When pagination is enabled: The paginator configuration
  * for the paginator.
  */
-PrimeFaces.widget.DataGrid = class DataGrid extends PrimeFaces.widget.BaseWidget {
+export class DataGrid extends BaseWidget {
 
     /**
      * @override
@@ -46,7 +49,7 @@ PrimeFaces.widget.DataGrid = class DataGrid extends PrimeFaces.widget.BaseWidget
             $this.handlePagination(newState);
         };
 
-        this.paginator = new PrimeFaces.widget.Paginator(this.cfg.paginator);
+        this.paginator = new Paginator(this.cfg.paginator);
         this.paginator.bindSwipeEvents(this.jq, this.cfg);
     }
 

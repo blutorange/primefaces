@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces SelectListbox Widget__
  * 
@@ -44,7 +46,7 @@
  * @prop {PrimeFaces.widget.SelectListbox.FilterMatchMode} cfg.filterMatchMode Mode of the filter. When set to `custom`
  *  a `filterFunction` must be specified.
  */
-PrimeFaces.widget.SelectListbox = class SelectListbox extends PrimeFaces.widget.BaseWidget {
+export class SelectListbox extends BaseWidget {
 
     /**
      * @override

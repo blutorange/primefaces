@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Organigram Widget__
  * 
@@ -19,7 +21,7 @@
  * @prop {number} cfg.leafNodeConnectorHeight The height of the connector line for leaf nodes.
  * @prop {boolean} cfg.zoom Whether zooming is enabled.
  */
-PrimeFaces.widget.Organigram = class Organigram extends PrimeFaces.widget.BaseWidget {
+export class Organigram extends BaseWidget {
 
     /**
      * @override

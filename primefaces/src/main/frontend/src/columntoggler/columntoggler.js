@@ -1,3 +1,7 @@
+import { DeferredWidget } from "../core/core.widget.js";
+
+import { DataTable } from "../datatable/datatable.js";
+
 /**
  * __PrimeFaces ColumnToggler Widget__
  *
@@ -36,7 +40,7 @@
  * @prop {string} cfg.trigger ID of the button that toggles this column toggler.
  * @prop {string} cfg.datasource ID of the component (table) to which this column toggler is attached.
  */
-PrimeFaces.widget.ColumnToggler = class ColumnToggler extends PrimeFaces.widget.DeferredWidget {
+export class ColumnToggler extends DeferredWidget {
 
     /**
      * @override
@@ -654,7 +658,7 @@ PrimeFaces.widget.ColumnToggler = class ColumnToggler extends PrimeFaces.widget.
 
             // #12195 must reset the navigable cells to keyboard accessibility of hidden/shown columns
             if (!this.tableWidget) {
-                this.tableWidget = PrimeFaces.getWidgetsByType(PrimeFaces.widget.DataTable).find(widget => widget.id === this.tableId);
+                this.tableWidget = PrimeFaces.getWidgetsByType(DataTable).find(widget => widget.id === this.tableId);
             }
             if (this.tableWidget) {
                 this.tableWidget.setupNavigableCells();

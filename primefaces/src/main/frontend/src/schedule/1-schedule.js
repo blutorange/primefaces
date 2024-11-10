@@ -8,6 +8,8 @@ import listPlugin from "@fullcalendar/list";
 import momentPlugin from "@fullcalendar/moment";
 import momentTimezonePlugin from "@fullcalendar/moment-timezone";
 
+import { DeferredWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Schedule Widget__
  * 
@@ -46,7 +48,7 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone";
  * @prop {string} cfg.urlTarget Target for events with urls. Clicking on such events in the schedule will not trigger the
  * `selectEvent` but open the url using this target instead. Default is `_blank`.
  */
-PrimeFaces.widget.Schedule = class Schedule extends PrimeFaces.widget.DeferredWidget {
+export class Schedule extends DeferredWidget {
 
     /**
      * @override

@@ -1,3 +1,5 @@
+import { DeferredWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces SpeedDial Widget__
  *
@@ -72,7 +74,7 @@
  * @prop {PrimeFaces.widget.SpeedDial.OpeningType} cfg.type Specifies the opening animation type of actions.
  * @prop {boolean} cfg.visible Specifies the visibility of the overlay.
  */
-PrimeFaces.widget.SpeedDial = class SpeedDial extends PrimeFaces.widget.DeferredWidget {
+export class SpeedDial extends DeferredWidget {
 
     /**
      * @override

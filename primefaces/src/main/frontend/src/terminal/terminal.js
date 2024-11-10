@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Terminal Widget__
  * 
@@ -18,7 +20,7 @@
  * 
  * @prop {string} cfg.prompt The current prompt text, i.e. the prefix at the beginning of the line.
  */
-PrimeFaces.widget.Terminal = class Terminal extends PrimeFaces.widget.BaseWidget {
+export class Terminal extends BaseWidget {
 
     /**
      * @override

@@ -1,3 +1,7 @@
+import "jquery-touchswipe";
+
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Paginator Widget__
  * 
@@ -57,7 +61,7 @@
  * @prop {number} cfg.rows The number of rows per page.
  * @prop {number} cfg.rpp The configured number of rows set per page.
  */
-PrimeFaces.widget.Paginator = class Paginator extends PrimeFaces.widget.BaseWidget {
+export class Paginator extends BaseWidget {
 
     /**
      * @override

@@ -1,3 +1,5 @@
+import { DynamicOverlayWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces CascadeSelect Widget__
  *
@@ -26,7 +28,7 @@
  * body.
  * @prop {boolean} cfg.disabled If true, disables the component.
  */
-PrimeFaces.widget.CascadeSelect = class CascadeSelect extends PrimeFaces.widget.DynamicOverlayWidget {
+export class CascadeSelect extends DynamicOverlayWidget {
 
     /**
      * @override

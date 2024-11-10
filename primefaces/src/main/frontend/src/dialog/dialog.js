@@ -1,3 +1,5 @@
+import { DynamicOverlayWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Dialog Widget__
  * 
@@ -87,7 +89,7 @@
  * @prop {string} cfg.styleClass One or more CSS classes for the dialog.
  * @prop {number} cfg.width The width of the dialog in pixels.
  */
-PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlayWidget {
+export class Dialog extends DynamicOverlayWidget {
 
     /**
      * @override
@@ -834,7 +836,7 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
      * @protected
      */
     applyARIA() {
-        var role = this instanceof PrimeFaces.widget.ConfirmDialog ? 'alertdialog' : 'dialog';
+        var role = this instanceof ConfirmDialog ? 'alertdialog' : 'dialog';
         this.jq.attr({
             'role': role
             ,'aria-describedby': this.id + '_content'
@@ -926,7 +928,7 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
  * read-only and should not be modified.
  * @extends {PrimeFaces.widget.DialogCfg} cfg
  */
-PrimeFaces.widget.ConfirmDialog = class ConfirmDialog extends PrimeFaces.widget.Dialog {
+export class ConfirmDialog extends Dialog {
 
     /**
      * @override
@@ -1108,7 +1110,7 @@ PrimeFaces.widget.ConfirmDialog = class ConfirmDialog extends PrimeFaces.widget.
  * configuration is usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.DialogCfg} cfg
  */
-PrimeFaces.widget.DynamicDialog = class DynamicDialog extends PrimeFaces.widget.Dialog {
+export class DynamicDialog extends Dialog {
 
     /**
      * @override

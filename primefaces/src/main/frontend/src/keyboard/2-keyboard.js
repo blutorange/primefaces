@@ -1,3 +1,8 @@
+import "./0-jquery.keypad.js";
+import "./1-keyboard-utils.js";
+
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Keyboard Widget__
  * 
@@ -25,7 +30,7 @@
  * @prop {JQueryKeypad.CloseListener} cfg.onClose Callback that is invoked by the keyboard JQuery plugin before
  * the keyboard is closed.
  */
- PrimeFaces.widget.Keyboard = class Keyboard extends PrimeFaces.widget.BaseWidget {
+export class Keyboard extends BaseWidget {
 
     /**
      * @override

@@ -1,3 +1,7 @@
+import "jquery-cropper";
+
+import { DeferredWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces ImageCropper Widget__
  * 
@@ -24,7 +28,7 @@
  * @prop {[number, number, number, number]} cfg.initialCoords Initial coordinates of the cropper area (x, y, width,
  * height).
  */
-PrimeFaces.widget.ImageCropper = class ImageCropper extends PrimeFaces.widget.DeferredWidget {
+export class ImageCropper extends DeferredWidget {
 
     /**
      * @override

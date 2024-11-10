@@ -1,5 +1,7 @@
 import AutoNumeric from "autonumeric";
 
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces InputNumber Widget__
  * 
@@ -26,7 +28,7 @@ import AutoNumeric from "autonumeric";
  * @prop {undefined} cfg.pluginOptions Always undefined.
  * @prop {string} cfg.valueToRender The initial, numerical value that is displayed, such as `0.0` or `5.3`.
  */
-PrimeFaces.widget.InputNumber = class InputNumber extends PrimeFaces.widget.BaseWidget {
+export class InputNumber extends BaseWidget {
 
     /**
      * @override

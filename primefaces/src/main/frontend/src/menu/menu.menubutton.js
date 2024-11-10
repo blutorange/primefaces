@@ -1,3 +1,5 @@
+import { TieredMenu } from "./menu.tieredmenu.js";
+
 /**
  * __PrimeFaces MenuButton Widget__
  *
@@ -19,7 +21,7 @@
  * alternative position. Similar to my and at, this accepts a single value or a pair for horizontal/vertical,
  * e.g., `flip`, `fit`, `fit flip`, `fit none`.
  */
-PrimeFaces.widget.MenuButton = class MenuButton extends PrimeFaces.widget.TieredMenu {
+export class MenuButton extends TieredMenu {
 
     /**
      * @override

@@ -1,3 +1,5 @@
+import { getWidgetIfPresent } from "./core.widget.registry.js";
+
 if (!PrimeFaces.utils) {
     
    /**
@@ -133,7 +135,8 @@ if (!PrimeFaces.utils) {
             var id = widget.id,
                 zIndex = overlay.css('z-index') - 1;
 
-            var role = widget instanceof PrimeFaces.widget.ConfirmDialog ? 'alertdialog' : 'dialog';
+            const ConfirmDialog = getWidgetIfPresent("ConfirmDialog");
+            var role = ConfirmDialog !== undefined && widget instanceof ConfirmDialog ? 'alertdialog' : 'dialog';
             overlay.attr({
                 'role': role
                 ,'aria-hidden': false
@@ -1070,11 +1073,13 @@ if (!PrimeFaces.utils) {
             // stop all pollers and idle monitors
             for (var item in PrimeFaces.widgets) {
                 widget = PrimeFaces.widgets[item];
-                if (PrimeFaces.widget.Poll && widget instanceof PrimeFaces.widget.Poll) {
+                const Poll = getWidgetIfPresent("Poll");
+                if (Poll !== undefined && widget instanceof Poll) {
                     PrimeFaces.warn("Stopping Poll");
                     widget.stop();
                 }
-                if (PrimeFaces.widget.IdleMonitor && widget instanceof PrimeFaces.widget.IdleMonitor) {
+                const IdleMonitor = getWidgetIfPresent("IdleMonitor");
+                if (IdleMonitor !== undefined && widget instanceof IdleMonitor) {
                     PrimeFaces.warn("Stopping IdleMonitor");
                     widget.pause();
                 }

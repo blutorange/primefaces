@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces TriStateCheckbox Widget__
  * 
@@ -23,7 +25,7 @@
  * configuration is usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
  */
-PrimeFaces.widget.TriStateCheckbox = class TriStateCheckbox extends PrimeFaces.widget.BaseWidget {
+export class TriStateCheckbox extends BaseWidget {
 
     /**
      * @override

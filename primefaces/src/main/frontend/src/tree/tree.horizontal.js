@@ -1,3 +1,5 @@
+import { BaseTree } from "./tree.base.js";
+
 /**
  * __PrimeFaces Horizontal Tree Widget__
  * 
@@ -9,7 +11,7 @@
  * read-only and should not be modified.
  * @extends {PrimeFaces.widget.BaseTreeCfg} cfg
  */
-PrimeFaces.widget.HorizontalTree = class HorizontalTree extends PrimeFaces.widget.BaseTree {
+export class HorizontalTree extends BaseTree {
 
     /**
      * @override

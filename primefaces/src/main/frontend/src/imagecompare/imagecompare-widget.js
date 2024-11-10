@@ -1,3 +1,7 @@
+import "./juxtapose.js";
+
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces ImageCompare Widget__
  * 
@@ -21,7 +25,7 @@
  * @prop {string} cfg.leftImage URL of the image to the left
  * @prop {string} cfg.rightImage URL of the image to the right
  */
-PrimeFaces.widget.ImageCompare = class ImageCompare extends PrimeFaces.widget.BaseWidget {
+export class ImageCompare extends BaseWidget {
 
     /**
      * @override

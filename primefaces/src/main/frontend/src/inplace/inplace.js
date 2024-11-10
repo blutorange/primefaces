@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Inplace Widget__
  *
@@ -29,7 +31,7 @@
  * @prop {string} cfg.event Name of the client side event to display inline content.
  * @prop {boolean} cfg.toggleable Defines if inplace content is toggleable or not.
  */
-PrimeFaces.widget.Inplace = class Inplace extends PrimeFaces.widget.BaseWidget {
+export class Inplace extends BaseWidget {
 
     /**
      * @override

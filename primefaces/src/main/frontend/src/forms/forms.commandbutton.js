@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces CommandButton Widget__
  * 
@@ -12,7 +14,7 @@
  *
  @prop {boolean} cfg.validateClientDynamic When set to `true` this button is only enabled after successful client side validation, otherwise classic behaviour. Used together with p:clientValidator.
  */
-PrimeFaces.widget.CommandButton = class CommandButton extends PrimeFaces.widget.BaseWidget {
+export class CommandButton extends BaseWidget {
 
     /**
      * @override

@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Rating Widget__
  *
@@ -23,7 +25,7 @@
  * @prop {PrimeFaces.widget.Rating.OnRateCallback} cfg.onRate Callback that is invoked when the user gives a rating.
  * @prop {boolean} cfg.readonly Whether this widget is in read-only mode.
  */
-PrimeFaces.widget.Rating = class Rating extends PrimeFaces.widget.BaseWidget {
+export class Rating extends BaseWidget {
 
     /**
      * @override

@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Draggable Widget__
  * 
@@ -27,7 +29,7 @@
  * @prop {PrimeFaces.widget.Draggable.OnStopCallback} cfg.onStop Callback for when dragging ends.
  * @prop {string} cfg.target ID of the target of this draggable.
  */
-PrimeFaces.widget.Draggable = class Draggable extends PrimeFaces.widget.BaseWidget {
+export class Draggable extends BaseWidget {
 
     /**
      * @override
@@ -91,7 +93,7 @@ PrimeFaces.widget.Draggable = class Draggable extends PrimeFaces.widget.BaseWidg
  * @prop {PrimeFaces.widget.Droppable.OnDropCallback} cfg.onDrop Callback for when an items is dropped.
  * @prop {string} cfg.target ID of the target of this droppable.
  */
-PrimeFaces.widget.Droppable = class Droppable extends PrimeFaces.widget.BaseWidget {
+export class Droppable extends BaseWidget {
 
     /**
      * @override

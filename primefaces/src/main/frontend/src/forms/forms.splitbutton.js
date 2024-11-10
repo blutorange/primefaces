@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces SplitButton Widget__
  *
@@ -46,7 +48,7 @@
  * @prop {PrimeFaces.widget.SplitButton.FilterFunction} cfg.filterFunction Custom JavaScript function for filtering the
  * available split button actions.
  */
-PrimeFaces.widget.SplitButton = class SplitButton extends PrimeFaces.widget.BaseWidget {
+export class SplitButton extends BaseWidget {
 
      /**
      * @override

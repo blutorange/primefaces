@@ -1,0 +1,4 @@
+/* @license 
+ * jQuery.print, version 1.6.2
+ * Licence: CC-By (http://creativecommons.org/licenses/by/3.0/)
+ *--------------------------------------------------------------------------*/

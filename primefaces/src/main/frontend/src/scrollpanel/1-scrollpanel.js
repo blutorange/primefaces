@@ -1,3 +1,7 @@
+import "jscrollpane";
+
+import { DeferredWidget } from "../core/core.widget.js";
+
 /** 
  * __PrimeFaces ScrollPanel Widget__
  * 
@@ -11,7 +15,7 @@
  * @extends {PrimeFaces.widget.DeferredWidgetCfg} cfg
  * @extends {JQueryJScrollPane.JScrollPaneSettings} cfg
  */
-PrimeFaces.widget.ScrollPanel = class ScrollPanel extends PrimeFaces.widget.DeferredWidget {
+export class ScrollPanel extends DeferredWidget {
 
     /**
      * @override
