@@ -87,10 +87,14 @@ PrimeFaces.widget.Schedule = class Schedule extends PrimeFaces.widget.DeferredWi
 
         this.setViewOptions();
 
-        this.renderDeferred();
-
-        // must be done after FullCalendar is built
-        this.setupTitlebarHandlers();
+        const localeName = this.cfg.options.locale;
+        const locale = PrimeFaces.locales[localeName] ?? PrimeFaces.locales[localeName.replace(/_.*$/, "")];
+        const loadMomentLocale = locale?.loadMomentLocale ?? (() => Promise.resolve());
+        loadMomentLocale().then(() => {
+            this.renderDeferred();
+            // must be done after FullCalendar is built
+            this.setupTitlebarHandlers();
+        });
     }
 
     /**

@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "上传",
     weak: "弱",
     weekHeader: "周",
+    loadMomentLocale: () => import("moment/locale/zh-cn.js"),
     aria: {
       cancelEdit: "取消编辑",
       close: "关闭",
@@ -329,6 +330,7 @@ if (window.PrimeFaces) {
     upload: "上傳",
     weak: "弱",
     weekHeader: "周",
+    loadMomentLocale: () => import("moment/locale/zh-tw.js"),
     aria: {
       cancelEdit: "取消編輯",
       close: "關閉",

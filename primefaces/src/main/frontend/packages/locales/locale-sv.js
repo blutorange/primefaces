@@ -71,6 +71,7 @@ if (window.PrimeFaces) {
     upload: "Ladda upp",
     weak: "Svagt",
     weekHeader: "v",
+    loadMomentLocale: () => import("moment/locale/sv.js"),
     aria: {
       cancelEdit: "Avbryt redigera",
       close: "Stänga",

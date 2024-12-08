@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Завантажити",
     weak: "Простий",
     weekHeader: "Тиж.",
+    loadMomentLocale: () => import("moment/locale/uk.js"),
     aria: {
       cancelEdit: "Скасувати редагування",
       close: "Закрити",

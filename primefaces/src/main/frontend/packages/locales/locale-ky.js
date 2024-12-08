@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Жүктөө",
     weak: "Алсыз",
     weekHeader: "Апта",
+    loadMomentLocale: () => import("moment/locale/ky.js"),
     aria: {
       cancelEdit: "Түзөтүүлөрдү жокко чыгаруу",
       close: "Жабуу",

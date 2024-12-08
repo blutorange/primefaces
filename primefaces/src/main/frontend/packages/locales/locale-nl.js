@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Upload",
     weak: "Zwak",
     weekHeader: "Wk",
+    loadMomentLocale: () => import("moment/locale/nl.js"),
     aria: {
       cancelEdit: "Annuleer bewerking",
       close: "Sluit",

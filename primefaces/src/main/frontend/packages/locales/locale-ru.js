@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Загрузить",
     weak: "Простой",
     weekHeader: "Нед.",
+    loadMomentLocale: () => import("moment/locale/ru.js"),
     aria: {
       cancelEdit: "Отменить правку",
       close: "Закрыть",

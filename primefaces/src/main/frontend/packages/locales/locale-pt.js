@@ -71,6 +71,7 @@ if (window.PrimeFaces) {
     upload: "Upload",
     weak: "Fraco",
     weekHeader: "Sem",
+    loadMomentLocale: () => import("moment/locale/pt.js"),
     aria: {
       cancelEdit: "Cancelar Editar",
       close: "Fechar",
@@ -270,6 +271,7 @@ if (window.PrimeFaces) {
     allDayText: "Todo o dia",
     moreLinkText: "Mais...",
     noEventsText: "Sem Eventos",
+    loadMomentLocale: () => import("moment/locale/pt-br.js"),
     aria: {
       "datatable.sort.ASC": "ative para classificar a coluna em ordem crescente",
       "datatable.sort.DESC": "ative para classificar a coluna em ordem decrescente",

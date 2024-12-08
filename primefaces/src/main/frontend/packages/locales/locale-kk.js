@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Жүктеу",
     weak: "Жеңіл",
     weekHeader: "Апт.",
+    loadMomentLocale: () => import("moment/locale/kk.js"),
     aria: {
       cancelEdit: "Өңдеуді болдырмау",
       close: "Жабу",

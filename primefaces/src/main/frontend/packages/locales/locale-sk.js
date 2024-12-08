@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Nahrať súbor",
     weak: "Slabé",
     weekHeader: "Týž.",
+    loadMomentLocale: () => import("moment/locale/sk.js"),
     aria: {
       cancelEdit: "Zrušiť úpravu",
       close: "Zavrieť",

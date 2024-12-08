@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "アップロード",
     weak: "弱い",
     weekHeader: "週",
+    loadMomentLocale: () => import("moment/locale/ja.js"),
     aria: {
       cancelEdit: "キャンセル",
       close: "閉じる",

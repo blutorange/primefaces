@@ -22,6 +22,7 @@ if (window.PrimeFaces) {
         week: 'კვირა',
         day: 'დღე',
         allDayText: 'ყველა დღე',
+        loadMomentLocale: () => import("moment/locale/ka.js"),
         clear: 'გადატვირთვა',
         "aria": {
             close: 'დახურვა',

@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Ανεβάζω",
     weak: "Αδύναμος",
     weekHeader: "Wk",
+    loadMomentLocale: () => import("moment/locale/el.js"),
     aria: {
       cancelEdit: "Ακύρωση επεξεργασίας",
       close: "Κλείσιμο",

@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Încarcă",
     weak: "Slabă",
     weekHeader: "Săpt",
+    loadMomentLocale: () => import("moment/locale/ro.js"),
     aria: {
       cancelEdit: "Anulați editarea",
       close: "Închide",

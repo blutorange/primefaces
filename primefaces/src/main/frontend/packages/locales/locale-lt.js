@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     "upload": "áÛkelti",
     "weak": "Weak",
     "weekHeader": "Wk",
+    loadMomentLocale: () => import("moment/locale/lt.js"),
     "aria": {
       "cancelEdit": "AtéÀaukti redagavimá?",
       "close": "Uéƒdaryti",

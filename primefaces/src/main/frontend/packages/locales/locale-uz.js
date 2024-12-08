@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Yuklash",
     weak: "Zaif",
     weekHeader: "Hafta",
+    loadMomentLocale: () => import("moment/locale/uz.js"),
     aria: {
       cancelEdit: "Tahrirni bekor qilish",
       close: "Yopish",

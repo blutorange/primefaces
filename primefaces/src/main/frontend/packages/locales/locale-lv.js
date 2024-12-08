@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Ielādēt",
     weak: "Vāja",
     weekHeader: "Ned",
+    loadMomentLocale: () => import("moment/locale/lv.js"),
     aria: {
       cancelEdit: "Atcelt rediģējumu",
       close: "Aizvērt",

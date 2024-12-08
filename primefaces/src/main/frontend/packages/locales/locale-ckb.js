@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "بارکردن",
     weak: "لاواز",
     weekHeader: "هەفتە",
+    loadMomentLocale: () => import("moment/locale/ku.js"),
     aria: {
       cancelEdit: "پەشیمانبوونەوە لە دەستکاری",
       close: "داخستن",

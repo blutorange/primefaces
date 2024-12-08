@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Lataa",
     weak: "Heikko",
     weekHeader: "Vko",
+    loadMomentLocale: () => import("moment/locale/fi.js"),
     aria: {
       cancelEdit: "Peruuta muutokset",
       close: "Sulje",

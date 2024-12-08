@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Hochladen",
     weak: "Schwach",
     weekHeader: "KW",
+    loadMomentLocale: () => import("moment/locale/de.js"),
     aria: {
       cancelEdit: "Änderungen abbrechen",
       close: "Schließen",
@@ -260,12 +261,14 @@ if (window.PrimeFaces) {
   PrimeFaces.locales["de_AT"] = $.extend(true, {}, PrimeFaces.locales["de"], {
     monthNames: ["Jänner", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
     monthNamesShort: ["Jän", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"],
+    loadMomentLocale: () => import("moment/locale/de-at.js"),
   });
 
   // Swiss
   PrimeFaces.locales["de_CH"] = $.extend(true, {}, PrimeFaces.locales["de"], {
     gt: "Grösser als",
     gte: "Grösser oder gleich",
+    loadMomentLocale: () => import("moment/locale/de-ch.js"),
     aria: {
       "colorpicker.CLOSE": "Farbauswahl schliessen",
       close: "Schliessen",

@@ -71,6 +71,7 @@ if (window.PrimeFaces) {
     upload: "ផ្ទុកឡើង",
     weak: "ខ្សោយ",
     weekHeader: "Wk",
+    loadMomentLocale: () => import("moment/locale/km.js"),
     aria: {
       cancelEdit: "បោះបង់ការកែសម្រួល",
       close: "បិទ",

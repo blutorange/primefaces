@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Качване",
     weak: "Слаба",
     weekHeader: "Сд",
+    loadMomentLocale: () => import("moment/locale/bg.js"),
     aria: {
       cancelEdit: "Отказ Редактиране",
       close: "Близо",

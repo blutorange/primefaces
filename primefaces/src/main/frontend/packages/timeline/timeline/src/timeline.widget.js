@@ -114,7 +114,10 @@ PrimeFaces.widget.Timeline = class Timeline extends PrimeFaces.widget.DeferredWi
             this.cfg.extender.call(this);
         }
 
-        this.renderDeferred();
+        const localeName = this.cfg.opts.locale;
+        const locale = PrimeFaces.locales[localeName] ?? PrimeFaces.locales[localeName.replace(/_.*$/, "")];
+        const loadMomentLocale = locale?.loadMomentLocale ?? (() => Promise.resolve());
+        loadMomentLocale().then(() => this.renderDeferred());
     }
 
     /**

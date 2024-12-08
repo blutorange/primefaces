@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Upload",
     weak: "Yếu",
     weekHeader: "Tuần",
+    loadMomentLocale: () => import("moment/locale/vi.js"),
     aria: {
       cancelEdit: "Hủy Chỉnh sửa",
       close: "Đóng",

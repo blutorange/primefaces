@@ -72,6 +72,7 @@ if (window.PrimeFaces) {
     upload: "Wgraj",
     weak: "Słaby",
     weekHeader: "Tydzień",
+    loadMomentLocale: () => import("moment/locale/pl.js"),
     aria: {
       cancelEdit: "Anuluj edycję",
       close: "Zamknij",

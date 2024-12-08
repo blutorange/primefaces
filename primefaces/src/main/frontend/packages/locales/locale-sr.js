@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Učitaj",
     weak: "Slabo",
     weekHeader: "Ned",
+    loadMomentLocale: () => import("moment/locale/sr.js"),
     aria: {
       cancelEdit: "Otkaži izmenu",
       close: "Zatvori",

@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "अपलोड करें",
     weak: "कमजोर",
     weekHeader: "सप्ताह",
+    loadMomentLocale: () => import("moment/locale/hi.js"),
     aria: {
       cancelEdit: "संपादन रद्द करें",
       close: "बंद करें",

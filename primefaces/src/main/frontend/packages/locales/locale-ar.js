@@ -122,6 +122,7 @@ if (window.PrimeFaces) {
     upload: "تحميل",
     weak: "ضعيف",
     weekHeader: "الأسبوع",
+    loadMomentLocale: () => import("moment/locale/ar.js"),
     aria: {
       cancelEdit: "إلغاء التعديل",
       close: "إغلاق",
@@ -311,5 +312,6 @@ if (window.PrimeFaces) {
     fileSizeTypes: ["بايت", "كيلو بايت", "ميقا بايت", "جيقا بايت", "تيرا بايت", "بيتا بايت", "إكسا بايت", "زيتا بايت", "يوتا بايت"],
     monthNames: ["جانفي", "فيفري", "مارس", "افريل", "ماي", "جوان", "جويلية", "اوت", "سبتمبر", "اكتوبر", "نوفمبر", "ديسمبر"],
     monthNamesShort: ["جانفي", "فيفري", "مارس", "افريل", "ماي", "جوان", "جويلية", "اوت", "سبتمبر", "اكتوبر", "نوفمبر", "ديسمبر"],
+    loadMomentLocale: () => import("moment/locale/ar-tn.js"),
   });
 }

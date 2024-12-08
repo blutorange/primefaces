@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "อัปโหลด",
     weak: "อ่อน",
     weekHeader: "สัปดาห์",
+    loadMomentLocale: () => import("moment/locale/th.js"),
     aria: {
       cancelEdit: "ยกเลิกการแก้ไข",
       close: "ปิด",

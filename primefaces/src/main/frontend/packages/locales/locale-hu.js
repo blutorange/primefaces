@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Feltölt",
     weak: "Gyenge",
     weekHeader: "Hét",
+    loadMomentLocale: () => import("moment/locale/hu.js"),
     aria: {
       cancelEdit: "Szerkesztés elvetése",
       close: "Bezár",

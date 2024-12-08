@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Upload",
     weak: "Weak",
     weekHeader: "Wk",
+    loadMomentLocale: () => Promise.resolve(),
     aria: {
       cancelEdit: "Cancel Edit",
       close: "Close",
@@ -261,10 +262,12 @@ if (window.PrimeFaces) {
   // Australia
   PrimeFaces.locales["en_AU"] = $.extend(true, {}, PrimeFaces.locales["en"], {
     dateFormat: "dd/mm/yy",
+    loadMomentLocale: () => import("moment/locale/en-au.js"),
   });
   // Great Britain/UK
   PrimeFaces.locales["en_GB"] = $.extend(true, {}, PrimeFaces.locales["en"], {
     firstDayOfWeek: 1,
     dateFormat: "yy/mm/dd",
+    loadMomentLocale: () => import("moment/locale/en-gb.js"),
   });
 }

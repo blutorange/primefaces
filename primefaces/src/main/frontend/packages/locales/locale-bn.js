@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "আপলোড",
     weak: "দুর্বল",
     weekHeader: "সপ্তাহ",
+    loadMomentLocale: () => import("moment/locale/bn.js"),
     aria: {
       cancelEdit: "সম্পাদনা বাতিল করুন",
       close: "বন্ধ করুন",

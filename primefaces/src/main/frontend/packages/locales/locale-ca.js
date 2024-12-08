@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Pujar",
     weak: "Dèbil",
     weekHeader: "Setm",
+    loadMomentLocale: () => import("moment/locale/ca.js"),
     aria: {
       cancelEdit: "Cancel·lar edició",
       close: "Tancar",

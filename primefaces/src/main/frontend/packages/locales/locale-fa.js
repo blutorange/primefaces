@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "بارگذاری",
     weak: "هفته",
     weekHeader: "هفته",
+    loadMomentLocale: () => import("moment/locale/fa.js"),
     aria: {
       cancelEdit: "لغو ویرایش",
       close: "بستن",

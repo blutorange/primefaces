@@ -82,11 +82,19 @@ async function createLocaleBuildTasks() {
             const relTo = path.relative(MavenRootDir, toPath);
             console.log(`Creating build task\n from <${relFrom}> to <${relTo}>`);
         }
-        return {
+        const options = {
             ...createBaseOptions(),
             entryPoints: [fromPath],
             outfile: toPath,
         };
+        options.plugins.push(loadFromExpressionPlugin({
+            expressions: {
+                modulePath: {
+                    "moment/moment.js": "window.moment",
+                },
+            },
+        }));
+        return options;
     });
 }
 
@@ -175,7 +183,7 @@ async function failOnDuplicateModulesInOutputs(metaFile) {
         }
         for (const input of Object.keys(inputs)) {
             // This is our ESBuild plugin that loads resources from the global scope.
-            if (input.startsWith("load-from-expression/bare:") || input.startsWith("load-from-expression/modulePath:")) {
+            if (input.startsWith("load-from-expression/bare:") || input.startsWith("load-from-expression/module-path:")) {
                 continue;
             }
 

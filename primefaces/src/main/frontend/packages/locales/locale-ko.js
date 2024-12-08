@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "업로드",
     weak: "약함",
     weekHeader: "Wk",
+    loadMomentLocale: () => import("moment/locale/ko.js"),
     aria: {
       cancelEdit: "편집 취소",
       close: "닫기",

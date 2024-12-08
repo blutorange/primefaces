@@ -72,6 +72,7 @@ if (window.PrimeFaces) {
     upload: "Unggah",
     weak: "Lemah",
     weekHeader: "Wk",
+    loadMomentLocale: () => import("moment/locale/id.js"),
     aria: {
       cancelEdit: "Batalkan Perubahan",
       close: "Tutup",

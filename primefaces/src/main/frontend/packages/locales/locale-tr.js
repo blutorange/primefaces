@@ -70,6 +70,7 @@ if (window.PrimeFaces) {
     upload: "Yükle",
     weak: "Zayıf",
     weekHeader: "Hf",
+    loadMomentLocale: () => import("moment/locale/tr.js"),
     aria: {
       cancelEdit: "Düzenlemeyi İptal Et",
       close: "Kapat",
