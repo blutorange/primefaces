@@ -1,51 +1,47 @@
+import { ajaxUtils } from "./core.ajax.js";
+
 /**
- * The object with functionality related to handling the `script-src` directive of the HTTP Content-Security-Policy
+ * The class with functionality related to handling the `script-src` directive of the HTTP `Content-Security-Policy`
  * (CSP) policy. This makes use of a nonce (number used once). The server must generate a unique nonce value each
  * time it transmits a policy. 
- * @namespace
  */
-class PrimeFacesCsp {
+export class Csp {
     /**
      * Name of the POST parameter for transmitting the nonce.
      * @type {string}
      * @readonly
      */
-    static NONCE_INPUT = "primefaces.nonce";
+    NONCE_INPUT = "primefaces.nonce";
 
     /**
      * The value of the nonce to be used.
      * @type {string}
      */
-    static NONCE_VALUE = "";
+    NONCE_VALUE = "";
 
     /**
      * Map of currently registered CSP events on this page.
      * @type {Map<string,Map<string,boolean>>}
      */
-    static EVENT_REGISTRY = new Map();
+    EVENT_REGISTRY = new Map();
 
-    /** @private */
-    constructor() {
-        throw new Error("Do not instantiate -- static methods only.");
-    }
-    
     /**
      * Sets the given nonce to all forms on the current page.
      * @param {string} nonce Nonce to set. This value is usually supplied by the server.
      */
-    static init(nonce) {
-        PrimeFacesCsp.NONCE_VALUE = nonce;
+    init(nonce) {
+        this.NONCE_VALUE = nonce;
 
         var forms = document.getElementsByTagName("form");
         for (const form of forms) {
-            if (!PrimeFacesCsp.isFacesForm(form)) {
+            if (!this.isFacesForm(form)) {
                 continue;
             }
 
-            var input = form.elements[PrimeFacesCsp.NONCE_INPUT];
+            var input = form.elements[this.NONCE_INPUT];
             if (!input) {
                 input = document.createElement("input");
-                input.setAttribute("name", PrimeFacesCsp.NONCE_INPUT);
+                input.setAttribute("name", this.NONCE_INPUT);
                 input.setAttribute("type", "hidden");
                 form.appendChild(input);
             }
@@ -58,7 +54,7 @@ class PrimeFacesCsp {
      * @param {HTMLInputElement} [form] The form to check.
      * @return {boolean} true if the form is a Faces form.
      */
-    static isFacesForm(form) {
+    isFacesForm(form) {
         if (form.method === 'post') {
             for (let child of form.children) {
                 if (child instanceof HTMLInputElement && child.name && child.name.includes(PrimeFaces.VIEW_STATE)) {
@@ -75,12 +71,12 @@ class PrimeFacesCsp {
      * @param {string} [event] Event to listen to, with the `on` prefix, such as `onclick` or `onblur`.
      * @param {() => boolean} [js] Callback that may return `false` to prevent the default behavior of the event.
      */
-    static register(id, event, js){
+    register(id, event, js){
         if (event) {
             var shortenedEvent = event.substring(2, event.length),
                 element = document.getElementById(id),
                 jqEvent = shortenedEvent + '.' + id,
-                isAjaxified = PrimeFaces.ajax.Utils.isAjaxRequest(js.toString());
+                isAjaxified = ajaxUtils.isAjaxRequest(js.toString());
 
             // if the eventhandler return false, we must use preventDefault
             var jsWrapper = function(event) {
@@ -101,10 +97,10 @@ class PrimeFacesCsp {
 
             //Collect some basic information about registered AJAXified event listeners
             if (!PrimeFaces.isProductionProjectStage()) {
-                if (!PrimeFacesCsp.EVENT_REGISTRY.has(id)) {
-                    PrimeFacesCsp.EVENT_REGISTRY.set(id, new Map());
+                if (!this.EVENT_REGISTRY.has(id)) {
+                    this.EVENT_REGISTRY.set(id, new Map());
                 }
-                PrimeFacesCsp.EVENT_REGISTRY.get(id).set(jqEvent, isAjaxified);
+                this.EVENT_REGISTRY.get(id).set(jqEvent, isAjaxified);
             }
         }
     }
@@ -115,15 +111,15 @@ class PrimeFacesCsp {
      * @param {string} [event] Event to listen to, with the `on` prefix, such as `onclick` or `onblur`.
      * @return {boolean|undefined} true if component has this AJAX event
      */
-    static hasRegisteredAjaxifiedEvent(id, event) {
+    hasRegisteredAjaxifiedEvent(id, event) {
         if (PrimeFaces.isProductionProjectStage()) {
             console.error("PrimeFaces CSP registry may not be used in JSF Production mode.");
             return false;
         }
-        if (PrimeFacesCsp.EVENT_REGISTRY.has(id)) {
+        if (this.EVENT_REGISTRY.has(id)) {
             var shortenedEvent = event.substring(2, event.length),
                 jqEvent = shortenedEvent + '.' + id;
-            return PrimeFacesCsp.EVENT_REGISTRY.get(id).get(jqEvent);
+            return this.EVENT_REGISTRY.get(id).get(jqEvent);
         }
         return false;
     }
@@ -135,16 +131,16 @@ class PrimeFacesCsp {
      * @param {string} [nonceValue] Nonce value. Leave out if not using CSP.
      * @param {string} [windowContext] Optional Window context to call eval from.
      */
-    static eval(js, nonceValue, windowContext) {
+    eval(js, nonceValue, windowContext) {
         // assign the NONCE if necessary
         var options = {};
         if (nonceValue) {
             options = {nonce: nonceValue};
-        } else if (PrimeFacesCsp.NONCE_VALUE) {
+        } else if (this.NONCE_VALUE) {
             if (windowContext) {
-                options = {nonce: windowContext.PrimeFacesCsp.NONCE_VALUE};
+                options = {nonce: windowContext.PrimeFaces.csp.NONCE_VALUE};
             } else {
-                options = {nonce: PrimeFacesCsp.NONCE_VALUE};
+                options = {nonce: this.NONCE_VALUE};
             }
         }
 
@@ -165,9 +161,9 @@ class PrimeFacesCsp {
      * @return {unknown} The result of the evaluated JavaScript code.
      * @see https://stackoverflow.com/a/33945236/502366
      */
-    static evalResult(js, nonceValue, windowContext) {
+    evalResult(js, nonceValue, windowContext) {
         var executeJs = "var cspResult = " + js;
-        PrimeFacesCsp.eval(executeJs, nonceValue, windowContext);
+        this.eval(executeJs, nonceValue, windowContext);
         return windowContext ? windowContext.cspResult : cspResult;
     }
 
@@ -180,12 +176,12 @@ class PrimeFacesCsp {
      * `this` context, which is set to the given `id`, and (b) the `event` variable, which is set to the given `e`.
      * @param {JQuery.TriggeredEvent} e The event from the caller to pass through.
      */
-    static executeEvent(id, js, e) {
+    executeEvent(id, js, e) {
         // create the wrapper function
         var scriptEval = 'var cspFunction = function(event){'+ js +'}';
 
         // evaluate JS into a function
-        PrimeFacesCsp.eval(scriptEval, PrimeFacesCsp.NONCE_VALUE);
+        this.eval(scriptEval, this.NONCE_VALUE);
 
         // call the function
         cspFunction.call(id, e);
@@ -198,15 +194,18 @@ class PrimeFacesCsp {
      * @param {JQuery} target The target of this click event.
      * @return {JQuery.TriggeredEvent} the JQuery click event
      */
-    static clickEvent(target) {
+    clickEvent(target) {
         var clickEvent = $.Event( 'click' );
-        if (PrimeFacesCsp.NONCE_VALUE && target.attr('data-ajax') !== 'false') {
+        if (this.NONCE_VALUE && target.attr('data-ajax') !== 'false') {
             clickEvent.preventDefault();
         }
         return clickEvent;
     }
 }
 
-if (!PrimeFaces.csp) {
-    PrimeFaces.csp = PrimeFacesCsp;
-};
+/**
+ * The object with functionality related to handling the `script-src` directive of the HTTP `Content-Security-Policy`
+ * (CSP) policy. This makes use of a nonce (number used once). The server must generate a unique nonce value each
+ * time it transmits a policy. 
+ */
+export const csp = new Csp();

@@ -1,12 +1,7 @@
 /**
- * The class with functionality related to working with search expressions.
+ * The class providing the entry point for functions related to search expressions. 
  */
-class SearchExpressionFacade {
-    /** @private */
-    constructor() {
-        throw new Error("Do not instantiate -- static methods only.");
-    }
-
+export class SearchExpressionFacade {
     /**
      * Takes a search expression that may contain multiple components, separated by commas or whitespaces. Resolves
      * each search expression to the component it refers to and returns a JQuery object with the DOM elements of
@@ -15,7 +10,7 @@ class SearchExpressionFacade {
      * @param {string | HTMLElement | JQuery} expressions A search expression with one or multiple components to resolve.
      * @return {JQuery} A list with the resolved components.
      */
-    static resolveComponentsAsSelector(source, expressions) {
+    resolveComponentsAsSelector(source, expressions) {
 
         if (expressions instanceof $) {
             return expressions;
@@ -25,7 +20,7 @@ class SearchExpressionFacade {
             return $(expressions);
         }
 
-        var splittedExpressions = SearchExpressionFacade.splitExpressions(expressions);
+        var splittedExpressions = this.splitExpressions(expressions);
         var elements = $();
 
         for (const splittedExpression of splittedExpressions) {
@@ -83,9 +78,9 @@ class SearchExpressionFacade {
      * @param {string} expressions A search expression with one or multiple components to resolve.
      * @return {string[]} A list of IDs with the resolved components.
      */
-    static resolveComponents(source, expressions) {
-        var splittedExpressions = SearchExpressionFacade.splitExpressions(expressions),
-        ids = [];
+    resolveComponents(source, expressions) {
+        const splittedExpressions = this.splitExpressions(expressions);
+        const ids = [];
 
         for (const splittedExpression of splittedExpressions) {
             var expression = PrimeFaces.trim(splittedExpression);
@@ -156,7 +151,7 @@ class SearchExpressionFacade {
      * @param {string} expression A search expression to split.
      * @return {string[]} The individual components of the given search expression.
      */
-    static splitExpressions(expression) {
+    splitExpressions(expression) {
 
         /** @type {string[]} */
         const expressions = [];
@@ -192,11 +187,19 @@ class SearchExpressionFacade {
     }
 }
 
-if (!PrimeFaces.expressions) {
-    /**
-     * The object with functionality related to working with search expressions.
-     */
-    PrimeFaces.expressions = {
-        SearchExpressionFacade,
-    };
+/**
+ * The object providing the entry point for functions related to search expressions. 
+ */
+export const searchExpressionFacade = new SearchExpressionFacade();
+
+/**
+ * The class with functionality related to working with search expressions.
+ */
+export class Expressions {
+    SearchExpressionFacade = searchExpressionFacade;
 }
+
+/**
+ * The object with functionality related to working with search expressions.
+ */
+export const expressions = new Expressions();

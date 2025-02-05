@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces AjaxStatus Widget__
  * 
@@ -55,7 +57,7 @@
  * @prop {boolean} hasSuccessOrErrorFacet True if this component contains a success/error facet.
  * 
  * @interface {PrimeFaces.widget.AjaxStatusCfg} cfg The configuration for the {@link  AjaxStatus| AjaxStatus widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
+ * You can access this configuration via {@link BaseWidget.cfg|BaseWidget.cfg}. Please note that this
  * configuration is usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
  * 
@@ -70,7 +72,7 @@
  * @prop {PrimeFaces.widget.AjaxStatus.PfAjaxSuccessCallback | jsf.ajax.OnEventCallback} cfg.success Client-side
  * callback for when the AJAX  behavior completes successfully, i.e. when the request succeeds.
  */
-PrimeFaces.widget.AjaxStatus = class AjaxStatus extends PrimeFaces.widget.BaseWidget {
+export class AjaxStatus extends BaseWidget {
 
     /**
      * @override

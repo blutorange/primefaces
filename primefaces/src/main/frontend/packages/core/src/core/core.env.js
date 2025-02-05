@@ -1,7 +1,7 @@
 /**
  * The class with functionality related to the browser environment, such as information about the current browser.
  */
-class PrimeFacesEnvironment {
+export class Environment {
     /**
      * `true` if the current browser is a mobile browser, `false` otherwise.
      * @type {boolean}
@@ -47,7 +47,7 @@ class PrimeFacesEnvironment {
     /**
      * Initializes the environment by reading the browser environment.
      */
-    init() {
+    constructor() {
         this.browser = jQBrowser;
         this.mobile = this.browser.mobile;
         this.touch = 'ontouchstart' in window || window.navigator.msMaxTouchPoints || this.mobile;
@@ -136,7 +136,4 @@ class PrimeFacesEnvironment {
     }
 }
 
-if (!PrimeFaces.env) {
-    PrimeFaces.env = new PrimeFacesEnvironment();
-    PrimeFaces.env.init();
-}
+export const env = new Environment();

@@ -1,8 +1,11 @@
+import { ajaxRequest } from "../core/core.ajax.js";
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces AjaxExceptionHandler Widget__
  *
  * @interface {PrimeFaces.widget.AjaxExceptionHandlerCfg} cfg The configuration for the {@link  AjaxExceptionHandler | AjaxExceptionHandler widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
+ * You can access this configuration via {@link BaseWidget.cfg|BaseWidget.cfg}. Please note that this
  * configuration is usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
  *
@@ -10,7 +13,7 @@
  * @prop {string} cfg.update The components to update.
  * @prop {string} cfg.onexception The JS callback.
  */
-PrimeFaces.widget.AjaxExceptionHandler = class AjaxExceptionHandler extends PrimeFaces.widget.BaseWidget {
+export class AjaxExceptionHandler extends BaseWidget {
 
     /**
      * @override
@@ -56,7 +59,7 @@ PrimeFaces.widget.AjaxExceptionHandler = class AjaxExceptionHandler extends Prim
                     }
                 }
             };
-            PrimeFaces.ajax.Request.handle(options);
+            ajaxRequest.handle(options);
         }
         else if (this.cfg.onexception) {
             this.cfg.onexception.call($this, errorName, errorMessage);

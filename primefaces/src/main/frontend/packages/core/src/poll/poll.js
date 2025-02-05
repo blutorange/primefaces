@@ -1,3 +1,5 @@
+import { BaseWidget } from "../core/core.widget.js";
+
 /**
  * __PrimeFaces Poll Widget__
  * 
@@ -12,7 +14,7 @@
  * @prop {number} timer The set-interval timer ID of the timer used for polling.
  * 
  * @interface {PrimeFaces.widget.PollCfg} cfg The configuration for the {@link  Poll| Poll widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
+ * You can access this configuration via {@link BaseWidget.cfg|BaseWidget.cfg}. Please note that this
  * configuration is usually meant to be read-only and should not be modified.
  * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
  * 
@@ -23,7 +25,7 @@
  * depending on the configure `intervalType`.
  * @prop {PrimeFaces.widget.Poll.PollingAction} cfg.fn Callback that performs the polling action.
  */
-PrimeFaces.widget.Poll = class Poll extends PrimeFaces.widget.BaseWidget {
+export class Poll extends BaseWidget {
 
     /**
      * @override

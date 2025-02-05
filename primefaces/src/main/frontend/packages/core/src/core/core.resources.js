@@ -1,31 +1,26 @@
 /**
  * The class with functionality related to handling resources on the server, such as CSS and JavaScript files.
  */
-class PrimeFacesResources {
+export class Resources {
     /**
      * Base URL for PrimeFaces resources.
      * @type {string}
      */
-    static SCRIPT_URI;
+    SCRIPT_URI;
 
     /**
      * Whether the Faces resources handler uses the extension mapping. When enabled,
      * Faces resource URLs get the `.xhtml` ending.
      * @type {boolean}
      */
-    static IS_EXTENSION_MAPPING;
+    IS_EXTENSION_MAPPING;
 
     /**
      * When {@link IS_EXTENSION_MAPPING extension mapping} is enabled, the extension for resource URLs,
      * e.g. `.xhtml`.
      * @type {string}
      */
-    static RESOURCE_URL_EXTENSION;
-
-    /** @private */
-    constructor() {
-        throw new Error("Do not instantiate -- static methods only.");
-    }
+    RESOURCE_URL_EXTENSION;
 
     /**
     * Builds a JSF resource URL for given resource.
@@ -39,15 +34,15 @@ class PrimeFacesResources {
     * @param {string} version The version of the library, such as `5.1`.
     * @return {string} The JSF resource URL for loading the resource.
     */
-    static getFacesResource(name, library, version) {
+    getFacesResource(name, library, version) {
         // just get sure - name shouldn't start with a slash
         if (name.indexOf('/') === 0) {
             name = name.substring(1, name.length);
         }
         
         // find any JS served JSF resource
-        var scriptURI = PrimeFacesResources.getResourceScriptURI();
-        var scriptName = PrimeFacesResources.getResourceScriptName(scriptURI);
+        var scriptURI = this.getResourceScriptURI();
+        var scriptName = this.getResourceScriptName(scriptURI);
         
         // replace core.js with our custom name
         scriptURI = scriptURI.replace(scriptName, name);
@@ -88,14 +83,14 @@ class PrimeFacesResources {
     * 
     * @return {boolean} `true` if the FacesServlet is mapped with an extension mapping, `false` otherwise.
     */
-    static isExtensionMapping() {
-        if (!PrimeFacesResources.IS_EXTENSION_MAPPING) {
-            var scriptURI = PrimeFacesResources.getResourceScriptURI();
-            var scriptName = PrimeFacesResources.getResourceScriptName(scriptURI);
-            PrimeFacesResources.IS_EXTENSION_MAPPING = scriptURI.charAt(scriptURI.indexOf(scriptName) + scriptName.length) === '.';
+    isExtensionMapping() {
+        if (!this.IS_EXTENSION_MAPPING) {
+            var scriptURI = this.getResourceScriptURI();
+            var scriptName = this.getResourceScriptName(scriptURI);
+            this.IS_EXTENSION_MAPPING = scriptURI.charAt(scriptURI.indexOf(scriptName) + scriptName.length) === '.';
         }
         
-        return PrimeFacesResources.IS_EXTENSION_MAPPING;
+        return this.IS_EXTENSION_MAPPING;
     }
     
     /**
@@ -105,14 +100,14 @@ class PrimeFacesResources {
     * 
     * @return {string} The URL extension.
     */
-    static getResourceUrlExtension() {
-        if (!PrimeFacesResources.RESOURCE_URL_EXTENSION) {
-            var scriptURI = PrimeFacesResources.getResourceScriptURI();
-            var scriptName = PrimeFacesResources.getResourceScriptName(scriptURI);
-            PrimeFacesResources.RESOURCE_URL_EXTENSION = RegExp(scriptName + '.([^?]*)').exec(scriptURI)[1];
+    getResourceUrlExtension() {
+        if (!this.RESOURCE_URL_EXTENSION) {
+            var scriptURI = this.getResourceScriptURI();
+            var scriptName = this.getResourceScriptName(scriptURI);
+            this.RESOURCE_URL_EXTENSION = RegExp(scriptName + '.([^?]*)').exec(scriptURI)[1];
         }
         
-        return PrimeFacesResources.RESOURCE_URL_EXTENSION;
+        return this.RESOURCE_URL_EXTENSION;
     }
     
     /**
@@ -121,7 +116,7 @@ class PrimeFacesResources {
     * @param {string} scriptURI The URI of a script
     * @return {string} The name of the script.
     */
-    static getResourceScriptName(scriptURI) {
+    getResourceScriptName(scriptURI) {
         // find script...normal is '/core.js' and portlets are '=core.js'
         var scriptRegex = new RegExp('\\/?' + PrimeFaces.RESOURCE_IDENTIFIER + '(\\/|=)(.*?)\\.js');
         return scriptRegex.exec(scriptURI)[2] + '.js';
@@ -132,34 +127,32 @@ class PrimeFacesResources {
     * 
     * @return {string} The first JavasScript resource URI.
     */
-    static getResourceScriptURI() {
-        if (!PrimeFacesResources.SCRIPT_URI) {
+    getResourceScriptURI() {
+        if (!this.SCRIPT_URI) {
             /** @param {JQuery} scripts */
-            function findScriptWithVersionParam(scripts) {
-                scripts.each(function() {
-                    var src = $(this).attr('src');
+            const findScriptWithVersionParam = (scripts) => {
+                for (const script of scripts) {
+                    var src = $(script).attr('src');
                     if (src && src.indexOf('v=') !== -1) {
-                        PrimeFaces.resources.SCRIPT_URI = src;
-                        return false; // Exit the loop early
+                        this.SCRIPT_URI = src;
+                        break;
                     }
-                });
+                }
             }
 
             // normal '/showcase/javax.faces.resource/jquery/jquery.js.xhtml?ln=primefaces&v=13.0.5'
             findScriptWithVersionParam($('script[src*="/' + PrimeFaces.RESOURCE_IDENTIFIER + '/"]'));
             
             // portlet 'javax.faces.resource=jquery/jquery.js.xhtml?ln=primefaces&v=13.0.5'
-            if (!PrimeFacesResources.SCRIPT_URI) {
+            if (!this.SCRIPT_URI) {
                 findScriptWithVersionParam($('script[src*="' + PrimeFaces.RESOURCE_IDENTIFIER + '="]'));
             }
         }
-        return PrimeFacesResources.SCRIPT_URI;
+        return this.SCRIPT_URI;
     }
 }
 
-if (!PrimeFaces.resources) {
-    /**
-    * The object with functionality related to handling resources on the server, such as CSS and JavaScript files.
-    */
-    PrimeFaces.resources = PrimeFacesResources;
-}
+/**
+ * The object with functionality related to handling resources on the server, such as CSS and JavaScript files.
+ */
+export const resources = new Resources();

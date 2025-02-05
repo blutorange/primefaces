@@ -1,5 +1,11 @@
 import Cookies from "js-cookie";
 
+import { ajaxQueue, ajaxUtils } from "./core.ajax.js";
+import { env } from "./core.env.js";
+import { resources } from "./core.resources.js";
+import { utils } from "./core.utils.js";
+import { BaseWidget } from "./core.widget.js";
+
 (function(window) {
 
     if(window.PrimeFaces) {
@@ -76,7 +82,7 @@ import Cookies from "js-cookie";
         /**
          * Finds a widget in the current page with the given ID.
          * @param {string} id ID of the widget to retrieve.
-         * @return {PrimeFaces.widget.BaseWidget | null} The widget with the given ID, of `null` if no such widget was
+         * @return {BaseWidget | null} The widget with the given ID, of `null` if no such widget was
          * found.
          */
         getWidgetById : function(id) {
@@ -107,11 +113,11 @@ import Cookies from "js-cookie";
         /**
          * Resolves the given target as $.
          *
-         * @param {string | HTMLElement | JQuery | PrimeFaces.widget.BaseWidget} target Either id, element, jQuery object or PF widget.
+         * @param {string | HTMLElement | JQuery | BaseWidget} target Either id, element, jQuery object or PF widget.
          * @return {JQuery} The resolved $.
          */
         resolveAs$: function(target) {
-            if (target instanceof PrimeFaces.widget.BaseWidget) {
+            if (target instanceof BaseWidget) {
                 return target.getJQ();
             }
             else if (target instanceof $) {
@@ -130,11 +136,11 @@ import Cookies from "js-cookie";
         /**
          * Resolves the given target as id.
          *
-         * @param {string | HTMLElement | JQuery | PrimeFaces.widget.BaseWidget} target Either id, element, jQuery object or PF widget.
+         * @param {string | HTMLElement | JQuery | BaseWidget} target Either id, element, jQuery object or PF widget.
          * @return {string} The id of the target.
          */
         resolveAsId: function(target) {
-            if (target instanceof PrimeFaces.widget.BaseWidget) {
+            if (target instanceof BaseWidget) {
                 var widgetJq = target.getJQ();
                 return widgetJq.data(PrimeFaces.CLIENT_ID_DATA)||widgetJq.attr('id');
             }
@@ -220,7 +226,7 @@ import Cookies from "js-cookie";
          * response yet, as well as requests that are waiting in the queue and have not been sent yet.
          */
         abortXHRs : function() {
-            PrimeFaces.ajax.Queue.abortAll();
+            ajaxQueue.abortAll();
         },
 
         /**
@@ -454,14 +460,14 @@ import Cookies from "js-cookie";
 
         /**
          * Applies the inline AJAX status (ui-state-loading) to the given widget / button.
-         * @param {PrimeFaces.widget.BaseWidget} [widget] the widget.
+         * @param {BaseWidget} [widget] the widget.
          * @param {JQuery} [button] The button DOM element.
-         * @param {(widget: PrimeFaces.widget.BaseWidget, settings: JQuery.AjaxSettings) => boolean} [isXhrSource] Callback that checks if the widget is the source of the current AJAX request.
+         * @param {(widget: BaseWidget, settings: JQuery.AjaxSettings) => boolean} [isXhrSource] Callback that checks if the widget is the source of the current AJAX request.
          */
         bindButtonInlineAjaxStatus: function(widget, button, isXhrSource) {
             if (!isXhrSource) {
                 isXhrSource = function(widget, settings) {
-                    return PrimeFaces.ajax.Utils.isXhrSource(widget, settings);
+                    return ajaxUtils.isXhrSource(widget, settings);
                 };
             }
 
@@ -511,7 +517,7 @@ import Cookies from "js-cookie";
 
         /**
          * Ends the AJAX disabled state.
-         * @param {PrimeFaces.widget.BaseWidget} [widget] the widget.
+         * @param {BaseWidget} [widget] the widget.
          * @param {JQuery} [button] The button DOM element.
          */
         buttonEndAjaxDisabled: function(widget, button) {
@@ -671,7 +677,7 @@ import Cookies from "js-cookie";
          * @return {string} The current theme, such as `omega` or `luna-amber`. Empty string when no theme is loaded.
          */
         getTheme : function() {
-            return PrimeFaces.env.getTheme();
+            return env.getTheme();
         },
 
         /**
@@ -779,7 +785,7 @@ import Cookies from "js-cookie";
          * @return {string} The URL for accessing the given resource.
          */
         getFacesResource : function(name, library, version) {
-           return PrimeFaces.resources.getFacesResource(name, library, version);
+           return resources.getFacesResource(name, library, version);
         },
 
         /**
@@ -1441,7 +1447,7 @@ import Cookies from "js-cookie";
          */
         resetState: function() {
             // terminate all AJAX requests, pollers, etc
-            PrimeFaces.utils.killswitch();
+            utils.killswitch();
 
             PrimeFaces.zindex = 1000;
             PrimeFaces.detachedWidgets = [];
@@ -1458,7 +1464,7 @@ import Cookies from "js-cookie";
          * @return {number | undefined} the id associated to the timeout or undefined if no timeout used
          */
         queueTask: function(fn, delay) {
-            return PrimeFaces.utils.queueTask(fn, delay);
+            return utils.queueTask(fn, delay);
         },
 
         /**
@@ -1528,7 +1534,7 @@ import Cookies from "js-cookie";
         /**
          * A list of widgets that were once instantiated, but are not removed from the DOM, such as due to the result
          * of an AJAX update request.
-         * @type {PrimeFaces.widget.BaseWidget[]}
+         * @type {BaseWidget[]}
          * @readonly
          */
         detachedWidgets : [],
@@ -1677,7 +1683,7 @@ import Cookies from "js-cookie";
     PrimeFaces.util = {};
     /**
      * A registry of all instantiated widgets that are available on the current page.
-     * @type {Record<string, PrimeFaces.widget.BaseWidget>}
+     * @type {Record<string, BaseWidget>}
      */
     PrimeFaces.widgets = {};
 
@@ -1878,14 +1884,14 @@ import Cookies from "js-cookie";
      * Note to typescript users: You should define a method that takes a widget variables and widget constructor, and
      * check whether the widget is of the given type. If so, you can return the widget and cast it to the desired type:
      * ```typescript
-     * function getWidget<T extends PrimeFaces.widget.BaseWidget>(widgetVar, widgetClass: new() => T): T | undefined {
+     * function getWidget<T extends BaseWidget>(widgetVar, widgetClass: new() => T): T | undefined {
      *   const widget = PrimeFaces.widget[widgetVar];
      *   return widget !== undefined && widget instanceof constructor ? widgetClass : undefined;
      * }
      * ```
      * @function
      * @param {string} widgetVar The widget variable of a widget.
-     * @return {PrimeFaces.widget.BaseWidget | undefined} The widget instance, or `undefined` if no such widget exists
+     * @return {BaseWidget | undefined} The widget instance, or `undefined` if no such widget exists
      * currently.
      */
     PF = function(widgetVar) {

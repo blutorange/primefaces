@@ -1,20 +1,20 @@
 /**
  * The class with functionality related to multiple window support in PrimeFaces applications.
  */
-class ClientWindow {
+export class ClientWindow {
     /**
     * The name of the URL parameter holding the client window ID.
     * @type {string}
     * @readonly
     */
-    static CLIENT_WINDOW_URL_PARAM = "jfwid";
+    CLIENT_WINDOW_URL_PARAM = "jfwid";
     
     /**
     * The key for the session storage entry holding the client window ID.
     * @type {string}
     * @readonly
     */
-    static CLIENT_WINDOW_SESSION_STORAGE = "pf.windowId";
+    CLIENT_WINDOW_SESSION_STORAGE = "pf.windowId";
     
     /**
     * The value of the temporary client window ID, used for requesting a new ID, see
@@ -22,7 +22,7 @@ class ClientWindow {
     * @type {string}
     * @readonly
     */
-    static TEMP_CLIENT_WINDOW_ID = "temp";
+    TEMP_CLIENT_WINDOW_ID = "temp";
     
     /**
     * The number of characters of the client window ID. Each client window ID must be of this length, or it is
@@ -30,7 +30,7 @@ class ClientWindow {
     * @type {number}
     * @readonly
     */
-    static LENGTH_CLIENT_WINDOW_ID = 5;
+    LENGTH_CLIENT_WINDOW_ID = 5;
     
     /**
     * Whether the {@link init} function was called already.
@@ -57,7 +57,7 @@ class ClientWindow {
     * @param {boolean} initialRedirect Whether the currently loaded page is from the first redirect.
     */
     init(clientWindowId, initialRedirect) {
-        if (PrimeFaces.clientwindow.initialized === true) {
+        if (this.initialized === true) {
             return;
         }
         
@@ -69,12 +69,12 @@ class ClientWindow {
         this.cleanupCookies();
         this.assertClientWindowId();
     }
-    
+
     /**
     * Makes sure the temporary cookie for the client window ID is expired.
     */
     cleanupCookies() {
-        var urlWindowId = this.getUrlParameter(window.location.href, ClientWindow.CLIENT_WINDOW_URL_PARAM);
+        var urlWindowId = this.getUrlParameter(window.location.href, this.CLIENT_WINDOW_URL_PARAM);
         if (urlWindowId) {
             this.expireCookie('pf.initialredirect-' + urlWindowId);
         }
@@ -85,15 +85,15 @@ class ClientWindow {
     * reloading the current page.
     */
     assertClientWindowId() {
-        var urlClientWindowId = this.getUrlParameter(window.location.href, ClientWindow.CLIENT_WINDOW_URL_PARAM);
-        var sessionStorageClientWindowId = sessionStorage.getItem(ClientWindow.CLIENT_WINDOW_SESSION_STORAGE);
+        var urlClientWindowId = this.getUrlParameter(window.location.href, this.CLIENT_WINDOW_URL_PARAM);
+        var sessionStorageClientWindowId = sessionStorage.getItem(this.CLIENT_WINDOW_SESSION_STORAGE);
         
         // session story empty -> "open in new tab/window" was used
         if (sessionStorageClientWindowId === null) {
             // initial redirect
             // -> the windowId is valid - we don't need to a second request
             if (this.initialRedirect && urlClientWindowId === this.clientWindowId) {
-                sessionStorage.setItem(ClientWindow.CLIENT_WINDOW_SESSION_STORAGE, this.clientWindowId);
+                sessionStorage.setItem(this.CLIENT_WINDOW_SESSION_STORAGE, this.clientWindowId);
             }
             // != initial redirect
             // -> request a new windowId to avoid multiple tabs with the same windowId
@@ -101,18 +101,18 @@ class ClientWindow {
                 this.requestNewClientWindowId();
             }
         }
-        else if (sessionStorageClientWindowId === ClientWindow.TEMP_CLIENT_WINDOW_ID) {
+        else if (sessionStorageClientWindowId === this.TEMP_CLIENT_WINDOW_ID) {
             // we triggered the windowId recreation last request
-            sessionStorage.setItem(ClientWindow.CLIENT_WINDOW_SESSION_STORAGE, this.clientWindowId);
+            sessionStorage.setItem(this.CLIENT_WINDOW_SESSION_STORAGE, this.clientWindowId);
         }
-        else if (sessionStorageClientWindowId.length !== ClientWindow.LENGTH_CLIENT_WINDOW_ID) {
+        else if (sessionStorageClientWindowId.length !== this.LENGTH_CLIENT_WINDOW_ID) {
             // security check length
             this.requestNewClientWindowId();
         }
         else if (sessionStorageClientWindowId !== urlClientWindowId || sessionStorageClientWindowId !== this.clientWindowId) {
             // session storage windowId doesn't match requested windowId
             // -> redirect to the same view with current windowId from the window name
-            window.location = this.replaceUrlParam(window.location.href, ClientWindow.CLIENT_WINDOW_URL_PARAM, sessionStorageClientWindowId);
+            window.location = this.replaceUrlParam(window.location.href, this.CLIENT_WINDOW_URL_PARAM, sessionStorageClientWindowId);
         }
     }
     
@@ -121,10 +121,10 @@ class ClientWindow {
     * the current page to request a new ID from the server.
     */
     requestNewClientWindowId() {
-        sessionStorage.setItem(ClientWindow.CLIENT_WINDOW_SESSION_STORAGE, ClientWindow.TEMP_CLIENT_WINDOW_ID);
+        sessionStorage.setItem(this.CLIENT_WINDOW_SESSION_STORAGE, this.TEMP_CLIENT_WINDOW_ID);
         
         // we remove the windowId if available and redirect to the same url again to create a new windowId
-        window.location = this.replaceUrlParam(window.location.href, ClientWindow.CLIENT_WINDOW_URL_PARAM, null);
+        window.location = this.replaceUrlParam(window.location.href, this.CLIENT_WINDOW_URL_PARAM, null);
     }
     
     /**
@@ -227,9 +227,4 @@ class ClientWindow {
     }
 }
 
-if (!PrimeFaces.clientwindow) {
-    /**
-    * The object with functionality related to multiple window support in PrimeFaces applications.
-    */
-    PrimeFaces.clientwindow = new ClientWindow();
-}	
+export const clientwindow = new ClientWindow();
