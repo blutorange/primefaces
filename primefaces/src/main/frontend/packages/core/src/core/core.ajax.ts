@@ -1,39 +1,42 @@
 import { AjaxExceptionHandler } from "../ajaxexceptionhandler/ajaxexceptionhandler.js";
 import { csp } from "./core.csp.js";
 import { searchExpressionFacade } from "./core.expressions.js";
+import { core, PF } from "./core.js";
 import { utils } from "./core.utils.js";
 import { BaseWidget } from "./core.widget.js";
 
 const unloadEvent = ("onpagehide" in window) ? "pagehide" : "unload";
 
 /**
- * A shortcut for `PrimeFaces.ajax.Request.handle(cfg, ext)`, with shorter option names. Sends an AJAX request to
+ * A shortcut for {@link AjaxRequest.handle PrimeFaces.ajax.Request.handle(cfg, ext)}, with shorter option names. Sends an AJAX request to
  * the server and processes the response. You can use this method if you need more fine-grained control over which
  * components you want to update or process, or if you need to change some other AJAX options.
- * @function
- * @param {Partial<PrimeFaces.ajax.ShorthandConfiguration>} cfg Configuration for the AJAX request, with shorthand
- * options. The individual options are documented in `PrimeFaces.ajax.Configuration`.
- * @param {Partial<PrimeFaces.ajax.ConfigurationExtender>} [ext] Optional extender with additional options that
+ * @param cfg Configuration for the AJAX request, with shorthand
+ * options. The individual options are documented in {@link PrimeType.ajax.Configuration}.
+ * @param ext Optional extender with additional options that
  * overwrite the options given in `cfg`.
- * @return {Promise<PrimeFaces.ajax.ResponseData>} A promise that resolves once the AJAX requests is done. Use this
+ * @return A promise that resolves once the AJAX requests is done. Use this
  * to run custom JavaScript logic. When the AJAX request succeeds, the promise is fulfilled. Otherwise, when the
  * AJAX request fails, the promise is rejected. If the promise is rejected, the rejection handler receives an object
- * of type {@link PrimeFaces.ajax.FailedRequestData}.
+ * of type {@link PrimeType.ajax.FailedRequestData}.
  */
-export function ab(cfg, ext) {
+export function ab(
+    cfg: Partial<PrimeType.ajax.ShorthandConfiguration>,
+    ext?: Partial<PrimeType.ajax.ConfigurationExtender>
+): Promise<PrimeType.ajax.ResponseData> {
     for (var option in cfg) {
         if (!cfg.hasOwnProperty(option)) {
             continue;
         }
 
         // just pass though if no mapping is available
-        if (PrimeFaces.ajax.CFG_SHORTCUTS[option]) {
-            cfg[PrimeFaces.ajax.CFG_SHORTCUTS[option]] = cfg[option];
+        if (ajax.CFG_SHORTCUTS[option]) {
+            cfg[ajax.CFG_SHORTCUTS[option]] = cfg[option];
             delete cfg[option];
         }
     }
 
-    return ajaxRequest.handle(cfg, ext);
+    return ajax.Request.handle(cfg, ext);
 };
 
 /**
@@ -45,10 +48,10 @@ export class AjaxUtils {
      * of each such child node. For the document itself, the node value is `null`.
      * For text, comment, and CDATA nodes, the `node value` is the (text) content of the node.
      * For attribute nodes, the value of the attribute is used.
-     * @param {HTMLElement} node An HTML node for which to retrieve the content.
-     * @return {string} The content of all immediate child nodes, concatenated together.
+     * @param node An element for which to retrieve the content.
+     * @return The content of all immediate child nodes, concatenated together.
      */
-    getContent(node) {
+    getContent(node: Element): string {
         var content = '';
 
         if (node) {
@@ -64,29 +67,29 @@ export class AjaxUtils {
      * Resolves the URL which should be used for the POST request.
      * For portlets, a different URL is used.
      *
-     * @param {JQuery} form The closest form of the request source.
-     * @return {string} The POST url.
+     * @param form The closest form of the request source.
+     * @return The POST url.
      */
-    getPostUrl(form) {
-        var postURL = form.attr('action');
-        var encodedURLInput = form.children("input[name*='javax.faces.encodedURL']");
+    getPostUrl(form: JQuery): string {
+        let postURL: string | string[] | number | undefined = form.attr('action');
+        let encodedURLInput = form.children("input[name*='javax.faces.encodedURL']");
 
         if (encodedURLInput.length > 0) {
             postURL = encodedURLInput.val();
         }
 
-        return postURL;
+        return typeof postURL === "string" ? postURL : "";
     }
 
     /**
      * Gets a selector to resolve all forms which needs to be updated with a new ViewState.
      * This is required in portlets as the DOM contains forms of multiple JSF views / applications.
      *
-     * @param {JQuery} form The closest form of the request source.
-     * @param {string} parameterPrefix The portlet parameter prefix.
-     * @return {string | null} The selector for the forms, or `null` when no forms need to be updated.
+     * @param form The closest form of the request source.
+     * @param parameterPrefix The portlet parameter prefix.
+     * @return The selector for the forms, or `null` when no forms need to be updated.
      */
-    getPorletForms(form, parameterPrefix) {
+    getPorletForms(form: JQuery, parameterPrefix: string): string | null {
         var encodedURLInput = form.children("input[name*='javax.faces.encodedURL']");
 
         if (encodedURLInput.length > 0) {
@@ -99,10 +102,10 @@ export class AjaxUtils {
     /**
      * Get source ID from settings.
      *
-     * @param {JQuery.AjaxSettings} settings containing source ID.
-     * @return {string} The source ID from settings or `null` if settings does not contain a source.
+     * @param settings containing source ID.
+     * @return The source ID from settings or `null` if settings does not contain a source.
      */
-    getSourceId(settings) {
+    getSourceId(settings: JQuery.AjaxSettings): string | null {
         if (settings && settings.source) {
             return typeof settings.source === 'string' ? settings.source : settings.source.name;
         }
@@ -113,25 +116,25 @@ export class AjaxUtils {
      * Checks whether the component ID from the provided widget equals the source ID from the provided
      * settings.
      *
-     * @param {BaseWidget} widget of the component to check for being the source.
-     * @param {JQuery.AjaxSettings} settings containing source ID.
-     * @returns {boolean} `true` if the component ID from the provided widget equals the source ID from the
+     * @param widget of the component to check for being the source.
+     * @param settings containing source ID.
+     * @returns `true` if the component ID from the provided widget equals the source ID from the
      * provided settings.
      */
-    isXhrSource(widget, settings) {
-        return widget.id === ajaxUtils.getSourceId(settings);
+    isXhrSource(widget: BaseWidget, settings: JQuery.AjaxSettings): boolean {
+        return widget.id === ajax.Utils.getSourceId(settings);
     }
 
     /**
      * Checks whether one of component's triggers equals the source ID from the provided settings.
      *
-     * @param {BaseWidget} widget of the component to check for being the source.
-     * @param {JQuery.AjaxSettings} settings containing source ID.
-     * @param {boolean} triggerMustExist flag to check if the trigger must exist
-     * @returns {boolean} `true` if if one of component's triggers equals the source ID from the provided settings.
+     * @param widget of the component to check for being the source.
+     * @param settings containing source ID.
+     * @param triggerMustExist flag to check if the trigger must exist
+     * @returns `true` if if one of component's triggers equals the source ID from the provided settings.
      */
-    isXhrSourceATrigger(widget, settings, triggerMustExist) {
-        var sourceId = ajaxUtils.getSourceId(settings);
+    isXhrSourceATrigger(widget: BaseWidget<any>, settings: JQuery.AjaxSettings, triggerMustExist: boolean): boolean {
+        var sourceId = ajax.Utils.getSourceId(settings);
         if (!sourceId) {
             return false;
         }
@@ -149,10 +152,10 @@ export class AjaxUtils {
 
     /**
      * Is this script an AJAX request?
-     * @param {string} script the JS script to check
-     * @returns {boolean} `true` if this script contains an AJAX request
+     * @param script the JS script to check
+     * @returns `true` if this script contains an AJAX request
      */
-    isAjaxRequest(script) {
+    isAjaxRequest(script: string): boolean {
         return script.includes("PrimeFaces.ab(") || script.includes("pf.ab(")
             || script.includes("mojarra.ab(")
             || script.includes("myfaces.ab(")
@@ -161,13 +164,13 @@ export class AjaxUtils {
 
     /**
      * Updates the main hidden input element for each form.
-     * @param {string} name Name of the hidden form input element, usually the same as the form.
-     * @param {string} value Value to set on the hidden input element.
-     * @param {PrimeFaces.ajax.pfXHR} [xhr] Optional XHR request with `pfSettings` or `pfArgs` with further
+     * @param name Name of the hidden form input element, usually the same as the form.
+     * @param value Value to set on the hidden input element.
+     * @param xhr Optional XHR request with `pfSettings` or `pfArgs` with further
      * data, such as which forms should be updated.
      */
-    updateFormStateInput(name, value, xhr) {
-        var trimmedValue = PrimeFaces.trim(value);
+    updateFormStateInput(name: string, value: string, xhr?: PrimeType.ajax.pfXHR): void {
+        var trimmedValue = core.trim(value);
 
         var forms = null;
         if (xhr && xhr.pfSettings && xhr.pfSettings.portletForms) {
@@ -204,14 +207,14 @@ export class AjaxUtils {
      * 
      * @param {string} content The content of the changeset that was returned by an AJAX request.
      */
-    updateResource(content) {
+    updateResource(content: string): void {
         var $head = $("head");
         try {
             var $content = $(content);
             var filteredContent = $content.length > 0 ? $content.filter("link[href], script[src]") : $();
 
             if (filteredContent.length === 0) {
-                PrimeFaces.debug("Adding content to the head because it lacks any JavaScript or CSS links...");
+                core.debug("Adding content to the head because it lacks any JavaScript or CSS links...");
                 $head.append(content);
             } else {
                 // #11714 Iterate through each script and stylesheet tag in the content
@@ -224,23 +227,23 @@ export class AjaxUtils {
 
                     // Check if script or stylesheet already exists and add it to head if it does not
                     if ($resources.length === 0) {
-                        PrimeFaces.debug("Appending " + type + " to head: " + src);
+                        core.debug("Appending " + type + " to head: " + src);
                         $head.append($resource);
                     }
                 }
             }
         } catch (error) {
             // MYFACES-4378 is incorrectly sending executable code here in the Resource section
-            PrimeFaces.debug("Appending content to the head as it contains only raw JavaScript code...");
+            core.debug("Appending content to the head as it contains only raw JavaScript code...");
             $head.append(content);
         }
     }
 
     /**
      * Updates the HTML `head` element of the current document with the content received from an AJAX request.
-     * @param {string} content The content of the changeset that was returned by an AJAX request.
+     * @param content The content of the changeset that was returned by an AJAX request.
      */
-    updateHead(content) {
+    updateHead(content: string): void {
         var cache = $.ajaxSetup()['cache'];
         $.ajaxSetup()['cache'] = true;
 
@@ -253,9 +256,9 @@ export class AjaxUtils {
 
     /**
      * Updates the HTML `body` element of the current document with the content received from an AJAX request.
-     * @param {string} content The content of the changeset that was returned by an AJAX request.
+     * @param content The content of the changeset that was returned by an AJAX request.
      */
-    updateBody(content) {
+    updateBody(content: string): void {
         var bodyStartTag = /<body[^>]*>/gi.exec(content)[0];
         var bodyStartIndex = content.indexOf(bodyStartTag) + bodyStartTag.length;
         $('body').html(content.substring(bodyStartIndex, content.lastIndexOf("</body>")));
@@ -264,44 +267,44 @@ export class AjaxUtils {
     /**
      * Updates an element with the given ID by applying a change set that was returned by an AJAX request. This
      * involves replacing the HTML content of the element with the new content.
-     * @param {string} id ID of the element that is to be updated.
-     * @param {string} content The new content of the changeset as returned by an AJAX request.
-     * @param {PrimeFaces.ajax.pfXHR} [xhr] Optional XHR request with `pfSettings` or `pfArgs` with further
+     * @param id ID of the element that is to be updated.
+     * @param content The new content of the changeset as returned by an AJAX request.
+     * @param xhr Optional XHR request with `pfSettings` or `pfArgs` with further
      * data, such as which forms should be updated.
      */
-    updateElement(id, content, xhr) {
+    updateElement(id: string, content: string, xhr?: PrimeType.ajax.pfXHR): void {
 
-        if (id.indexOf(PrimeFaces.VIEW_STATE) !== -1) {
-            ajaxUtils.updateFormStateInput(PrimeFaces.VIEW_STATE, content, xhr);
+        if (id.indexOf(core.VIEW_STATE) !== -1) {
+            ajax.Utils.updateFormStateInput(core.VIEW_STATE, content, xhr);
         }
-        else if (id.indexOf(PrimeFaces.CLIENT_WINDOW) !== -1) {
-            ajaxUtils.updateFormStateInput(PrimeFaces.CLIENT_WINDOW, content, xhr);
+        else if (id.indexOf(core.CLIENT_WINDOW) !== -1) {
+            ajax.Utils.updateFormStateInput(core.CLIENT_WINDOW, content, xhr);
         }
         // used by @all
-        else if (id === PrimeFaces.VIEW_ROOT) {
+        else if (id === core.VIEW_ROOT) {
 
             // reset PrimeFaces JS state because the view is completely replaced with a new one
-            window.PrimeFaces.resetState();
+            core.resetState();
 
-            ajaxUtils.updateHead(content);
-            ajaxUtils.updateBody(content);
+            ajax.Utils.updateHead(content);
+            ajax.Utils.updateBody(content);
         }
-        else if (id === PrimeFaces.ajax.VIEW_HEAD) {
-            ajaxUtils.updateHead(content);
+        else if (id === ajax.VIEW_HEAD) {
+            ajax.Utils.updateHead(content);
         }
-        else if (id === PrimeFaces.ajax.VIEW_BODY) {
-            ajaxUtils.updateBody(content);
+        else if (id === ajax.VIEW_BODY) {
+            ajax.Utils.updateBody(content);
         }
-        else if (id === PrimeFaces.ajax.RESOURCE) {
-            ajaxUtils.updateResource(content);
+        else if (id === ajax.RESOURCE) {
+            ajax.Utils.updateResource(content);
         }
-        else if (id === $('head')[0].id) {
-            ajaxUtils.updateHead(content);
+        else if (id === $('head')[0]?.id) {
+            ajax.Utils.updateHead(content);
         }
         else {
-            var target = $(PrimeFaces.escapeClientId(id));
+            var target = $(core.escapeClientId(id));
             if (target.length === 0) {
-                PrimeFaces.warn("DOM element with id '" + id + "' cant be found; skip update...");
+                core.warn("DOM element with id '" + id + "' cant be found; skip update...");
             }
             else {
                 var removedContent = target.replaceWith(content);
@@ -313,13 +316,14 @@ export class AjaxUtils {
 
     /**
      * Handle the error either by calling the p:ajaxExceptionHandlers, trying to redirect to the error-page or by logging.
-     * @param {string} errorName The error name.
-     * @param {string} errorMessage The error message.
+     * @param errorName The error name.
+     * @param errorMessage The error message.
      */
-    handleError(errorName, errorMessage) {
+    handleError(errorName: string, errorMessage: string): void {
+        let exceptionHandlers: AjaxExceptionHandler[] = [];
         if (errorName) {
             // try to invoke specific AjaxExceptionHandler
-            var exceptionHandlers = PrimeFaces.getWidgetsByType(AjaxExceptionHandler);
+            exceptionHandlers = core.getWidgetsByType(AjaxExceptionHandler);
             for (var exceptionHandler of exceptionHandlers) {
                 if (exceptionHandler.handles(errorName)) {
                     exceptionHandler.handle(errorName, errorMessage);
@@ -335,39 +339,39 @@ export class AjaxUtils {
             return;
         }
 
-        if (PrimeFaces.settings.errorPages) {
+        if (core.settings.errorPages) {
             var errorPageUrl = null;
             if (errorName) {
                 // strip off 'class ' prefix, which is logged with exception class
                 if (errorName.startsWith('class ')) {
-                    errorPageUrl = PrimeFaces.settings.errorPages[errorName.replace('class ', '')];
+                    errorPageUrl = core.settings.errorPages[errorName.replace('class ', '')];
                 }
                 else {
-                    errorPageUrl = PrimeFaces.settings.errorPages[errorName];
+                    errorPageUrl = core.settings.errorPages[errorName];
                 }
             }
             if (!errorPageUrl) {
-                errorPageUrl = PrimeFaces.settings.errorPages['java.lang.Throwable'];
+                errorPageUrl = core.settings.errorPages['java.lang.Throwable'];
             }
             if (!errorPageUrl) {
-                errorPageUrl = PrimeFaces.settings.errorPages[''];
+                errorPageUrl = core.settings.errorPages[''];
             }
 
             if (errorPageUrl) {
                 try {
-                    PrimeFaces.debug("Redirect to error page: " + errorPageUrl)
+                    core.debug("Redirect to error page: " + errorPageUrl)
                     window.location.assign(errorPageUrl);
                 } catch (error) {
-                    PrimeFaces.warn('Error redirecting to URL: ' + errorPageUrl);
+                    core.warn('Error redirecting to URL: ' + errorPageUrl);
                 }
 
                 return;
             }
         }
 
-        PrimeFaces.error("No ajaxExceptionHandler or error page found for '" + errorName + "' defined!");
+        core.error("No ajaxExceptionHandler or error page found for '" + errorName + "' defined!");
         if (errorMessage) {
-            PrimeFaces.error(errorMessage);
+            core.error(errorMessage);
         }
     }
 }
@@ -380,39 +384,35 @@ export class AjaxQueue {
     /**
      * A map between the source ID and  the timeout IDs (as returned by `setTimeout`). Used for AJAX requests
      * with a specified delay (such as remote commands that have a delay set).
-     * @type {Record<string, number>}
      */
-    delays = {};
+    delays: Record<string, number> = {};
 
     /**
      * A list of requests that are waiting to be sent.
-     * @type {Partial<PrimeFaces.ajax.Configuration>[]}
      */
-    requests = [];
+    requests: Partial<PrimeType.ajax.Configuration>[] = [];
 
     /**
      * A list of sent AJAX requests, i.e. HTTP requests that were already started. This is used, for example, to
      * abort requests that were sent already when that becomes necessary.
-     *
-     * @type {PrimeFaces.ajax.pfXHR[]}
      */
-    xhrs = [];
+    xhrs: PrimeType.ajax.pfXHR[] = [];
 
     /**
      * Offers an AJAX request to this queue. The request is sent once all other requests in this queue have
      * been sent. If a delay is set on the request configuration, the request is not sent before the specified
      * delay has elapsed.
-     * @param {Partial<PrimeFaces.ajax.Configuration>} request The request to send.
+     * @param request The request to send.
      */
-    offer(request) {
+    offer(request: Partial<PrimeType.ajax.Configuration>): void {
         if (request.delay) {
             const sourceId = (typeof (request.source) === 'string') ? request.source : $(request.source).attr('id');
             const createTimeout = () => {
-                return PrimeFaces.queueTask(() => {
+                return core.queueTask(() => {
                     this.requests.push(request);
 
                     if (this.requests.length === 1) {
-                        ajaxRequest.send(request);
+                        ajax.Request.send(request);
                     }
                 }, request.delay);
             };
@@ -439,10 +439,9 @@ export class AjaxQueue {
     /**
      * Removes the topmost request (the requests that was just sent) from this queue; and starts the second
      * topmost request.
-     * @return {Partial<PrimeFaces.ajax.Configuration> | null} The topmost request in this queue, or `null` if this queue
-     * is empty.
+     * @return The topmost request in this queue, or `null` if this queue is empty.
      */
-    poll() {
+    poll(): Partial<PrimeType.ajax.Configuration> | null {
         if (this.isEmpty()) {
             return null;
         }
@@ -459,39 +458,39 @@ export class AjaxQueue {
 
     /**
      * Returns the request that is scheduled to be sent next, but does not modify the queue in any way.
-     * @return {Partial<PrimeFaces.ajax.Configuration> | null} The topmost request in this queue that is to be sent next,
+     * @return The topmost request in this queue that is to be sent next,
      * or `null` when this queue is empty.
      */
-    peek() {
+    peek(): Partial<PrimeType.ajax.Configuration> | null {
         if (this.isEmpty()) {
             return null;
         }
 
-        return this.requests[0];
+        return this.requests[0] ?? null;
     }
 
     /**
      * Checks whether this queue contains any scheduled AJAX requests.
-     * @return {boolean} `true` if this queue contains no scheduled requests, `false` otherwise.
+     * @return `true` if this queue contains no scheduled requests, `false` otherwise.
      */
-    isEmpty() {
+    isEmpty(): boolean {
         return this.requests.length === 0;
     }
 
     /**
-     * Adds a newly sent XHR request to the list of sent requests (`PrimeFaces.ajax.xhrs`).
-     * @param {PrimeFaces.ajax.pfXHR} xhr XHR request to add.
+     * Adds a newly sent XHR request to the list of sent requests ({@link AjaxQueue.xhrs PrimeFaces.ajax.Queue.xhrs}).
+     * @param xhr XHR request to add.
      */
-    addXHR(xhr) {
+    addXHR(xhr: PrimeType.ajax.pfXHR): void {
         this.xhrs.push(xhr);
     }
 
     /**
-     * Removes an XHR request from the list of sent requests (`PrimeFaces.ajax.xhrs`). Usually called once the
-     * AJAX request is done, having resulted in either a success or an error.
-     * @param {PrimeFaces.ajax.pfXHR} xhr XHR request to remove.
+     * Removes an XHR request from the list of sent requests ({@link AjaxQueue.xhrs PrimeFaces.ajax.Queue.xhrs}). Usually
+     * called once the AJAX request is done, having resulted in either a success or an error.
+     * @param xhr XHR request to remove.
      */
-    removeXHR(xhr) {
+    removeXHR(xhr: PrimeType.ajax.pfXHR): void {
         var index = $.inArray(xhr, this.xhrs);
         if (index > -1) {
             this.xhrs.splice(index, 1);
@@ -502,7 +501,7 @@ export class AjaxQueue {
      * Aborts all requests that were already sent, but have not yet received an answer from the server. Also
      * removes all requests that are waiting in the queue and have not been sent yet.
      */
-    abortAll() {
+    abortAll(): void {
         // clear out any pending requests
         this.requests = [];
 
@@ -525,20 +524,23 @@ export class AjaxRequest {
      * Handles the given AJAX request, either by sending it immediately (if `async` is set to `true`), or by
      * adding it to the AJAX queue otherwise. The AJAX queue ensures that requests are sent and handled in the
      * order they were started. See also {@link jsf.ajax.request}.
-     * @param {Partial<PrimeFaces.ajax.Configuration>} cfg Configuration for the AJAX request to send, such as
+     * @param cfg Configuration for the AJAX request to send, such as
      * the HTTP method, the URL, and the content of the request.
-     * @param {Partial<PrimeFaces.ajax.ConfigurationExtender>} [ext] Optional extender with additional options
+     * @param ext Optional extender with additional options
      * that overwrite the options given in `cfg`.
-     * @return {Promise<PrimeFaces.ajax.ResponseData>} A promise that resolves once the AJAX requests is done.
+     * @return A promise that resolves once the AJAX requests is done.
      * Use this to run custom JavaScript logic. When the AJAX request succeeds, the promise is fulfilled.
      * Otherwise, when the AJAX request fails, the promise is rejected. If the promise is rejected, the
-     * rejection handler receives an object of type {@link PrimeFaces.ajax.FailedRequestData}.
+     * rejection handler receives an object of type {@link PrimeType.ajax.FailedRequestData}.
      */
-    handle(cfg, ext) {
+    handle(
+        cfg: Partial<PrimeType.ajax.Configuration>,
+        ext?: Partial<PrimeType.ajax.ConfigurationExtender>
+    ): Promise<PrimeType.ajax.ResponseData>  {
         cfg.ext = ext;
         cfg.promise = cfg.promise || $.Deferred();
 
-        if (PrimeFaces.settings.earlyPostParamEvaluation) {
+        if (core.settings.earlyPostParamEvaluation) {
             cfg.earlyPostParams = this.collectEarlyPostParams(cfg);
         }
 
@@ -546,7 +548,7 @@ export class AjaxRequest {
             this.send(cfg);
         }
         else {
-            ajaxQueue.offer(cfg);
+            ajax.Queue.offer(cfg);
         }
 
         return cfg.promise.promise();
@@ -556,17 +558,17 @@ export class AjaxRequest {
      * Performs the early collection of post parameters (form element values) if the request is configured that
      * way. See: https://github.com/primefaces/primefaces/issues/109
      *
-     * @param {Partial<PrimeFaces.ajax.Configuration>} cfg Configuration for the AJAX request to send, such as
+     * @param cfg Configuration for the AJAX request to send, such as
      * the HTTP method, the URL, and the content of the request.
-     * @return {PrimeFaces.ajax.RequestParameter[]} The collected form element values to be sent with the request.
+     * @return The collected form element values to be sent with the request.
      */
-    collectEarlyPostParams(cfg) {
+    collectEarlyPostParams(cfg: Partial<PrimeType.ajax.Configuration>): PrimeType.ajax.RequestParameter[] {
 
         var earlyPostParams;
 
         var sourceElement;
         if (typeof (cfg.source) === 'string') {
-            sourceElement = $(PrimeFaces.escapeClientId(cfg.source));
+            sourceElement = $(core.escapeClientId(cfg.source));
         }
         else {
             sourceElement = $(cfg.source);
@@ -596,15 +598,14 @@ export class AjaxRequest {
     /**
      * Starts the given AJAX request immediately by sending the data to the server. Contrast with
      * {@link handle}, which may queue AJAX requests, depending on how they are configured.
-     * @param {Partial<PrimeFaces.ajax.Configuration>} cfg Configuration for the AJAX request to send, such as
+     * @param cfg Configuration for the AJAX request to send, such as
      * the HTTP method, the URL, and the content of the request.
-     * @return {boolean|undefined} `false` if the AJAX request is to be canceled, `true` or `undefined`
-     * otherwise.
+     * @return `false` if the AJAX request is to be canceled, `true` or `undefined` otherwise.
      */
-    send(cfg) {
-        PrimeFaces.debug('Initiating ajax request.');
+    send(cfg: Partial<PrimeType.ajax.Configuration>): boolean | undefined {
+        core.debug('Initiating ajax request.');
 
-        PrimeFaces.customFocus = false;
+        core.customFocus = false;
 
         var global = cfg.global !== false,
             form = null,
@@ -619,11 +620,11 @@ export class AjaxRequest {
         }
 
         if (retVal === false) {
-            PrimeFaces.debug('AJAX request cancelled by onstart callback.');
+            core.debug('AJAX request cancelled by onstart callback.');
 
             //remove from queue
             if (!cfg.async) {
-                ajaxQueue.poll();
+                ajax.Queue.poll();
             }
 
             if (cfg.promise) {
@@ -644,7 +645,7 @@ export class AjaxRequest {
             sourceId = $(cfg.source).attr('id');
         }
 
-        var $source = $(PrimeFaces.escapeClientId(sourceId));
+        var $source = $(core.escapeClientId(sourceId));
 
         if (cfg.formId) {
             //Explicit form is defined
@@ -660,43 +661,43 @@ export class AjaxRequest {
             }
         }
 
-        PrimeFaces.debug('Form to post ' + form.attr('id') + '.');
+        core.debug('Form to post ' + form.attr('id') + '.');
 
-        var formData;
-        var scanForFiles;
-        var multipart = form.attr('enctype') === 'multipart/form-data';
+        let formData: FormData;
+        let scanForFiles: JQuery = $();
+        let multipart = form.attr('enctype') === 'multipart/form-data';
         if (multipart) {
             formData = new FormData();
             scanForFiles = $();
         }
 
-        var postURL = ajaxUtils.getPostUrl(form);
-        var postParams = [];
+        var postURL = ajax.Utils.getPostUrl(form);
+        var postParams: PrimeType.ajax.RequestParameter<string, unknown>[] = [];
 
         // See #6857 - parameter namespace for Portlets
         var parameterPrefix = this.extractParameterNamespace(form);
 
-        PrimeFaces.debug('URL to post ' + postURL + '.');
+        core.debug('URL to post ' + postURL + '.');
 
         //partial ajax
-        this.addParam(postParams, PrimeFaces.PARTIAL_REQUEST_PARAM, true, parameterPrefix);
+        this.addParam(postParams, core.PARTIAL_REQUEST_PARAM, true, parameterPrefix);
 
         //source
-        this.addParam(postParams, PrimeFaces.PARTIAL_SOURCE_PARAM, sourceId, parameterPrefix);
+        this.addParam(postParams, core.PARTIAL_SOURCE_PARAM, sourceId, parameterPrefix);
 
         //resetValues
         if (cfg.resetValues) {
-            this.addParam(postParams, PrimeFaces.RESET_VALUES_PARAM, true, parameterPrefix);
+            this.addParam(postParams, core.RESET_VALUES_PARAM, true, parameterPrefix);
         }
 
         //ignoreAutoUpdate
         if (cfg.ignoreAutoUpdate) {
-            this.addParam(postParams, PrimeFaces.IGNORE_AUTO_UPDATE_PARAM, true, parameterPrefix);
+            this.addParam(postParams, core.IGNORE_AUTO_UPDATE_PARAM, true, parameterPrefix);
         }
 
         //skip children
         if (cfg.skipChildren === false) {
-            this.addParam(postParams, PrimeFaces.SKIP_CHILDREN_PARAM, false, parameterPrefix);
+            this.addParam(postParams, core.SKIP_CHILDREN_PARAM, false, parameterPrefix);
         }
 
         //process
@@ -718,7 +719,7 @@ export class AjaxRequest {
             }
         }
         if (!processIds.includes('@none')) {
-            this.addParam(postParams, PrimeFaces.PARTIAL_PROCESS_PARAM, processIds, parameterPrefix);
+            this.addParam(postParams, core.PARTIAL_PROCESS_PARAM, processIds, parameterPrefix);
         }
 
         //update
@@ -727,12 +728,12 @@ export class AjaxRequest {
             updateArray.push(cfg.fragmentUpdate);
         }
         if (updateArray.length > 0) {
-            this.addParam(postParams, PrimeFaces.PARTIAL_UPDATE_PARAM, updateArray.join(' '), parameterPrefix);
+            this.addParam(postParams, core.PARTIAL_UPDATE_PARAM, updateArray.join(' '), parameterPrefix);
         }
 
         //behavior event
         if (cfg.event) {
-            this.addParam(postParams, PrimeFaces.BEHAVIOR_EVENT_PARAM, cfg.event, parameterPrefix);
+            this.addParam(postParams, core.BEHAVIOR_EVENT_PARAM, cfg.event, parameterPrefix);
 
             var domEvent = cfg.event;
 
@@ -741,7 +742,7 @@ export class AjaxRequest {
             else if (cfg.event === 'action')
                 domEvent = 'click';
 
-            this.addParam(postParams, PrimeFaces.PARTIAL_EVENT_PARAM, domEvent, parameterPrefix);
+            this.addParam(postParams, core.PARTIAL_EVENT_PARAM, domEvent, parameterPrefix);
         }
         else {
             this.addParam(postParams, sourceId, sourceId, parameterPrefix);
@@ -757,7 +758,7 @@ export class AjaxRequest {
 
         // try to get partialSubmit from global config
         if (cfg.partialSubmit === undefined) {
-            cfg.partialSubmit = PrimeFaces.settings.partialSubmit;
+            cfg.partialSubmit = core.settings.partialSubmit;
         }
         // check for overwrite
         if (cfg.ext && cfg.ext.partialSubmit) {
@@ -774,7 +775,7 @@ export class AjaxRequest {
             if (processIds.indexOf('@none') === -1) {
                 var partialSubmitFilter = cfg.partialSubmitFilter || ':input';
                 for (const processId of processArray) {
-                    var jqProcess = $(PrimeFaces.escapeClientId(processId));
+                    var jqProcess = $(core.escapeClientId(processId));
                     var componentPostParams = null;
 
                     if (jqProcess.is('form')) {
@@ -813,8 +814,8 @@ export class AjaxRequest {
             //add form state if necessary
             if (!formProcessed) {
                 // Faces
-                this.addParamFromInput(postParams, PrimeFaces.VIEW_STATE, form, parameterPrefix);
-                this.addParamFromInput(postParams, PrimeFaces.CLIENT_WINDOW, form, parameterPrefix);
+                this.addParamFromInput(postParams, core.VIEW_STATE, form, parameterPrefix);
+                this.addParamFromInput(postParams, core.CLIENT_WINDOW, form, parameterPrefix);
                 // PrimeFaces
                 this.addParamFromInput(postParams, csp.NONCE_INPUT, form, parameterPrefix);
                 // DeltaSpike
@@ -834,7 +835,7 @@ export class AjaxRequest {
 
         // remove postParam if already available in earlyPostParams
         // we can skip files here, they likely wont change during that time
-        if (PrimeFaces.settings.earlyPostParamEvaluation && cfg.earlyPostParams) {
+        if (core.settings.earlyPostParamEvaluation && cfg.earlyPostParams) {
             postParams = this.arrayCompare(cfg.earlyPostParams, postParams);
 
             $.merge(postParams, cfg.earlyPostParams);
@@ -865,7 +866,7 @@ export class AjaxRequest {
             type: "POST",
             cache: false,
             dataType: "xml",
-            portletForms: ajaxUtils.getPorletForms(form, parameterPrefix),
+            portletForms: ajax.Utils.getPorletForms(form, parameterPrefix),
             source: cfg.source,
             global: false,
             beforeSend: function(xhr, settings) {
@@ -893,7 +894,7 @@ export class AjaxRequest {
         else {
             var postData = $.param(postParams);
 
-            PrimeFaces.debug('Post Data:' + postData);
+            core.debug('Post Data:' + postData);
 
             xhrOptions.data = postData;
         }
@@ -915,7 +916,7 @@ export class AjaxRequest {
 
                 var location = xhr.getResponseHeader("Location");
                 if (xhr.status === 401 && location) {
-                    PrimeFaces.debug('Unauthorized status received. Redirecting to ' + location);
+                    core.debug('Unauthorized status received. Redirecting to ' + location);
                     window.location = location;
                     return;
                 }
@@ -928,10 +929,10 @@ export class AjaxRequest {
 
                 $(document).trigger('pfAjaxError', [xhr, this, errorThrown]);
 
-                PrimeFaces.error('Request return with error:' + status + '.');
+                core.error('Request return with error:' + status + '.');
             })
             .done(function(data, status, xhr) {
-                PrimeFaces.debug('Response received successfully.');
+                core.debug('Response received successfully.');
                 try {
                     var parsed;
 
@@ -960,18 +961,18 @@ export class AjaxRequest {
                         return;
                     }
                     else {
-                        ajaxResponse.handle(data, status, xhr);
+                        ajax.Response.handle(data, status, xhr);
                     }
                 }
                 catch (err) {
-                    PrimeFaces.error(err);
+                    core.error(err);
                 }
 
                 if (global) {
                     $(document).trigger('pfAjaxUpdated', [xhr, this, xhr.pfArgs]);
                 }
 
-                PrimeFaces.debug('DOM is updated.');
+                core.debug('DOM is updated.');
             })
             .always(function(data, status, xhr) {
                 // first call the extension callback (e.g. datatable paging)
@@ -988,26 +989,28 @@ export class AjaxRequest {
                     $(document).trigger('pfAjaxComplete', [xhr, this, xhr.pfArgs]);
                 }
 
-                PrimeFaces.debug('Response completed.');
+                core.debug('Response completed.');
 
-                ajaxQueue.removeXHR(xhr);
+                ajax.Queue.removeXHR(xhr);
 
                 if (!cfg.async) {
-                    ajaxQueue.poll();
+                    ajax.Queue.poll();
                 }
             });
 
-            ajaxQueue.addXHR(jqXhr);
+            ajax.Queue.addXHR(jqXhr);
+
+        return undefined;
     }
 
     /**
      * Collects all `process` or `update` search expressions from the given AJAX call configuration and returns
      * them as one search expression.
-     * @param {Partial<PrimeFaces.ajax.Configuration>} cfg An AJAX call configuration.
-     * @param {"process" | "update"} type Whether to resolve the `process` or `update` expressions.
-     * @return {string} All process or update search expression from the given configuration.
+     * @param cfg An AJAX call configuration.
+     * @param type Whether to resolve the `process` or `update` expressions.
+     * @return All process or update search expression from the given configuration.
      */
-    resolveExpressionsForAjaxCall(cfg, type) {
+    resolveExpressionsForAjaxCall(cfg: Partial<PrimeType.ajax.Configuration>, type: "process" | "update"): string {
         var expressions = '';
 
         if (cfg[type]) {
@@ -1026,12 +1029,12 @@ export class AjaxRequest {
      * expressions given by the configurations. Resolves the search expressions to the actual components and
      * returns a list of their IDs.
      *
-     * @param {JQuery} source the source element.
-     * @param {Partial<PrimeFaces.ajax.Configuration>} cfg An AJAX call configuration.
-     * @param {"process" | "update"} type Whether to resolve the `process` or `update` expressions.
-     * @return {string[]} A list of IDs with the components to which the process or update expressions refer.
+     * @param source the source element.
+     * @param cfg An AJAX call configuration.
+     * @param type Whether to resolve the `process` or `update` expressions.
+     * @return A list of IDs with the components to which the process or update expressions refer.
      */
-    resolveComponentsForAjaxCall(source, cfg, type) {
+    resolveComponentsForAjaxCall(source: JQuery, cfg: Partial<PrimeType.ajax.Configuration>, type: "process" | "update"): string[] {
         var expressions = this.resolveExpressionsForAjaxCall(cfg, type);
         return searchExpressionFacade.resolveComponents(source, expressions);
     }
@@ -1039,14 +1042,14 @@ export class AjaxRequest {
     /**
      * Appends a request parameter to the given list of parameters.
      * Optionally add a prefix to the name, this is used for portlet namespacing.
-     * @template [TValue=unknown] Type of the parameter value.
-     * @param {PrimeFaces.ajax.RequestParameter<string, TValue>[]} params List of parameters to which a new
+     * @template Value Type of the parameter value.
+     * @param params List of parameters to which a new
      * parameter is added.
-     * @param {string} name Name of the new parameter to add.
-     * @param {TValue} value Value of the parameter to add.
-     * @param {string} [parameterPrefix] Optional prefix that is added in front of the name.
+     * @param name Name of the new parameter to add.
+     * @param value Value of the parameter to add.
+     * @param parameterPrefix Optional prefix that is added in front of the name.
      */
-    addParam(params, name, value, parameterPrefix) {
+    addParam<Value>(params:PrimeType.ajax.RequestParameter<string, Value>[], name: string, value: Value, parameterPrefix?: string | null): void {
         // add namespace if not available
         if (parameterPrefix || !name.indexOf(parameterPrefix) === 0) {
             params.push({ name: parameterPrefix + name, value: value });
@@ -1060,12 +1063,12 @@ export class AjaxRequest {
     /**
      * Appends a request parameter to the given list of parameters.
      * Optionally add a prefix to the name, this is used for portlet namespacing.
-     * @param {FormData} formData the form data to add to the form.
-     * @param {string} name Name of the new parameter to add.
-     * @param {string | Blob} value Value of the parameter to add.
-     * @param {string} [parameterPrefix] Optional prefix that is added in front of the name.
+     * @param formData the form data to add to the form.
+     * @param name Name of the new parameter to add.
+     * @param value Value of the parameter to add.
+     * @param parameterPrefix Optional prefix that is added in front of the name.
      */
-    addFormData(formData, name, value, parameterPrefix) {
+    addFormData(formData: FormData, name: string, value: string | Blob, parameterPrefix?: string): void {
         // add namespace if not available
         if (parameterPrefix || !name.indexOf(parameterPrefix) === 0) {
             formData.append(parameterPrefix + name, value);
@@ -1078,16 +1081,19 @@ export class AjaxRequest {
     /**
      * Adds a list of callback parameters to the given list. Optionally prepends a prefix to the name of each
      * added parameter.
-     * @template [TValue=unknown] Type of the parameter values.
-     * @param {PrimeFaces.ajax.RequestParameter<string, TValue>[]} params List of callback parameters to which
+     * @template Value Type of the parameter values.
+     * @param params List of callback parameters to which
      * parameters are added.
-     * @param {PrimeFaces.ajax.RequestParameter<string, TValue>[]} paramsToAdd List of callback parameters to
+     * @param paramsToAdd List of callback parameters to
      * add.
-     * @param {string} [parameterPrefix] Optional prefix that is added in front of the name of the added
+     * @param parameterPrefix Optional prefix that is added in front of the name of the added
      * callback parameters.
      */
-    addParams(params, paramsToAdd, parameterPrefix) {
-
+    addParams<Value>(
+        params: PrimeType.ajax.RequestParameter<string, Value>[],
+        paramsToAdd: PrimeType.ajax.RequestParameter<string, Value>[],
+        parameterPrefix?: string | null,
+    ): void {
         for (const param of paramsToAdd) {
             // add namespace if not available
             if (parameterPrefix && !param.name.indexOf(parameterPrefix) === 0) {
@@ -1102,13 +1108,12 @@ export class AjaxRequest {
      * Adds a new request parameter to the given list. The value of the parameter is taken from the input
      * element of the given form. The input element must have the same name as the name of the parameter to add.
      * Optionally add a prefix to the name, which used for portlet namespacing.
-     * @param {PrimeFaces.ajax.RequestParameter[]} params List of request parameters to the new
-     * parameter is added.
-     * @param {string} name Name of the new parameter to add
-     * @param {JQuery} form An HTML FORM element that contains an INPUT element with the given name.
-     * @param {string} [parameterPrefix] Optional prefix that is added in front of the name.
+     * @param params List of request parameters to the new parameter is added.
+     * @param name Name of the new parameter to add
+     * @param form An HTML FORM element that contains an INPUT element with the given name.
+     * @param parameterPrefix Optional prefix that is added in front of the name.
      */
-    addParamFromInput(params, name, form, parameterPrefix) {
+    addParamFromInput(params: PrimeType.ajax.RequestParameter[], name: string, form: JQuery, parameterPrefix?: string | null): void {
         var input = null,
             escapedName = CSS.escape(name);
         if (parameterPrefix) {
@@ -1129,12 +1134,12 @@ export class AjaxRequest {
      * Adds a new request parameter to the given FormData. The value of the parameter is taken from the input
      * element of the given form. The input element must have the same name as the name of the parameter to add.
      * Optionally add a prefix to the name, which used for portlet namespacing.
-     * @param {FormData} formData The FormData.
-     * @param {string} name Name of the new parameter to add
-     * @param {JQuery} form An HTML FORM element that contains an INPUT element with the given name.
-     * @param {string} [parameterPrefix] Optional prefix that is added in front of the name.
+     * @param formData The FormData.
+     * @param name Name of the new parameter to add
+     * @param form An HTML FORM element that contains an INPUT element with the given name.
+     * @param parameterPrefix Optional prefix that is added in front of the name.
      */
-    addFormDataFromInput(formData, name, form, parameterPrefix) {
+    addFormDataFromInput(formData: FormData, name: string, form: JQuery, parameterPrefix?: string | null): void {
         var input = null,
             escapedName = CSS.escape(name);
         if (parameterPrefix) {
@@ -1145,7 +1150,7 @@ export class AjaxRequest {
         }
 
         if (input && input.length > 0) {
-            var value = input.val();
+            const value = input.val();
             this.addFormData(formData, name, value, parameterPrefix);
         }
     }
@@ -1154,16 +1159,16 @@ export class AjaxRequest {
      * Finds the namespace (prefix) for the parameters of the given form.
      * This is required for Porlets as a Portlet contains multiple JSF views and we must only process and update the forms/inputs of the current view / application.
      * Later the namespace is used for all post params.
-     * @param {JQuery} form An HTML FORM element.
-     * @return {string | null} The namespace for the parameters of the given form, or `null` when the form does
-     * not specifiy a namespace.
+     * @param form An HTML FORM element.
+     * @return The namespace for the parameters of the given form, or `null` when the form does
+     * not specify a namespace.
      */
-    extractParameterNamespace(form) {
-        var input = form.children("input[name*='" + PrimeFaces.VIEW_STATE + "']");
+    extractParameterNamespace(form: JQuery): string | null {
+        var input = form.children("input[name*='" + core.VIEW_STATE + "']");
         if (input && input.length > 0) {
-            var name = input[0].name;
-            if (name.length > PrimeFaces.VIEW_STATE.length) {
-                return name.substring(0, name.indexOf(PrimeFaces.VIEW_STATE));
+            const name = input[0].name;
+            if (name.length > core.VIEW_STATE.length) {
+                return name.substring(0, name.indexOf(core.VIEW_STATE));
             }
         }
 
@@ -1174,13 +1179,15 @@ export class AjaxRequest {
      * Creates a new array with all parameters from the second array that are not in the first array. That is,
      * removes all parameters from the second array whose name is equal to one of the parameters in the first
      * array. The given input array are not modified.
-     * @template [TValue=unknown] Type of the parameter values.
-     * @param {PrimeFaces.ajax.RequestParameter<string, TValue>[]} arr1 A list of parameters for comparison.
-     * @param {PrimeFaces.ajax.RequestParameter<string, TValue>[]} arr2 A list of additional parameters.
-     * @return {PrimeFaces.ajax.RequestParameter<string, TValue>[]} An list of parameters that are in the second
-     * array, but not in the first.
+     * @typeParam Item Type of the parameter values.
+     * @param arr1 A list of parameters for comparison.
+     * @param arr2 A list of additional parameters.
+     * @return A list of parameters that are in the second array, but not in the first.
      */
-    arrayCompare(arr1, arr2) {
+    arrayCompare<Item>(
+        arr1: PrimeType.ajax.RequestParameter<string, Item>[],
+        arr2: PrimeType.ajax.RequestParameter<string, Item>[]
+    ): PrimeType.ajax.RequestParameter<string, Item>[] {
         // loop arr1 params
         $.each(arr1, function(index1, param1) {
             // loop arr2 params and remove it, if it's the same param as the arr1 param
@@ -1196,32 +1203,32 @@ export class AjaxRequest {
      * Creates a FormData which can be used for a Faces AJAX request on the current view.
      * It already contains all required parameters like ViewState or ClientWindow.
      *
-     * @param {JQuery} form The closest form of the request source.
-     * @param {string} parameterPrefix The Portlet parameter namespace.
-     * @param {string} source The id of the request source.
-     * @param {string} [process] A comma separated list of components which should be processed.
-     * @param {string} [update] A comma separated list of components which should be updated.
-     * @param {boolean} [ignoreAutoUpdate] If true, components which use `p:autoUpdate` will not be updated for this request.
-     * @return {FormData} The newly created form data.
+     * @param form The closest form of the request source.
+     * @param parameterPrefix The Portlet parameter namespace.
+     * @param source The id of the request source.
+     * @param [process] A comma separated list of components which should be processed.
+     * @param [update] A comma separated list of components which should be updated.
+     * @param [ignoreAutoUpdate] If true, components which use `p:autoUpdate` will not be updated for this request.
+     * @return The newly created form data.
      */
-    createFacesAjaxFormData(form, parameterPrefix, source, process, update, ignoreAutoUpdate) {
+    createFacesAjaxFormData(form: JQuery, parameterPrefix: string, source: string, process?: string, update?: string, ignoreAutoUpdate?: boolean): FormData {
         var formData = new FormData();
 
-        this.addFormData(formData, PrimeFaces.PARTIAL_REQUEST_PARAM, true, parameterPrefix);
-        this.addFormData(formData, PrimeFaces.PARTIAL_SOURCE_PARAM, source, parameterPrefix);
+        this.addFormData(formData, core.PARTIAL_REQUEST_PARAM, true, parameterPrefix);
+        this.addFormData(formData, core.PARTIAL_SOURCE_PARAM, source, parameterPrefix);
         if (process) {
-            this.addFormData(formData, PrimeFaces.PARTIAL_PROCESS_PARAM, process, parameterPrefix);
+            this.addFormData(formData, core.PARTIAL_PROCESS_PARAM, process, parameterPrefix);
         }
         if (update) {
-            this.addFormData(formData, PrimeFaces.PARTIAL_UPDATE_PARAM, update, parameterPrefix);
+            this.addFormData(formData, core.PARTIAL_UPDATE_PARAM, update, parameterPrefix);
         }
         if (ignoreAutoUpdate) {
-            this.addFormData(formData, PrimeFaces.IGNORE_AUTO_UPDATE_PARAM, true, parameterPrefix);
+            this.addFormData(formData, core.IGNORE_AUTO_UPDATE_PARAM, true, parameterPrefix);
         }
 
         // Faces
-        this.addFormDataFromInput(formData, PrimeFaces.VIEW_STATE, form, parameterPrefix);
-        this.addFormDataFromInput(formData, PrimeFaces.CLIENT_WINDOW, form, parameterPrefix);
+        this.addFormDataFromInput(formData, core.VIEW_STATE, form, parameterPrefix);
+        this.addFormDataFromInput(formData, core.CLIENT_WINDOW, form, parameterPrefix);
         // PrimeFaces
         this.addFormDataFromInput(formData, csp.NONCE_INPUT, form, parameterPrefix);
         // DeltaSpike
@@ -1236,7 +1243,7 @@ export class AjaxRequest {
 
 /**
  * The class containing low-level functionality related to handling AJAX responses. Note that
- * the different types of AJAX actions are handles by the `PrimeFaces.ResponseProcessor`.
+ * the different types of AJAX actions are handled by the {@link AjaxResponseProcessor PrimeFaces.ajax.ResponseProcessor}.
  */
 export class AjaxResponse {
     /**
@@ -1246,30 +1253,34 @@ export class AjaxResponse {
      * Also updates the specified components if any and synchronizes the client side JSF state. DOM updates are
      * implemented using jQuery which uses a very algorithm.
      *
-     * @template {BaseWidget} [TWidget=BaseWidget] Type of the widget which
-     * triggered the AJAX request.
-     * @param {XMLDocument} xml The XML that was returned by the AJAX request.
-     * @param {JQuery.Ajax.SuccessTextStatus} status Text status of the request.
-     * @param {PrimeFaces.ajax.pfXHR} xhr The XHR request to which a response was received.
-     * @param {PrimeFaces.ajax.UpdateHandler<TWidget>} [updateHandler] Optional handler for `update` actions.
+     * @typeParam Widget Type of the widget which triggered the AJAX request.
+     * @param xml The XML that was returned by the AJAX request.
+     * @param status Text status of the request.
+     * @param xhr The XHR request to which a response was received.
+     * @param updateHandler Optional handler for `update` actions.
      */
-    handle(xml, status, xhr, updateHandler) {
+    handle<Widget extends BaseWidget<any>>(
+        xml: XMLDocument,
+        status: JQuery.Ajax.SuccessTextStatus,
+        xhr: PrimeType.ajax.pfXHR,
+        updateHandler?: PrimeType.ajax.UpdateHandler<Widget>
+    ): void {
         if (xml === undefined || xml === null) {
             return;
         }
 
-        var partialResponseNode = xml.getElementsByTagName("partial-response")[0];
+        const partialResponseNode = xml.getElementsByTagName("partial-response")[0];
 
         for (const currentNode of partialResponseNode.childNodes) {
 
             switch (currentNode.nodeName) {
                 case "redirect":
                     xhr.pfArgs.redirect = true;
-                    ajaxResponseProcessor.doRedirect(currentNode);
+                    ajax.ResponseProcessor.doRedirect(currentNode);
                     break;
 
                 case "changes":
-                    var activeElement = $(document.activeElement);
+                    var activeElement = document.activeElement ? $(document.activeElement) : $();
                     var activeElementId = activeElement.attr('id');
                     var activeElementSelection;
                     if (activeElement.length > 0 && activeElement.is('input') && typeof $.fn.getSelection === "function") {
@@ -1279,22 +1290,22 @@ export class AjaxResponse {
                     for (const currentChangeNode of currentNode.childNodes) {
                         switch (currentChangeNode.nodeName) {
                             case "update":
-                                ajaxResponseProcessor.doUpdate(currentChangeNode, xhr, updateHandler);
+                                ajax.ResponseProcessor.doUpdate(currentChangeNode, xhr, updateHandler);
                                 break;
                             case "delete":
-                                ajaxResponseProcessor.doDelete(currentChangeNode);
+                                ajax.ResponseProcessor.doDelete(currentChangeNode);
                                 break;
                             case "insert":
-                                ajaxResponseProcessor.doInsert(currentChangeNode);
+                                ajax.ResponseProcessor.doInsert(currentChangeNode);
                                 break;
                             case "attributes":
-                                ajaxResponseProcessor.doAttributes(currentChangeNode);
+                                ajax.ResponseProcessor.doAttributes(currentChangeNode);
                                 break;
                             case "eval":
-                                ajaxResponseProcessor.doEval(currentChangeNode, xhr);
+                                ajax.ResponseProcessor.doEval(currentChangeNode, xhr);
                                 break;
                             case "extension":
-                                ajaxResponseProcessor.doExtension(currentChangeNode, xhr);
+                                ajax.ResponseProcessor.doExtension(currentChangeNode, xhr);
                                 break;
                         }
                     }
@@ -1304,15 +1315,15 @@ export class AjaxResponse {
                     break;
 
                 case "eval":
-                    ajaxResponseProcessor.doEval(currentNode);
+                    ajax.ResponseProcessor.doEval(currentNode);
                     break;
 
                 case "extension":
-                    ajaxResponseProcessor.doExtension(currentNode, xhr);
+                    ajax.ResponseProcessor.doExtension(currentNode, xhr);
                     break;
 
                 case "error":
-                    ajaxResponseProcessor.doError(currentNode, xhr);
+                    ajax.ResponseProcessor.doError(currentNode, xhr);
                     break;
             }
         }
@@ -1320,14 +1331,13 @@ export class AjaxResponse {
 
     /**
      * Puts focus on the given element if necessary.
-     * @param {string} activeElementId ID of the active to refocus.
-     * @param {PrimeFaces.ajax.ActiveElementSelection} [activeElementSelection] The range to select, for INPUT
-     * and TEXTAREA elements.
+     * @param activeElementId ID of the active to refocus.
+     * @param activeElementSelection The range to select, for INPUT and TEXTAREA elements.
      */
-    handleReFocus(activeElementId, activeElementSelection) {
+    handleReFocus(activeElementId: string, activeElementSelection?: PrimeType.ajax.ActiveElementSelection): void {
         // skip when customFocus is active
-        if (PrimeFaces.customFocus === true) {
-            PrimeFaces.customFocus = false;
+        if (core.customFocus === true) {
+            core.customFocus = false;
             return;
         }
 
@@ -1336,7 +1346,7 @@ export class AjaxResponse {
             return;
         }
 
-        var elementToFocus = $(PrimeFaces.escapeClientId(activeElementId));
+        var elementToFocus = $(core.escapeClientId(activeElementId));
         if (elementToFocus.length > 0) {
 
             var refocus = function() {
@@ -1360,20 +1370,19 @@ export class AjaxResponse {
      * Destroys all widgets that are not part of the DOM anymore, usually because they were removed by an AJAX
      * update. Calls the `destroy` method on the widget and removes the widget from the global widget registry.
      */
-    destroyDetachedWidgets() {
+    destroyDetachedWidgets(): void {
         // destroy detached widgets
-        for (const widgetVar of PrimeFaces.detachedWidgets) {
-            var widget = PF(widgetVar);
+        for (const widgetVar of core.detachedWidgets) {
+            const widget = PF(widgetVar);
             if (widget && widget.isDetached() === true) {
                 try {
                     widget.destroy();
-                    delete PrimeFaces.widgets[widgetVar];
-                    widget = null;
-                } catch (e) { PrimeFaces.warn("Error destroying widget: " + widgetVar) }
+                    delete core.widgets[widgetVar];
+                } catch (e) { core.warn("Error destroying widget: " + widgetVar) }
             }
         }
 
-        PrimeFaces.detachedWidgets = [];
+        core.detachedWidgets = [];
     }
 }
 
@@ -1384,45 +1393,47 @@ export class AjaxResponse {
 export class AjaxResponseProcessor {
     /**
      * Handles a `redirect` AJAX action by performing a redirect to the target URL.
-     * @param {Node} node The XML node of the `redirect` action.
+     * @param node The XML node of the `redirect` action.
      */
-    doRedirect(node) {
+    doRedirect(node: Element): void {
         try {
-            window.location.assign(node.getAttribute('url'));
+            window.location.assign(node.getAttribute('url') ?? "");
         } catch (error) {
-            PrimeFaces.warn('Error redirecting to URL: ' + node.getAttribute('url'));
+            core.warn('Error redirecting to URL: ' + node.getAttribute('url'));
         }
     }
 
     /**
      * Handles an `update` AJAX action by calling the given update handler. When no update handler is given,
      * replaces the HTML content of the element with the new content.
-     * @template {BaseWidget} [TWidget=BaseWidget] Type of the widget which
-     * triggered the AJAX request.
-     * @param {Node} node The XML node of the `update` action.
-     * @param {PrimeFaces.ajax.pfXHR} xhr The XHR request to which a response was received.
-     * @param {PrimeFaces.ajax.UpdateHandler<TWidget>} [updateHandler] Optional handler for the update.
+     * @typeParam Widget Type of the widget which triggered the AJAX request.
+     * @param node The XML node of the `update` action.
+     * @param xhr The XHR request to which a response was received.
+     * @param updateHandler Optional handler for the update.
      */
-    doUpdate(node, xhr, updateHandler) {
-        var id = node.getAttribute('id'),
-            content = ajaxUtils.getContent(node);
+    doUpdate<Widget extends BaseWidget>(node: Node, xhr: PrimeType.ajax.pfXHR, updateHandler?: PrimeType.ajax.UpdateHandler<Widget>): void {
+        if (!(node instanceof Element)) {
+            return;
+        }
+        const id = node.getAttribute('id');
+        const content = ajax.Utils.getContent(node);
 
         if (updateHandler && updateHandler.widget && updateHandler.widget.id === id) {
             updateHandler.handle.call(updateHandler.widget, content);
         } else {
-            ajaxUtils.updateElement(id, content, xhr);
+            ajax.Utils.updateElement(id, content, xhr);
         }
     }
 
     /**
      * Handles an `eval` AJAX action by evaluating the returned JavaScript.
-     * @param {Node} node The XML node of the `eval` action.
-     * @param {PrimeFaces.ajax.pfXHR} xhr The XHR request to which a response was received.
+     * @param node The XML node of the `eval` action.
+     * @param xhr The XHR request to which a response was received.
      */
-    doEval(node, xhr) {
+    doEval(node: Node, xhr?: PrimeType.ajax.pfXHR): void {
         var textContent = node.textContent || node.innerText || node.text;
 
-        var nonce;
+        let nonce;
         if (xhr && xhr.pfSettings && xhr.pfSettings.nonce) {
             nonce = xhr.pfSettings.nonce;
         }
@@ -1431,11 +1442,11 @@ export class AjaxResponseProcessor {
 
     /**
      * Handles an `extension` AJAX action by extending the `pfArgs` property on the jQuery XHR object.
-     * @param {Node} node The XML node of the `extension` action.
-     * @param {PrimeFaces.ajax.pfXHR} xhr The XHR request to which a response was received.
+     * @param node The XML node of the `extension` action.
+     * @param xhr The XHR request to which a response was received.
      */
-    doExtension(node, xhr) {
-        if (xhr) {
+    doExtension(node: Node, xhr?: PrimeType.ajax.pfXHR): void {
+        if (xhr && node instanceof Element) {
             if (node.getAttribute("ln") === "primefaces" && node.getAttribute("type") === "args") {
                 var textContent = node.textContent || node.innerText || node.text;
                 // it's possible that pfArgs are already defined e.g. if Portlet parameter namespacing is enabled
@@ -1457,40 +1468,49 @@ export class AjaxResponseProcessor {
 
     /**
      * Handles an `error` AJAX action by doing nothing currently.
-     * @param {Node} node The XML node of the `error` action.
-     * @param {PrimeFaces.ajax.pfXHR} xhr The XHR request to which a response was received.
+     * @param node The XML node of the `error` action.
+     * @param xhr The XHR request to which a response was received.
      */
-    doError(node, xhr) {
-        var errorName = ajaxUtils.getContent(node.getElementsByTagName("error-name")[0]);
-        var errorMessage = ajaxUtils.getContent(node.getElementsByTagName("error-message")[0]);
+    doError(node: Node, xhr?: PrimeType.ajax.pfXHR): void {
+        if (!(node instanceof Element)) {
+            return;
+        }
+        var errorName = ajax.Utils.getContent(node.getElementsByTagName("error-name")[0]);
+        var errorMessage = ajax.Utils.getContent(node.getElementsByTagName("error-message")[0]);
 
-        ajaxUtils.handleError(errorName, errorMessage);
+        ajax.Utils.handleError(errorName, errorMessage);
     }
 
     /**
      * Handles a `delete` AJAX action by remove the DOM element.
-     * @param {Node} node The XML node of the `delete` action.
+     * @param node The XML node of the `delete` action.
      */
-    doDelete(node) {
+    doDelete(node: Node): void {
+        if (!(node instanceof Element)) {
+            return;
+        }
         var id = node.getAttribute('id');
-        $(PrimeFaces.escapeClientId(id)).remove();
+        $(core.escapeClientId(id)).remove();
     }
 
     /**
      * Handles an `insert` AJAX action by inserting a newly creating DOM element.
-     * @param {Node} node The XML node of the `insert` action.
-     * @return {boolean | undefined} `false` if the AJAX action could not be performed, `true` or `undefined`
+     * @param node The XML node of the `insert` action.
+     * @return `false` if the AJAX action could not be performed, `true` or `undefined`
      * otherwise.
      */
-    doInsert(node) {
+    doInsert(node: Node): boolean | undefined {
         if (!node.childNodes) {
             return false;
         }
 
         for (const childNode of node.childNodes) {
+            if (!(childNode instanceof Element)) {
+                continue;
+            }
             var id = childNode.getAttribute('id');
-            var jq = $(PrimeFaces.escapeClientId(id));
-            var content = ajaxUtils.getContent(childNode);
+            var jq = $(core.escapeClientId(id));
+            var content = ajax.Utils.getContent(childNode);
 
             if (childNode.nodeName === "after") {
                 $(content).insertAfter(jq);
@@ -1499,25 +1519,30 @@ export class AjaxResponseProcessor {
                 $(content).insertBefore(jq);
             }
         }
+
+        return undefined;
     }
 
     /**
      * Handles an `attributes` AJAX action by setting the attributes on the DOM element.
-     * @param {Node} node The XML node of the `attributes` action.
-     * @return {boolean | undefined} `false` if the AJAX action could not be performed, `true` or `undefined`
+     * @param node The XML node of the `attributes` action.
+     * @return `false` if the AJAX action could not be performed, `true` or `undefined`
      * otherwise.
      */
-    doAttributes(node) {
-        if (!node.childNodes) {
+    doAttributes(node: Node): boolean | undefined {
+        if (!node.childNodes || !(node instanceof Element)) {
             return false;
         }
 
         var id = node.getAttribute('id');
-        var jq = $(PrimeFaces.escapeClientId(id));
+        var jq = $(core.escapeClientId(id));
 
         for (const attrNode of node.childNodes) {
-            var attrName = attrNode.getAttribute("name");
-            var attrValue = attrNode.getAttribute("value");
+            if (!(attrNode instanceof Element)) {
+                continue;
+            }
+            const attrName = attrNode.getAttribute("name");
+            let attrValue = attrNode.getAttribute("value");
 
             if (!attrName) {
                 return;
@@ -1529,36 +1554,10 @@ export class AjaxResponseProcessor {
 
             jq.attr(attrName, attrValue);
         }
+
+        return undefined;
     }
 }
-
-/**
- * The object containing utility methods for AJAX requests, primarily used internally.
- */
-export const ajaxUtils = new AjaxUtils();
-
-/**
- * This object contains functionality related to queuing AJAX requests to ensure that they are (a) sent in the
- * proper order and (b) that each response is processed in the same order as the requests were sent.
- */
-export const ajaxQueue = new AjaxQueue();
-
-/**
- * The object containing low-level functionality related to sending AJAX requests.
- */
-export const ajaxRequest = new AjaxRequest();
-
-/**
- * The object containing low-level functionality related to handling AJAX responses. Note that
- * the different types of AJAX actions are handles by the `PrimeFaces.ResponseProcessor`.
- */
-export const ajaxResponse = new AjaxResponse();
-
-/**
- * The object containing low-level functionality related to processing the different types
- * of actions from AJAX responses.
- */
-export const ajaxResponseProcessor = new AjaxResponseProcessor();
 
 /**
  * The class with functionality related to sending and receiving AJAX requests that are made by PrimeFaces. Each
@@ -1588,10 +1587,9 @@ export class Ajax {
     RESOURCE = "javax.faces.Resource";
 
     /**
-     * Parameter shortcut mapping for the method `PrimeFaces.ab`.
-     * @type {Record<string, string>}
+     * Parameter shortcut mapping for the method {@link ab}.
      */
-    CFG_SHORTCUTS = {
+    CFG_SHORTCUTS: PrimeType.ajax.ShorthandToArticulateConfigurationMap = {
         's': 'source',
         'f': 'formId',
         'p': 'process',
@@ -1617,54 +1615,51 @@ export class Ajax {
 
     /**
      * Minimum number of milliseconds to show inline Ajax load animations.
-     * @type {number}
      */
-    minLoadAnimation = 500;
+    minLoadAnimation: number = 500;
 
     /**
      * This object contains utility methods for AJAX requests, primarily used internally.
-     * @readonly
      */
-    Utils = ajaxUtils;
+    readonly Utils: AjaxUtils = new AjaxUtils();
 
     /**
      * This object contains functionality related to queuing AJAX requests to ensure that they are (a) sent in the
      * proper order and (b) that each response is processed in the same order as the requests were sent.
-     * @readonly
      */
-    Queue = ajaxQueue;
+    readonly Queue: AjaxQueue = new AjaxQueue();
 
     /**
      * The the object containing low-level functionality related to sending AJAX requests.
-     * @readonly
      */
-    Request = ajaxRequest;
+    readonly Request: AjaxRequest = new AjaxRequest();
 
     /**
      * The object containing low-level functionality related to handling AJAX responses. Note that
-     * the different types of AJAX actions are handles by the `PrimeFaces.ResponseProcessor`.
-     * @readonly
+     * the different types of AJAX actions are handles by the {@link AjaxResponseProcessor PrimeFaces.ResponseProcessor}.
      */
-    Response = ajaxResponse;
+    readonly Response: AjaxResponse = new AjaxResponse();
 
     /**
      * The object containing low-level functionality related to processing the different types
      * of actions from AJAX responses.
-     * @readonly
      */
-    ResponseProcessor = ajaxResponseProcessor;
+    readonly ResponseProcessor: AjaxResponseProcessor = new AjaxResponseProcessor();
 
     /**
      * Only available for backward compatibility, do not use in new code.
-     * @deprecated Use `PrimeFaces.ajax.Request.handle` instead.
-     * @param {Partial<PrimeFaces.ajax.Configuration>} cfg Configuration for the AJAX request to send, such as
+     * @deprecated Use {@link AjaxRequest.handle PrimeFaces.ajax.Request.handle} instead.
+     * @param cfg Configuration for the AJAX request to send, such as
      * the HTTP method, the URL, and the content of the request.
-     * @param {Partial<PrimeFaces.ajax.ConfigurationExtender>} [ext] Optional extender with additional options
+     * @param ext Optional extender with additional options
      * that overwrite the options given in `cfg`.
-     * @return {undefined} Always returns `undefined`.
+     * @return A promise that resolves once the AJAX requests is done. Use this to run custom JavaScript logic. When the
+     * AJAX request succeeds, the promise is fulfilled. Otherwise, when the AJAX request fails, the promise is rejected.
+     * If the promise is rejected, the rejection handler receives an object of type
+     * {@link PrimeType.ajax.FailedRequestData} .
      */
-    AjaxRequest(cfg, ext) {
-        return ajaxRequest.handle(cfg, ext);
+    AjaxRequest(cfg: Partial<PrimeType.ajax.Configuration>, ext?: Partial<PrimeType.ajax.ConfigurationExtender>): Promise<PrimeType.ajax.ResponseData> {
+        return ajax.Request.handle(cfg, ext);
     }
 }
 
@@ -1673,23 +1668,23 @@ export class Ajax {
  * request receives an XML response, which consists of one or multiple actions that are to be performed. This
  * includes creating new DOM elements, deleting or updating existing elements, or executing some JavaScript.
  */
-export const ajax = new Ajax();
+export const ajax: Ajax = new Ajax();
 
-export function globalAjaxSetup() {
-    $(window).on(unloadEvent, ()  => ajaxQueue.abortAll());
+export function globalAjaxSetup(): void {
+    $(window).on(unloadEvent, ()  => ajax.Queue.abortAll());
 
     $(() => {
         if (window.jsf && jsf.ajax) {
             jsf.ajax.addOnError((data) => {
                 // serverError means a real server-side exception where a p:ajaxExceptionHandler or error-page mapping might exist
                 if (data.status === "serverError") {
-                    ajaxUtils.handleError(data.errorName, data.errorMessage);
+                    ajax.Utils.handleError(data.errorName, data.errorMessage);
                 }
                 // malformedXML, emptyResponse, httpError, clientError, timeout
                 else {
                     // this are very likely very strange errors or client connection errors
                     // just invoke the same logic, this will likely result in a global p:ajaxExceptionHandler or global error-page
-                    ajaxUtils.handleError(data.errorName, data.errorMessage);
+                    ajax.Utils.handleError(data.errorName, data.errorMessage);
                 }
             });
         }

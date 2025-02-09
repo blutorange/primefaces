@@ -1,4 +1,12 @@
-import { ajaxUtils } from "./core.ajax.js";
+import { ajax } from "./core.ajax.js";
+
+declare global {
+    interface Window {
+        cspResult?: unknown;
+    }
+    let cspResult: unknown;
+    let cspFunction: ((this: HTMLElement, event: JQuery.TriggeredEvent) => void) | undefined;
+}
 
 /**
  * The class with functionality related to handling the `script-src` directive of the HTTP `Content-Security-Policy`
@@ -8,28 +16,24 @@ import { ajaxUtils } from "./core.ajax.js";
 export class Csp {
     /**
      * Name of the POST parameter for transmitting the nonce.
-     * @type {string}
-     * @readonly
      */
-    NONCE_INPUT = "primefaces.nonce";
+    readonly NONCE_INPUT: string = "primefaces.nonce";
 
     /**
      * The value of the nonce to be used.
-     * @type {string}
      */
-    NONCE_VALUE = "";
+    NONCE_VALUE: string = "";
 
     /**
      * Map of currently registered CSP events on this page.
-     * @type {Map<string,Map<string,boolean>>}
      */
-    EVENT_REGISTRY = new Map();
+    readonly EVENT_REGISTRY: Map<string,Map<string,boolean>> = new Map();
 
     /**
      * Sets the given nonce to all forms on the current page.
-     * @param {string} nonce Nonce to set. This value is usually supplied by the server.
+     * @param nonce Nonce to set. This value is usually supplied by the server.
      */
-    init(nonce) {
+    init(nonce: string): void {
         this.NONCE_VALUE = nonce;
 
         var forms = document.getElementsByTagName("form");
@@ -38,23 +42,25 @@ export class Csp {
                 continue;
             }
 
-            var input = form.elements[this.NONCE_INPUT];
+            var input = form.elements.namedItem(this.NONCE_INPUT);
             if (!input) {
                 input = document.createElement("input");
                 input.setAttribute("name", this.NONCE_INPUT);
                 input.setAttribute("type", "hidden");
                 form.appendChild(input);
             }
-            input.setAttribute("value", nonce);
+            if (input instanceof Element) {
+                input.setAttribute("value", nonce);
+            }
         }
     }
 
     /**
      * Checks if the given form is a Faces form.
-     * @param {HTMLInputElement} [form] The form to check.
-     * @return {boolean} true if the form is a Faces form.
+     * @param form The form to check.
+     * @return `true` if the form is a Faces form.
      */
-    isFacesForm(form) {
+    isFacesForm(form: HTMLFormElement): boolean {
         if (form.method === 'post') {
             for (let child of form.children) {
                 if (child instanceof HTMLInputElement && child.name && child.name.includes(PrimeFaces.VIEW_STATE)) {
@@ -67,20 +73,20 @@ export class Csp {
 
     /**
      * Registers an event listener for the given element.
-     * @param {string} id ID of an element
-     * @param {string} [event] Event to listen to, with the `on` prefix, such as `onclick` or `onblur`.
-     * @param {() => boolean} [js] Callback that may return `false` to prevent the default behavior of the event.
+     * @param id ID of an element
+     * @param event Event to listen to, with the `on` prefix, such as `onclick` or `onblur`.
+     * @param js Callback that may return `false` to prevent the default behavior of the event.
      */
-    register(id, event, js){
+    register(id: string, event: string | undefined, js: (event: JQuery.TriggeredEvent) => boolean): void {
         if (event) {
-            var shortenedEvent = event.substring(2, event.length),
-                element = document.getElementById(id),
-                jqEvent = shortenedEvent + '.' + id,
-                isAjaxified = ajaxUtils.isAjaxRequest(js.toString());
+            const shortenedEvent = event.substring(2, event.length);
+            let element: Window | HTMLElement | null = document.getElementById(id);
+            const jqEvent = shortenedEvent + '.' + id;
+            const isAjaxified = ajax.Utils.isAjaxRequest(js.toString());
 
-            // if the eventhandler return false, we must use preventDefault
-            var jsWrapper = function(event) {
-                var retVal = js.call(element, event);
+            // if the event handler returns false, we must use preventDefault
+            const jsWrapper = (event: JQuery.TriggeredEvent) => {
+                const retVal = js.call(element, event);
                 if (retVal === false && (typeof event.cancelable !== 'boolean' || event.cancelable)) {
                     event.preventDefault();
                 }
@@ -91,35 +97,37 @@ export class Csp {
                 element = window;
             }
 
-            $(element).off(jqEvent)
-                .on(jqEvent, jsWrapper)
-                .attr('data-ajax', String(isAjaxified));
+            if (element !== null) {
+                $(element).off(jqEvent)
+                    .on(jqEvent, jsWrapper)
+                    .attr('data-ajax', String(isAjaxified));
+            }
 
             //Collect some basic information about registered AJAXified event listeners
             if (!PrimeFaces.isProductionProjectStage()) {
                 if (!this.EVENT_REGISTRY.has(id)) {
                     this.EVENT_REGISTRY.set(id, new Map());
                 }
-                this.EVENT_REGISTRY.get(id).set(jqEvent, isAjaxified);
+                this.EVENT_REGISTRY.get(id)?.set(jqEvent, isAjaxified);
             }
         }
     }
 
     /**
      * Does this component have a registered AJAX event.
-     * @param {string} id ID of an element
-     * @param {string} [event] Event to listen to, with the `on` prefix, such as `onclick` or `onblur`.
-     * @return {boolean|undefined} true if component has this AJAX event
+     * @param id ID of an element
+     * @param event Event to listen to, with the `on` prefix, such as `onclick` or `onblur`.
+     * @return `true` if component has this AJAX event
      */
-    hasRegisteredAjaxifiedEvent(id, event) {
+    hasRegisteredAjaxifiedEvent(id: string, event: string): boolean | undefined {
         if (PrimeFaces.isProductionProjectStage()) {
             console.error("PrimeFaces CSP registry may not be used in JSF Production mode.");
             return false;
         }
         if (this.EVENT_REGISTRY.has(id)) {
-            var shortenedEvent = event.substring(2, event.length),
-                jqEvent = shortenedEvent + '.' + id;
-            return this.EVENT_REGISTRY.get(id).get(jqEvent);
+            const shortenedEvent = event.substring(2, event.length);
+            const jqEvent = shortenedEvent + '.' + id;
+            return this.EVENT_REGISTRY.get(id)?.get(jqEvent);
         }
         return false;
     }
@@ -127,11 +135,11 @@ export class Csp {
     /**
      * Perform a CSP safe `eval()`.
      *
-     * @param {string} js The JavaScript code to evaluate.
-     * @param {string} [nonceValue] Nonce value. Leave out if not using CSP.
-     * @param {string} [windowContext] Optional Window context to call eval from.
+     * @param js The JavaScript code to evaluate.
+     * @param nonceValue Nonce value. Leave out if not using CSP.
+     * @param windowContext Optional Window context to call eval from.
      */
-    eval(js, nonceValue, windowContext) {
+    eval(js: string, nonceValue?: string, windowContext?: Window): void {
         // assign the NONCE if necessary
         var options = {};
         if (nonceValue) {
@@ -155,13 +163,13 @@ export class Csp {
     /**
      * Perform a CSP safe `eval()` with a return result value.
      *
-     * @param {string} js The JavaScript code to evaluate.
-     * @param {string} [nonceValue] Nonce value. Leave out if not using CSP.
-     * @param {string} [windowContext] Optional Window context to call eval from.
-     * @return {unknown} The result of the evaluated JavaScript code.
+     * @param js The JavaScript code to evaluate.
+     * @param nonceValue Nonce value. Omit if not using CSP.
+     * @param windowContext Optional Window context to call eval from.
+     * @return The result of the evaluated JavaScript code.
      * @see https://stackoverflow.com/a/33945236/502366
      */
-    evalResult(js, nonceValue, windowContext) {
+    evalResult(js: string, nonceValue?: string, windowContext?: Window): unknown {
         var executeJs = "var cspResult = " + js;
         this.eval(executeJs, nonceValue, windowContext);
         return windowContext ? windowContext.cspResult : cspResult;
@@ -171,12 +179,12 @@ export class Csp {
      * CSP won't allow string-to-JavaScript methods like `eval()` and `new Function()`.
      * This method uses JQuery `globalEval` to safely evaluate the function if CSP is enabled.
      *
-     * @param {HTMLElement} id The element executing the function (aka `this`).
-     * @param {string} js The JavaScript code to evaluate. Two variables will be in scope for the code: (a) the
+     * @param id The element executing the function (aka `this`).
+     * @param js The JavaScript code to evaluate. Two variables will be in scope for the code: (a) the
      * `this` context, which is set to the given `id`, and (b) the `event` variable, which is set to the given `e`.
-     * @param {JQuery.TriggeredEvent} e The event from the caller to pass through.
+     * @param e The event from the caller to pass through.
      */
-    executeEvent(id, js, e) {
+    executeEvent(id: HTMLElement, js: string, e: JQuery.TriggeredEvent): void {
         // create the wrapper function
         var scriptEval = 'var cspFunction = function(event){'+ js +'}';
 
@@ -184,18 +192,18 @@ export class Csp {
         this.eval(scriptEval, this.NONCE_VALUE);
 
         // call the function
-        cspFunction.call(id, e);
+        cspFunction?.call(id, e);
     }
 
     /**
      * GitHub #5790: When using jQuery to trigger a click event on a button while using CSP
      * we must set preventDefault or else it will trigger a non-ajax button click.
      * 
-     * @param {JQuery} target The target of this click event.
-     * @return {JQuery.TriggeredEvent} the JQuery click event
+     * @param target The target of this click event.
+     * @return The JQuery click event
      */
-    clickEvent(target) {
-        var clickEvent = $.Event( 'click' );
+    clickEvent(target: JQuery): JQuery.Event {
+        const clickEvent = $.Event('click');
         if (this.NONCE_VALUE && target.attr('data-ajax') !== 'false') {
             clickEvent.preventDefault();
         }
@@ -208,4 +216,4 @@ export class Csp {
  * (CSP) policy. This makes use of a nonce (number used once). The server must generate a unique nonce value each
  * time it transmits a policy. 
  */
-export const csp = new Csp();
+export const csp: Csp = new Csp();

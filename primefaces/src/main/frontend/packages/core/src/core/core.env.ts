@@ -1,56 +1,53 @@
+import type { BaseWidgetCfg } from "./core.widget.js";
+
+import type { Matchs } from "jquery.browser";
+
 /**
  * The class with functionality related to the browser environment, such as information about the current browser.
  */
 export class Environment {
     /**
      * `true` if the current browser is a mobile browser, `false` otherwise.
-     * @type {boolean}
      */
-    mobile = false;
+    mobile: boolean = false;
     /**
      * `true` if the current browser supports touch, `false` otherwise.
-     * @type {boolean}
      */
-    touch = false;
+    touch: boolean = false;
     /**
      * `true` if the current browser is an IOS browser, `false` otherwise.
-     * @type {boolean}
      */
-    ios = false;
+    ios: boolean = false;
     /**
      * `true` if the current browser is an Android browser, `false` otherwise.
      * @type {boolean}
      */
-    android = false;
+    android: boolean = false;
     /**
      * The current browser type.
-     * @type {import("jquery.browser").Matchs}
      */
-    browser = null;
+    browser: Matchs | null = null;
     /**
      * `true` if the user's current OS setting prefers dark mode, `false` otherwise.
-     * @type {boolean}
      */
-    preferredColorSchemeDark = false;
+    preferredColorSchemeDark: boolean = false;
     /**
      * `true` if the user's current OS setting prefers light mode, `false` otherwise.
-     * @type {boolean}
      */
-    preferredColorSchemeLight = false;
+    preferredColorSchemeLight: boolean = false;
     
     /**
      * `true` if the user's current OS setting prefers reduced motion or animations, `false` otherwise.
-     * @type {boolean}
      */
-    prefersReducedMotion = false;
+    prefersReducedMotion: boolean = false;
 
     /**
      * Initializes the environment by reading the browser environment.
      */
     constructor() {
         this.browser = jQBrowser;
-        this.mobile = this.browser.mobile;
-        this.touch = 'ontouchstart' in window || window.navigator.msMaxTouchPoints || this.mobile;
+        this.mobile = this.browser.mobile ?? false;
+        this.touch = 'ontouchstart' in window || window.navigator.maxTouchPoints > 0 || this.mobile === true;
         this.ios = /iPhone|iPad|iPod/i.test(window.navigator.userAgent) || (/mac/i.test(window.navigator.userAgent) && this.touch);
         this.android = /(android)/i.test(window.navigator.userAgent);
         this.preferredColorSchemeDark = this.evaluateMediaQuery('(prefers-color-scheme: dark)');
@@ -60,17 +57,17 @@ export class Environment {
 
     /**
      * Gets the currently loaded PrimeFaces theme.
-     * @return {string} The current theme, such as `omega` or `luna-amber`. Empty string when no theme is loaded.
+     * @return The current theme, such as `omega` or `luna-amber`. Empty string when no theme is loaded.
      */
-    getTheme() {
+    getTheme(): string {
         var themeLink = PrimeFaces.getThemeLink();
         if (themeLink.length === 0) {
             return "";
         }
 
-        var themeURL = themeLink.attr('href'),
-            plainURL = themeURL.split('&')[0],
-            oldTheme = plainURL.split('ln=primefaces-')[1];
+        const themeURL = themeLink.attr('href') ?? "";
+        const plainURL = themeURL.split('&')[0] ?? "";
+        const oldTheme = plainURL.split('ln=primefaces-')[1] ?? "";
 
         return oldTheme;
     }
@@ -79,10 +76,10 @@ export class Environment {
      * A widget is touch enabled if the browser supports touch AND the widget has the touchable property enabled.
      * The default will be true if it widget status can't be determined.
      * 
-     * @param {PrimeFaces.widget.BaseWidgetCfg} cfg the widget configuration
-     * @return {boolean} true if touch is enabled, false if disabled
+     * @param cfg the widget configuration.
+     * @return `true` if touch is enabled, false if disabled
      */
-    isTouchable(cfg) {
+    isTouchable(cfg: PrimeType.widget.PartialWidgetCfg<BaseWidgetCfg>): boolean {
         var widgetTouchable = (cfg == undefined) || (cfg.touchable != undefined ? cfg.touchable : true);
         return this.touch && widgetTouchable;
     }
@@ -90,18 +87,18 @@ export class Environment {
     /**
      * Gets the user's preferred color scheme set in their operating system.
      * 
-     * @return {string} either 'dark' or 'light'
+     * @return The preferred color scheme, either 'dark' or 'light'
      */
-    getOSPreferredColorScheme() {
+    getOSPreferredColorScheme(): PrimeType.ThemeKind {
         return this.preferredColorSchemeLight ? 'light' : 'dark';
     }
 
     /**
      * Based on the current PrimeFaces theme determine if light or dark contrast is being applied.
      * 
-     * @return {string} either 'dark' or 'light'
+     * @return The theme contrast, either 'dark' or 'light'.
      */
-    getThemeContrast() {
+    getThemeContrast(): PrimeType.ThemeKind {
         var theme = this.getTheme();
         var darkRegex = /(^(arya|vela|.+-(dim|dark))$)/gm;
         return darkRegex.test(theme) ? 'dark' : 'light';
@@ -110,30 +107,33 @@ export class Environment {
     /**
      * Evaluate a media query and return true/false if its a match.
      *
-     * @param {string} mediaquery the media query to evaluate
-     * @return {boolean} true if it matches the query false if not
+     * @param mediaQuery The media query to evaluate.
+     * @return `true` if it matches the query, `false` if not.
      */
-    evaluateMediaQuery(mediaquery) {
-        return window.matchMedia && window.matchMedia(mediaquery).matches;
+    evaluateMediaQuery(mediaQuery: string): boolean {
+        return window.matchMedia && window.matchMedia(mediaQuery).matches;
     }
 
     /**
      * Media query to determine if screen size is below pixel count.
-     * @param {number} pixels the number of pixels to check
-     * @return {boolean} true if screen is less than number of pixels
+     * @param The number of pixels to check.
+     * @return `true` if screen is less than number of pixels
      */
-    isScreenSizeLessThan(pixels) {
+    isScreenSizeLessThan(pixels: number): boolean {
         return this.evaluateMediaQuery('(max-width: ' + pixels + 'px)');
     }
 
     /**
      * Media query to determine if screen size is above pixel count.
-     * @param {number} pixels the number of pixels to check
-     * @return {boolean} true if screen is greater than number of pixels
+     * @param pixels the number of pixels to check
+     * @return true if screen is greater than number of pixels
      */
-    isScreenSizeGreaterThan(pixels) {
+    isScreenSizeGreaterThan(pixels: number): boolean {
         return this.evaluateMediaQuery('(min-width: ' + pixels + 'px)');
     }
 }
 
-export const env = new Environment();
+/**
+ * The object with functionality related to the browser environment, such as information about the current browser.
+ */
+export const env: Environment = new Environment();

@@ -33,6 +33,7 @@
     "@types/hammerjs": "2.0.46",
     "@types/inputmask": "5.0.7",
     "@types/jquery": "3.5.32",
+    "@types/jqueryui": "1.12.23",
     "@types/jquery-mousewheel": "3.1.12",
     "@types/jquery.browser": "0.1.4",
     "@types/js-cookie": "3.0.6",

@@ -303,6 +303,7 @@ __metadata:
     "@types/jquery": "npm:3.5.32"
     "@types/jquery-mousewheel": "npm:3.1.12"
     "@types/jquery.browser": "npm:0.1.4"
+    "@types/jqueryui": "npm:^1.12.23"
     "@types/js-cookie": "npm:3.0.6"
     "@types/jscrollpane": "npm:2.0.35"
     "@types/node": "npm:22.10.1"
@@ -402,6 +403,15 @@ __metadata:
   dependencies:
     "@types/sizzle": "npm:*"
   checksum: 10c0/4a17ad6819b89026c21323656ab01b0b263f9d470910a87c8740920ff98319d503c7352b85b50134a39724ecbfccabc73aa4c741dfdd460cf8bbe714f9259054
+  languageName: node
+  linkType: hard
+
+"@types/jqueryui@npm:^1.12.23":
+  version: 1.12.23
+  resolution: "@types/jqueryui@npm:1.12.23"
+  dependencies:
+    "@types/jquery": "npm:*"
+  checksum: 10c0/2b28473f289dbdbac4b2932734b36ebf714cbdf9bff8127e9b3270ec6778ea5144b98788b963e2d23547d3a3c5b69db5892349d26a680872822471e95c12dab1
   languageName: node
   linkType: hard
 

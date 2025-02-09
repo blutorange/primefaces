@@ -1,3 +1,5 @@
+import "@types/jqueryui";
+
 import "./src/jquery.ui.js";
 import "./src/jquery.caretposition.js";
 import setupMousewheel from "jquery-mousewheel";
