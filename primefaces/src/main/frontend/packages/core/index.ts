@@ -1,21 +1,20 @@
 import Cookies from "js-cookie";
 
 import { core, PF as _PF, type Core } from "./src/core/core.js";
-import { ab, globalAjaxSetup } from "./src/core/core.ajax.js";
-import { expressions, type Expressions } from "./src/core/core.expressions.js";
-import { globalUtilsSetup, metaKey, utils, type Utils } from "./src/core/core.utils.js";
-import { resources, type Resources} from "./src/core/core.resources.js";
-import { clientwindow, type ClientWindow } from "./src/core/core.clientwindow.js";
+import { globalAjaxSetup } from "./src/core/core.ajax.js";
+import { globalUtilsSetup } from "./src/core/core.utils.js";
 
 import { AjaxExceptionHandler } from "./src/ajaxexceptionhandler/ajaxexceptionhandler.js";
 import { AjaxStatus } from "./src/ajaxstatus/ajaxstatus.js";
 import { BaseWidget, DeferredWidget, DynamicOverlayWidget } from "./src/core/core.widget.js";
 import { Poll } from "./src/poll/poll.js";
 
-import "./src/validation/validation.common.js";
-import "./src/validation/validation.converters.js";
+import { registerCommonConverters } from "./src/validation/validation.converters.js";
 import "./src/validation/validation.validators.js";
 import "./src/validation/validation.highlighters.js";
+import { registerValidationMessages } from "./src/validation/validation.common.js";
+import { registerCommonValidators } from "./src/validation/validation.validators.js";
+import { registerCommonHighlighters } from "./src/validation/validation.highlighters.js";
 
 // General types
 declare global {
@@ -23,31 +22,182 @@ declare global {
         export type EntityMap = Record<string, string>;
 
         /**
+         * A callback that is invoked when the user clicks on an element outside
+         * an overlay widget.
+         */
+        export type OverlayHideCallback =
+            /**
+             * @param event The event that caused the overlay to be hidden.
+             * @param eventTarget The target of the event, wrapped in a JQuery instance.
+             */
+            (event: JQuery.TriggeredEvent, eventTarget: JQuery) => void;
+
+        /**
+         * Used when registering overlay {@link OverlayHideCallback}.
+         * 
+         * The callback which resolves the elements to ignore when the user
+         * clicks outside the overlay. The {@link OverlayHideCallback} is not
+         * invoked when the user clicks on one those elements.
+         */
+        export type OverlayResolveIgnoredElementCallback = 
+            /**
+             * The event that occurred, with the element that was clicked.
+             */
+            (event: JQuery.TriggeredEvent) => JQuery;
+
+        /**
+         * Callback invoked when an element or the window was resized.
+         */
+        export type ResizeCallback = 
+            /**
+             * @param event The resize event that occurred.
+             */
+            (event: JQuery.TriggeredEvent) => void;
+
+        /**
+         * Callback invoked when a scroll event occurred.
+         */
+        export type ScrollCallback =
+            /**
+             * @param event The scroll event that occurred.
+             */
+            (event: JQuery.TriggeredEvent) => void;
+
+        /**
+         * Callback invoked when changes occur that may affect an element's
+         * position or dimensions, such as a resize or DOM mutation event.
+         */
+        export type MutationCallback = () => void;
+        
+        /**
          * Custom logger for logging messages. Set your custom logger via
          * `PrimeFaces.logger = ...`.
          */
         export interface Logger {
             /**
              * Logs a message at the debug level.
-             * @param message Message to log.
+             * @param message Message or error to log.
              */
-            debug: (message: string) => void;
+            debug: (message: unknown) => void;
             /**
              * Logs a message at the error level.
-             * @param message Message to log.
+             * @param message Message or error to log.
              */
-            error: (message: string) => void;
+            error: (message: unknown) => void;
             /**
              * Logs a message at the info level.
-             * @param message Message to log.
+             * @param log Message or error to log
              */
-            info: (message: string) => void;
+            info: (message: unknown) => void;
             /**
              * Logs a message at the warn level.
-             * @param message Message to log.
+             * @param log Message or error to log
              */
-            warn: (message: string) => void;
+            warn: (message: unknown) => void;
         }
+
+        /**
+         * CSS transition callbacks that can be passed to the methods in {@link CssTransitionHandler}.
+         * @since 10.0.0
+         */
+        export interface CssTransitionCallback {
+            /**
+             * Called when the entering process is about to start.
+             */
+            onEnter?: (this: Window) => void;
+            /**
+             * Called during the entering process.
+             * @this The event that occurred. When animations are globally disabled, this callback may still be called, but
+             * no event is passed and the this context is the Window.
+             */
+            onEntering?: (this: JQuery.TriggeredEvent | Window) => void;
+            /**
+             * Called when the entering process has finished.
+             * @this The event that occurred. When animations are globally disabled, this callback may still be called, but
+             * no event is passed and the this context is the Window.
+             */
+            onEntered?: (this: JQuery.TriggeredEvent | Window) => void;
+            /**
+             * Called when the exiting process is about to start.
+             */
+            onExit?: (this: Window) => void;
+            /**
+             * Called during the exiting process.
+             * @this The event that occurred. When animations are globally disabled, this callback may still be called, but
+             * no event is passed and the this context is the Window.
+             */
+            onExiting?: (this: JQuery.TriggeredEvent | Window) => void;
+            /**
+             * Called when the exiting process has finished.
+             * @this The event that occurred. When animations are globally disabled, this callback may still be called, but
+             * no event is passed and the this context is the Window.
+             */
+            onExited?: (this: JQuery.TriggeredEvent | Window) => void;
+        }
+
+        /**
+         * Methods for a CSS transition that are returned by {@link PrimeFaces.utils.registerCSSTransition}.
+         * @since 10.0.0
+         */
+        export interface CssTransitionHandler {
+            /**
+             * Should be called when an element gets shown.
+             * @param callbacks Optional callbacks that will be invoked at the appropriate time.
+             */
+            show(callbacks?: CssTransitionCallback): void;
+            /**
+             * Should be called when an element gets hidden.
+             * @param callbacks Optional callbacks that will be invoked at the appropriate time.
+             */
+            hide(callbacks?: CssTransitionCallback): void;
+        }
+
+        /**
+         * Defines the possible severity levels of a faces message (a message shown to the user).
+         *
+         * - fatal: Indicates that the message reports a grave error that needs the immediate attention of the reader.
+         * - error: Indicates that the message reports an error that occurred, such as invalid user input or database
+         * connection failures etc.
+         * - warn: Indicates that the message reports a possible issue, but it does not prevent the normal operation of the
+         * system.
+         * - info: Indicates that the message provides additional information, if the reader is interested.
+         */
+        export type FacesMessageSeverity = "fatal" | "error" | "warn" | "info";
+
+        /**
+         * A 'FacesMessage' with a short summary message and a more detailed message, as well as a severity level that
+         * indicates the type of this message. Used by the client-side validation framework and some widgets such as the
+         * growl widget.
+         */
+        export interface BaseFacesMessage {
+            /**
+             * A short summary of the message.
+             */
+            summary: string;
+            /**
+             * In-depth details of the message.
+             */
+            detail: string;
+            /**
+             * The severity of this message, i.e. whether it is an information message, a warning message, or an error
+             * message.
+             */
+            severity?: FacesMessageSeverity;
+            /**
+             * If the message was successfully rendered by a message/growl component.
+             */
+            rendered?: boolean;
+        }
+        
+
+        /**
+         * A 'FacesMessage' with a short summary message and a more detailed message, as well as a severity level that
+         * indicates the type of this message. Used by the client-side validation framework and some widgets such as the
+         * growl widget.
+         * 
+         * Similar to {@link BaseFacesMessage}, but all fields are required.
+         */
+        export type FacesMessage = Required<BaseFacesMessage>;
 
         /**
          * Represents a deferred render added for a deferred widget.
@@ -146,6 +296,10 @@ declare global {
 
 // AJAX types
 declare global {
+    /**
+     * Namespace related to AJAX functionality, such as sending post-back requests
+     * to the server and handling the response.
+     */
     namespace PrimeType.ajax {
         /**
          * An entry on the {@link JQuery.jqXHR} request object with additional values added by PrimeFaces. For example, when
@@ -155,13 +309,27 @@ declare global {
          */
         export type PrimeFacesArgs = Record<string, unknown>;
         /**
-         * Additional settings on a {@link JQuery.jqXHR} request, such as portlet forms and nonces.
+         * Additional settings on a {@link JQuery.jqXHR | jqXHR} request, such as portlet forms and nonces.
          */
-        export type PrimeFacesSettings = Record<string, unknown>;
+        export interface PrimeFacesSettings extends JQuery.AjaxSettings<PrimeFacesSettings> {
+            /**
+             * Selector to resolve all forms which needs to be updated with a new ViewState. This is required in
+             * portlets, as the DOM contains forms of multiple JSF views / applications.
+             */
+            portletForms?: string | null | undefined;
+            /**
+             * The source that triggered the AJAX request.
+             */
+            source?: string | HTMLElement | JQuery<HTMLElement> | undefined;
+            beforeSend?(this: PrimeFacesSettings, jqXHR: pfXHR, settings: PrimeFacesSettings): false | void;
+            nonce?: string;
+        }
         /**
          * Callback for an AJAX request that is always called after the request completes, irrespective of whether it
          * succeeded or failed.
          *
+         * The parameters passed to this function depend on whether the requested was successful.
+         * 
          * This is the type of function that you can set as a client side callback for the `oncomplete` attribute of a
          * component or an AJX behavior.
          */
@@ -171,10 +339,17 @@ declare global {
              * @param xhrOrErrorThrown Either the XHR request that was made (in case of success), or the error that was
              * thrown (in case of an error).
              * @param status The type of error or success.
-             * @param pfArgs Additional arguments returned by PrimeFaces, such as AJAX callback params from beans.
+             * @param pfArgs Additional arguments returned by PrimeFaces, such as AJAX callback params from beans (in
+             * case of success); or undefined (in case of an error).
              * @param dataOrXhr Either the XMLDocument (in case of success), or the XHR request (in case of an error).
              */
-            (this: JQuery.AjaxSettings, xhrOrErrorThrown: unknown, status: JQuery.Ajax.TextStatus, pfArgs: PrimeFacesArgs, dataOrXhr: XMLDocument | pfXHR) => void;
+            (
+                this: PrimeFacesSettings,
+                xhrOrErrorThrown: unknown,
+                status: JQuery.Ajax.TextStatus,
+                pfArgs: PrimeFacesArgs | undefined,
+                dataOrXhr: XMLDocument | pfXHR
+            ) => void;
         /**
          * Callback for an AJAX request that is called in case any error occurred during the request, such as a a network
          * error. Note that this is not called for errors in the application logic, such as when bean validation fails.
@@ -189,7 +364,7 @@ declare global {
              * @param status The type of error that occurred.
              * @param errorThrown The error with details on why the request failed.
              */
-            (this: JQuery.AjaxSettings, xhr: pfXHR, status: JQuery.Ajax.ErrorTextStatus, errorThrown: string) => void;
+            (this: PrimeFacesSettings, xhr: pfXHR, status: JQuery.Ajax.ErrorTextStatus, errorThrown: string) => void;
         /**
          * Callback for an AJAX request that is called before the request is sent. Return `false` to cancel the request.
          *
@@ -218,11 +393,11 @@ declare global {
              * @param xhr The XHR request that succeeded.
              * @return `true` if this handler already handle and/or parsed the response, `false` or `undefined` otherwise.
              */
-            (this: JQuery.AjaxSettings, data: XMLDocument, status: JQuery.Ajax.SuccessTextStatus, xhr: pfXHR) => boolean | undefined;
+            (this: PrimeFacesSettings, data: XMLDocument, status: JQuery.Ajax.SuccessTextStatus, xhr: pfXHR) => boolean | undefined;
         /**
          * The XHR request object used by PrimeFaces. It extends the `jqXHR` object as used by JQuery, but adds additional
          * properties specific to PrimeFaces.
-         * @typeparam P Data made available by the server via {@link pfXHR.pfArgs}.
+         * @typeParam P Data made available by the server via {@link pfXHR.pfArgs}.
          */
         export interface pfXHR<P extends PrimeFacesArgs = PrimeFacesArgs> extends JQuery.jqXHR {
             /**
@@ -240,7 +415,7 @@ declare global {
         /**
          * Represents the data of a PrimeFaces AJAX request. This is the value that is returned by {@link PrimeFaces.ab} and
          * {@link PrimeFaces.ajax.Request.handle}.
-         * @typeparam P Record type of the data made available in the property {@link PrimeFaces.ajax.pfXHR.pfArgs} by the
+         * @typeParam P Record type of the data made available in the property {@link PrimeFaces.ajax.pfXHR.pfArgs} by the
          * server.
          */
         export interface ResponseData<P extends PrimeFacesArgs = PrimeFacesArgs> {
@@ -376,61 +551,67 @@ declare global {
              * global queue to ensure that only one request is active at a time, and that each response is processed
              * in order. Defaults to `false`.
              */
-            async: boolean;
+            async?: boolean;
             /**
              * Delay in milliseconds. If less than this delay elapses between AJAX requests, only the most recent one is
              * sent and all other requests are discarded. If this option is not specified, no delay is used.
              */
-            delay: number;
+            delay?: number;
             /**
              * A PrimeFaces client-side search expression (such as `@widgetVar` or `@(.my-class)` for locating the form
              * to with the input elements that are serialized. If not given, defaults to the enclosing form.
              */
-            formId: string;
+            formId?: string;
+            /**
+             * Params to be added early when preparing an AJAX request, if
+             * {@link PFSettings.earlyPostParamEvaluation | earlyPostParamEvaluation}
+             * is enabled. 
+             */
+            earlyPostParams?: PrimeType.ajax.RequestParameter<string, string | Blob>[];
             /**
              * The AJAX behavior event that triggered the AJAX request.
              */
-            event: string;
+            event?: string;
             /**
              * Additional options that can be passed when sending an AJAX request to override the current options.
              */
-            ext: Partial<ConfigurationExtender>;
+            ext?: Partial<ConfigurationExtender>;
             /**
              * Additional search expression that is added to the `process` option.
              */
-            fragmentProcess: string;
+            fragmentProcess?: string;
             /**
              * Additional search expression that is added to the `update` option.
              */
-            fragmentUpdate: string;
+            fragmentUpdate?: string;
             /**
              * Whether this AJAX request is global, ie whether it should trigger the global `<p:ajaxStatus />`. Defaults
              * to `true`.
              */
-            global: boolean;
+            global?: boolean;
             /**
              * `true` if components with `<p:autoUpdate/`> should be ignored and updated only if specified explicitly
              * in the `update` option; or `false` otherwise. Defaults to `false`.
              */
-            ignoreAutoUpdate: boolean;
+            ignoreAutoUpdate?: boolean;
             /**
              * Callback that is always called after the request completes, irrespective of whether it succeeded or
              * failed.
              */
-            oncomplete: CallbackOncomplete;
+            oncomplete?: CallbackOncomplete;
             /**
              * Callback that is called in case any error occurred during the request, such as a a network error. Note
              * that this is not called for errors in the application logic, such as when bean validation fails.
              */
-            onerror: CallbackOnerror;
+            onerror?: CallbackOnerror;
             /**
              * Callback that is called before the request is sent. Return `false` to cancel the request.
              */
-            onstart: CallbackOnstart;
+            onstart?: CallbackOnstart;
             /**
              * Callback that is called when the request succeeds.
              */
-            onsuccess: CallbackOnsuccess;
+            onsuccess?: CallbackOnsuccess;
             /**
              * Additional parameters that are passed to the server. These can be accessed as follows:
              *
@@ -438,49 +619,50 @@ declare global {
              * final String myParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("myParam");
              * ```
              */
-            params: RequestParameter[];
+            params?: RequestParameter[];
             /**
              * `true` to perform a partial submit and not send the entire form data, but only the processed components;
              * or `false` to send the entire form data. Defaults to `false`.
              */
-            partialSubmit: boolean;
+            partialSubmit?: boolean;
             /**
              * A CSS selector for finding the input elements of partially processed components. Defaults to `:input`.
              */
-            partialSubmitFilter: string;
+            partialSubmitFilter?: string;
             /**
              * A (client-side) PrimeFaces search expression for the components to process in the AJAX request.
              */
-            process: string;
+            process?: string;
             /**
              * A promise object that is resolved when the AJAX request is complete. You can use this option to register
              * a custom callback. Please note that usually you do not have to set this option explicitly, you can use the
              * return value of {@link PrimeFaces.ab} or {@link PrimeFaces.ajax.Request.handle}. It will create a new promise
              * object when none was provided, and return that.
              */
-            promise: Promise<ResponseData>;
+            promise?: JQuery.Deferred<ResponseData>;
             /**
              * `true` if the AJAX request is a reset request that resets the value of all form elements to their
              * initial values, or `false` otherwise. Defaults to `false`.
              */
-            resetValues: boolean;
+            resetValues?: boolean;
             /**
              * `true` if child components should be skipped for the AJAX request, `false` otherwise. Used only by a few
              * specific components.
              */
-            skipChildren: boolean;
+            skipChildren?: boolean;
             /**
-             * The source that triggered the AJAX request.
+             * The source that triggered the AJAX request. Either a client ID or
+             * an (HTML) element.
              */
-            source: string | JQuery | HTMLElement;
+            source?: string | JQuery<HTMLElement> | HTMLElement;
             /**
              * Set a timeout (in milliseconds) for the request. A value of 0 means there will be no timeout.
              */
-            timeout: number;
+            timeout?: number;
             /**
              * A (client-side) PrimeFaces search expression for the components to update in the AJAX request.
              */
-            update: string;
+            update?: string;
         }
         /**
          * Additional options that can be passed when sending an AJAX request to override the current options.
@@ -493,7 +675,7 @@ declare global {
              * @param componentPostParams The serialized values of a component.
              * @return The filtered values that are to be sent to the server.
              */
-            partialSubmitParameterFilter(this: Request, componentPostParams: RequestParameter[]): RequestParameter[];
+            partialSubmitParameterFilter?: (this: AjaxRequest, componentPostParams: JQuery.NameValuePair[]) => JQuery.NameValuePair[];
         };
         /**
          * Mapping from articulate to shortname names for the options passed to AJAX calls made by PrimeFaces.
@@ -627,6 +809,164 @@ declare global {
              * from the server, and rejected when a network or server error occurred.
              */
             (params?: RemoteCommandParams<T>) => Promise<ResponseData<R>>;
+    }
+}
+
+// Validation types
+declare global {
+    /**
+     * Namespace for functionality related to validation, such as client-side
+     * validation logic.
+     */
+    namespace PrimeType.validation {
+        /**
+         * Type of the value of an element that is about to be submitted, passed
+         * e.g. to {@link Converter.convert}.
+         */
+        export type SubmittedValue = string | number | string[] | FileList | null;
+
+        /**
+         * A converter for converting string values to the correct data type.
+         * @typeParam T Type of the converted value returned by the converter.
+         */
+        export interface Converter<T = unknown> {
+            /**
+             * Converts a string value to the correct data type.
+             * @param element Element for which the value was submitted.
+             * @param submittedValue The submitted string value
+             * @return The converted value, `null` when no value is present.
+             */
+            convert(element: JQuery, submittedValue: SubmittedValue): T | null;
+        }
+
+        /**
+         * A validator for checking whether the value of an element confirms to certain restrictions.
+         */
+        export interface Validator {
+            /**
+             * Validates the given element. If it is not valid, the error message should be thrown.
+             * @param element Element to validate
+             * @param value Current value of the element
+             * @throws The error message as the string when the element with its current value is not valid.
+             */
+            validate(element: JQuery, value?: unknown): void;
+        }
+
+        /**
+         * The validation result.
+         */
+        export interface ValidationResult {
+            /**
+             * A map between the client ID of an element and a list of faces message for that element.
+             */
+            messages: Record<string, FacesMessage[]>;
+            /**
+             * If the result is valid / if it has any validation errors.
+             */
+            valid: boolean;
+            /**
+             * If the result has any unrendered message.
+             */
+            hasUnrenderedMessage: boolean;
+        }
+
+        /**
+         * When an element is invalid due to a validation error, the user needs to be informed. A highlight handler is
+         * responsible for changing the visual state of an element so that the user notices the invalid element. A highlight
+         * handler is usually registered for a particular type of element or widget.
+         */
+        export interface Highlighter {
+            /**
+             * When an element is invalid due to a validation error, the user needs to be informed. This method must
+             * highlight the given element in a way that makes the user notice that the element is invalid.
+             * @param element An element to highlight.
+             */
+            highlight(element: JQuery): void;
+            /**
+             * When an element is invalid due to a validation error, the user needs to be informed. This method must
+             * remove the highlighting of the given element that was added by `highlight`.
+             * @param element An element to unhighlight.
+             */
+            unhighlight(element: JQuery): void;
+        }
+
+        /**
+         * The options that can be passed to the Validation method. Note that you do not have to provide a value
+         * for all these property. Most methods such as `PrimeFaces.vb` have got sensible defaults in case you
+         * do not.
+         */
+        export interface Configuration {
+            /**
+             * The source that triggered the validation.
+             */
+            source?: string | JQuery | HTMLElement;
+            /**
+             * `true` if the validation is triggered by AJAXified component. Defaults to `false`.
+             */
+            ajax?: boolean;
+            /**
+             * A (client-side) PrimeFaces search expression for the components to process in the validation.
+             */
+            process?: string;
+            /**
+             * A (client-side) PrimeFaces search expression for the components to update in the validation.
+             */
+            update?: string;
+            /**
+             * `true` if invalid elements should be highlighted as invalid. Default is `true`.
+             */
+            highlight?: boolean;
+            /**
+             * `true` if the first invalid element should be focussed. Default is `true`.
+             */
+            focus?: boolean;
+            /**
+             * `true` to log messages that do not have a valid target and are thus not shown on the UI.
+             */
+            logUnrenderedMessages?: boolean;
+            /**
+             * `true` if messages should be rendered. Default is `true`.
+             */
+            renderMessages?: boolean;
+            /**
+             * `true` if invisible elements should be validated. Default is `false`.
+             */
+            validateInvisibleElements?: boolean;
+        }
+
+        /**
+         * A map with all registered validator. Key is the name of the validator,
+         * the value is the validator implementation.
+         * 
+         * @implNote This really should be just a `Record<string, Validator>`.
+         * However, for legacy reasons, PrimeFaces also includes the
+         * {@link ValidationHighlighter} in this "map" as
+         * `PrimeFaces.validation.Highlighter`. A Validator is incompatible with
+         * a ValidationHighlighter, so we need to spell out the keys explicitly.
+         */
+        export interface ValidatorInstanceMap {
+            /**
+             * When an element is invalid due to a validation error, the user needs to be informed. This highlighter is
+             * responsible for changing the visual state of an element so that the user notices the invalid element.
+             */
+            Highlighter: ValidationHighlighter;
+        }
+        
+        /**
+         * Options passed to `PrimeFaces.vb` as shortcut. This is the same as `Configuration`, but with shorter
+         * option names and is used mainly by the method `PrimeFaces.vb`. See `Configuration` for a detailed description
+         * of these options.
+         */
+        export type ShorthandConfiguration = RenameKeys<Configuration, {
+            source: "s";
+            ajax: "a";
+            process: "p";
+            update: "u";
+            highlight: "h";
+            focus: "f";
+            renderMessages: "r";
+            validateInvisibleElements: "v";
+        }>;
     }
 }
 
@@ -872,25 +1212,25 @@ declare global {
          * An object with all localized strings required on the client side.
          */
         export interface Locale {
-            "accept"?: string;
-            "addRule"?: string;
-            "am"?: string;
-            "apply"?: string;
-            "cancel"?: string;
-            "choose"?: string;
-            "chooseDate"?: string;
-            "chooseMonth"?: string;
-            "chooseYear"?: string;
-            "clear"?: string;
-            "completed"?: string;
-            "contains"?: string;
-            "custom"?: string;
-            "dateAfter"?: string;
-            "dateBefore"?: string;
-            "dateFormat"?: string;
-            "dateIs"?: string;
-            "dateIsNot"?: string;
-            "dayNames": [
+            accept?: string;
+            addRule?: string;
+            am?: string;
+            apply?: string;
+            cancel?: string;
+            choose?: string;
+            chooseDate?: string;
+            chooseMonth?: string;
+            chooseYear?: string;
+            clear?: string;
+            completed?: string;
+            contains?: string;
+            custom?: string;
+            dateAfter?: string;
+            dateBefore?: string;
+            dateFormat?: string;
+            dateIs?: string;
+            dateIsNot?: string;
+            dayNames?: [
                 string,
                 string,
                 string,
@@ -899,7 +1239,7 @@ declare global {
                 string,
                 string
             ];
-            "dayNamesMin": [
+            dayNamesMin?: [
                 string,
                 string,
                 string,
@@ -908,7 +1248,7 @@ declare global {
                 string,
                 string
             ];
-            "dayNamesShort": [
+            dayNamesShort?: [
                 string,
                 string,
                 string,
@@ -917,37 +1257,25 @@ declare global {
                 string,
                 string
             ];
-            "emptyFilterMessage"?: string;
-            "emptyMessage"?: string;
-            "emptySearchMessage"?: string;
-            "emptySelectionMessage"?: string;
-            "endsWith"?: string;
-            "equals"?: string;
-            "fileSizeTypes": ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"],
-            "filter"?: string;
-            "firstDayOfWeek": number,
-            "gt"?: string;
-            "gte"?: string;
-            "lt"?: string;
-            "lte"?: string;
-            "matchAll"?: string;
-            "matchAny"?: string;
-            "medium"?: string;
-            "monthNames": [
-                string,
-                string,
-                string,
-                string,
-                string,
-                string,
-                string,
-                string,
-                string,
-                string,
-                string,
-                string
-            ];
-            "monthNamesShort": [
+            decimalSeparator?: string;
+            emptyFilterMessage?: string;
+            emptyMessage?: string;
+            emptySearchMessage?: string;
+            emptySelectionMessage?: string;
+            endsWith?: string;
+            equals?: string;
+            fileSizeTypes: ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"],
+            filter?: string;
+            firstDayOfWeek: number,
+            groupingSeparator?: string;
+            gt?: string;
+            gte?: string;
+            lt?: string;
+            lte?: string;
+            matchAll?: string;
+            matchAny?: string;
+            medium?: string;
+            monthNames: [
                 string,
                 string,
                 string,
@@ -961,54 +1289,70 @@ declare global {
                 string,
                 string
             ];
-            "nextDecade"?: string;
-            "nextHour"?: string;
-            "nextMinute"?: string;
-            "nextMonth"?: string;
-            "nextSecond"?: string;
-            "nextYear"?: string;
-            "noFilter"?: string;
-            "notContains"?: string;
-            "notEquals"?: string;
-            "now"?: string;
-            "passwordPrompt"?: string;
-            "pending"?: string;
-            "pm"?: string;
-            "prevDecade"?: string;
-            "prevHour"?: string;
-            "prevMinute"?: string;
-            "prevMonth"?: string;
-            "prevSecond"?: string;
-            "prevYear"?: string;
-            "reject"?: string;
-            "removeRule"?: string;
-            "searchMessage"?: string;
-            "selectionMessage"?: string;
-            "showMonthAfterYear": boolean,
-            "startsWith"?: string;
-            "strong"?: string;
-            "today"?: string;
-            "upload"?: string;
-            "weak"?: string;
-            "weekHeader"?: string;
-            "weekNumberTitle"?: string;
-            "isRTL": boolean,
-            "yearSuffix": "",
-            "timeOnlyTitle"?: string;
-            "timeText"?: string;
-            "hourText"?: string;
-            "minuteText"?: string;
-            "secondText"?: string;
-            "millisecondText"?: string;
-            "year"?: string;
-            "month"?: string;
-            "week"?: string;
-            "day"?: string;
-            "list"?: string;
-            "allDayText"?: string;
-            "moreLinkText"?: string;
-            "noEventsText"?: string;
-            "aria": LocaleAria;
+            monthNamesShort: [
+                string,
+                string,
+                string,
+                string,
+                string,
+                string,
+                string,
+                string,
+                string,
+                string,
+                string,
+                string
+            ];
+            nextDecade?: string;
+            nextHour?: string;
+            nextMinute?: string;
+            nextMonth?: string;
+            nextSecond?: string;
+            nextYear?: string;
+            noFilter?: string;
+            notContains?: string;
+            notEquals?: string;
+            now?: string;
+            passwordPrompt?: string;
+            pending?: string;
+            pm?: string;
+            prevDecade?: string;
+            prevHour?: string;
+            prevMinute?: string;
+            prevMonth?: string;
+            prevSecond?: string;
+            prevYear?: string;
+            reject?: string;
+            removeRule?: string;
+            searchMessage?: string;
+            selectionMessage?: string;
+            showMonthAfterYear: boolean;
+            startsWith?: string;
+            strong?: string;
+            today?: string;
+            upload?: string;
+            weak?: string;
+            weekHeader?: string;
+            weekNumberTitle?: string;
+            isRTL: boolean,
+            yearSuffix: string;
+            timeOnlyTitle?: string;
+            timeText?: string;
+            hourText?: string;
+            minuteText?: string;
+            secondText?: string;
+            millisecondText?: string;
+            year?: string;
+            month?: string;
+            week?: string;
+            day?: string;
+            list?: string;
+            allDayText?: string;
+            moreLinkText?: string;
+            noEventsText?: string;
+            aria: LocaleAria;
+
+            unexpectedError: string;
 
             // legacy
             closeText?: string;
@@ -1163,29 +1507,114 @@ declare global {
     }
 }
 
+// Re-exports
+declare global {
+    namespace PrimeType {
+        /**
+         * The class with functionality related to multiple window support in PrimeFaces applications.
+         */
+        export type ClientWindow = import("./src/core/core.clientwindow.js").ClientWindow;
+        /**
+         * The class with functionality related to handling the `script-src` directive of the HTTP `Content-Security-Policy`
+         * (CSP) policy. This makes use of a nonce (number used once). The server must generate a unique nonce value each
+         * time it transmits a policy. 
+         */
+        export type Csp = import("./src/core/core.csp.js").Csp;
+        /**
+         * The class with functionality related to the browser environment, such as information about the current browser.
+         */
+        export type Environment = import("./src/core/core.env.js").Environment;
+        /**
+         * The class with functionality related to working with search expressions.
+         */
+        export type Expressions = import("./src/core/core.expressions.js").Expressions;
+        /**
+         * The class with functionality related to handling resources on the server, such as CSS and JavaScript files.
+         */
+        export type Resources = import("./src/core/core.resources.js").Resources;
+        /**
+         * The class with various utilities needed by PrimeFaces.
+         */
+        export type Utils = import("./src/core/core.utils.js").Utils;
+        /**
+         * __PrimeFaces Client Side Validation Framework__
+         * 
+         * The class for enabling client side validation of form fields.
+         */
+        export type Validation = import("./src/validation/validation.common.js").Validation;
+    }
+
+    namespace PrimeType.ajax {
+        /**
+         * The class with functionality related to sending and receiving AJAX requests that are made by PrimeFaces. Each
+         * request receives an XML response, which consists of one or multiple actions that are to be performed. This
+         * includes creating new DOM elements, deleting or updating existing elements, or executing some JavaScript.
+         */
+        export type Ajax = import("./src/core/core.ajax.js").Ajax;
+        /**
+         * This class contains functionality related to queuing AJAX requests to ensure that they are (a) sent in the
+         * proper order and (b) that each response is processed in the same order as the requests were sent.
+         */
+        export type AjaxQueue = import("./src/core/core.ajax.js").AjaxQueue;
+        /**
+         * The class containing low-level functionality related to sending AJAX requests.
+         */
+        export type AjaxRequest = import("./src/core/core.ajax.js").AjaxRequest;
+        /**
+         * The class containing low-level functionality related to handling AJAX responses. Note that
+         * the different types of AJAX actions are handled by the {@link AjaxResponseProcessor PrimeFaces.ajax.ResponseProcessor}.
+         */
+        export type AjaxResponse = import("./src/core/core.ajax.js").AjaxResponse;
+        /**
+         * The class containing low-level functionality related to processing the different types
+         * of actions from AJAX responses.
+         */
+        export type AjaxResponseProcessor = import("./src/core/core.ajax.js").AjaxResponseProcessor;
+        /**
+         * The class containing utility methods for AJAX requests, primarily used internally.
+         */
+        export type AjaxUtils = import("./src/core/core.ajax.js").AjaxUtils;
+    }
+
+    namespace PrimeType.expressions {
+        /**
+         * The class providing the entry point for functions related to search expressions. 
+         */
+        export type SearchExpressionFacade = import("./src/core/core.expressions.js").SearchExpressionFacade;
+    }
+
+    namespace PrimeType.validation {
+        /**
+         * The class that contains functionality related to handling faces messages, especially validation errror messages.
+         * Contains methods for clearing message of an element or adding messages to an element.
+         */
+        export type ValidationContext = import("./src/validation/validation.common.js").ValidationContext;
+        /**
+         * When an element is invalid due to a validation error, the user needs to be informed. This highlighter is
+         * responsible for changing the visual state of an element so that the user notices the invalid element.
+         */
+        export type ValidationHighlighter = import("./src/validation/validation.highlighters.js").ValidationHighlighter;
+        /**
+         * The class with mostly internal utility methods used to validate data on the client.
+         */
+        export type ValidationUtils = import("./src/validation/validation.common.js").ValidationUtils;
+    }
+}
+
 // Module augmentation
 declare global {
     namespace PrimeType {
-        export interface PrimeFaces extends Core {
-            ab: typeof ab;
-            metaKey: typeof metaKey;
+        // Extend PrimeFaces namespace
+        export interface PrimeFaces extends Core {}
 
-            clientwindow: ClientWindow;
-            expressions: Expressions;
-            resources: Resources;
-
-            /**
-             * The object with various utility methods needed by PrimeFaces.
-             */
-            utils: Utils;
-        }
-
+        // Extend Window global
         export interface WindowExtensions {
             Cookies: typeof Cookies;
             PrimeFaces: PrimeFaces;
             PF: typeof _PF;
         }
 
+        // Extend widget registry (available widget types)
         export interface WidgetRegistry {
             AjaxExceptionHandler: typeof AjaxExceptionHandler;
             AjaxStatus: typeof AjaxStatus;
@@ -1196,6 +1625,18 @@ declare global {
         }
     }
 
+    // Extend validators
+    namespace PrimeType.validation {
+        interface ValidatorInstanceMap {
+            "javax.faces.Length"?: Validator;
+            "javax.faces.LongRange"?: Validator;
+            "javax.faces.DoubleRange"?: Validator;
+            "javax.faces.RegularExpression"?: Validator;
+            "primefaces.File"?: Validator;
+        }
+    }
+
+    // Extend widget configurations
     namespace PrimeType.widget {
         export type AjaxStatusCfg = import("./src/ajaxstatus/ajaxstatus.js").AjaxStatusCfg;
         export type BaseWidgetCfg = import("./src/core/core.widget.js").BaseWidgetCfg;
@@ -1203,19 +1644,18 @@ declare global {
         export type DynamicOverlayWidgetCfg = import("./src/core/core.widget.js").DynamicOverlayWidgetCfg;
         export type PollCfg = import("./src/poll/poll.js").PollCfg;
     }
-
+    
+    // Extend globals
     let PrimeFaces: PrimeType.PrimeFaces;
     let PF: typeof _PF;
 }
 
 function exposeToGlobalScope() {
+    // Do nothing if the core script was already loaded
     if("PrimeFaces" in window) {
         window.PrimeFaces.debug("PrimeFaces already loaded, ignoring duplicate execution.");
         return;
     }
-
-    // @ts-expect-error
-    const PrimeFaces: PrimeType.PrimeFaces = {};
 
     // Expose js-cookie to the global scope
     Object.assign(window, { 
@@ -1224,17 +1664,16 @@ function exposeToGlobalScope() {
         PF: _PF,
      });
 
-    // Expose core to the global scope
-    Object.assign(PrimeFaces, {
-        ab,
-        clientwindow,
-        expressions,
-        metaKey,
-        resources,
-        util: {}, // seems unused, but define this for now for compatibility
-        utils,
-    });
+    // Seems unused, but define this for now for compatibility
+    // TODO Can this be removed?
+    Object.assign(core, { util: {} });
 
+    // Register additional components
+    registerCommonConverters();
+    registerCommonHighlighters();
+    registerCommonValidators();
+    registerValidationMessages();
+    
     // Global setup
     globalAjaxSetup();
     globalUtilsSetup();

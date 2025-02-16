@@ -1,15 +1,20 @@
 import Cookies from "js-cookie";
 
-import { Ajax, ajax, ajaxQueue, ajaxUtils } from "./core.ajax.js";
+import { Ajax, ajax } from "./core.ajax.js";
 import { csp, type Csp } from "./core.csp.js";
+import { clientwindow, type ClientWindow } from "./core.clientwindow.js";
 import { env, type Environment } from "./core.env.js";
+import { expressions, type Expressions } from "./core.expressions.js";
+import type { Resources } from "./core.resources.js";
 import { resources } from "./core.resources.js";
-import { utils } from "./core.utils.js";
+import { utils, type Utils } from "./core.utils.js";
 
 import { BaseWidget, DeferredWidget, DynamicOverlayWidget } from "./core.widget.js";
 import { AjaxExceptionHandler } from "../ajaxexceptionhandler/ajaxexceptionhandler.js";
 import { AjaxStatus } from "../ajaxstatus/ajaxstatus.js";
 import { Poll } from "../poll/poll.js";
+import { validation, type Validation } from "../validation/validation.common.js";
+import { validationHighlighter } from "../validation/validation.highlighters.js";
 
 declare global {
     interface Window {
@@ -104,6 +109,7 @@ const LocaleEnUs: PrimeType.Locale = {
     "allDayText": "All Day",
     "moreLinkText": "More...",
     "noEventsText": "No Events",
+    "unexpectedError": "Unexpected error",
     "aria": {
         "cancelEdit": "Cancel Edit",
         "close": "Close",
@@ -181,25 +187,44 @@ const LocaleEnUs: PrimeType.Locale = {
         "messages.FATAL": "Fatal",
         "messages.INFO": "Information",
         "messages.WARN": "Warning"
-    }
+    },
 };
+
+function toArticulateValidationConfiguration(cfg: PrimeType.validation.ShorthandConfiguration): PrimeType.validation.Configuration {
+    for (var option in cfg) {
+        if (!cfg.hasOwnProperty(option)) {
+            continue;
+        }
+
+        // just pass though if no mapping is available
+        if (validation.CFG_SHORTCUTS[option]) {
+            // @ts-expect-error Can't really make renaming type safe, unless we spell out each key and create a new object
+            cfg[PrimeFaces.validation.CFG_SHORTCUTS[option]] = cfg[option];
+            // @ts-expect-error Can't really make renaming type safe, unless we spell out each key and create a new object
+            delete cfg[option];
+        }
+    }
+
+    return cfg as unknown as PrimeType.validation.Configuration;
+}
+
 
 /**
  * This is the main global object for accessing the client-side API of PrimeFaces. Broadly speaking, it consists
  * of the following entries:
  *
- * - `PrimeFaces.ajax` The AJAX module with functionality for sending AJAX requests
- * - `PrimeFaces.clientwindow` The client window module for multiple window support in PrimeFaces applications.
- * - `PrimeFaces.csp` The  CSP module for the HTTP Content-Security-Policy (CSP) policy `script-src` directive.
+ * - {@link Ajax | PrimeFaces.ajax} The AJAX module with functionality for sending AJAX requests
+ * - {@link ClientWindow | PrimeFaces.clientwindow} The client window module for multiple window support in PrimeFaces applications.
+ * - {@link Csp | PrimeFaces.csp} The  CSP module for the HTTP Content-Security-Policy (CSP) policy `script-src` directive.
  * - `PrimeFaces.dialog` The dialog module with functionality related to the dialog framework
- * - `PrimeFaces.env` The environment module with information about the current browser
- * - `PrimeFaces.expressions` The search expressions module with functionality for working with search expression
- * - `PrimeFaces.resources` The resources module with functionality for creating resource links
- * - `PrimeFaces.utils` The utility module with functionality that does not fit anywhere else
- * - `PrimeFaces.widget` The registry with all available widget classes
- * - `PrimeFaces.widgets` The registry with all currently instantiated widgets
+ * - {@link Environment | PrimeFaces.env} The environment module with information about the current browser
+ * - {@link Expressions | PrimeFaces.expressions} The search expressions module with functionality for working with search expression
+ * - {@link Resources | PrimeFaces.resources} The resources module with functionality for creating resource links
+ * - {@link Utils | PrimeFaces.utils} The utility module with functionality that does not fit anywhere else
+ * - {{@link widget | PrimeFaces.widget} The registry with all available widget classes
+ * - {@link widgets | PrimeFaces.widgets} The registry with all currently instantiated widgets
  * - Several other utility methods defined directly on the `PrimeFaces` object, such as
- * {@link Core.getWidgetById PrimeFaces.getWidgetById}, or {@link Core.escapeHTML PrimeFaces.escapeHTML}.
+ * {@link getWidgetById | PrimeFaces.getWidgetById}, or {@link escapeHTML | PrimeFaces.escapeHTML}.
  */
 export class Core {
     /**
@@ -245,6 +270,23 @@ export class Core {
     };
 
     /**
+     * Registry with the client-side implementation of some faces converters. The
+     * key is the name of the converter, e.g. `javax.faces.Length`, the value is
+     * the converter implementation.
+     */
+    converter: Record<string, PrimeType.validation.Converter> = {};
+
+    /**
+     * Registry with the client-side implementation of some faces validators.
+     * Used for implementing client-side validation for quick feedback. The
+     * key is the name of the validator, e.g. `javax.faces.LongRange`, the value
+     * is the validator implementation.
+     */
+    validator: PrimeType.validation.ValidatorInstanceMap = {
+        Highlighter: validationHighlighter,
+    };
+
+    /**
      * This object contains the  widget classes that are currently available. The key is the name of the widget, the
      * value the class (constructor) of the widget. Please note that widgets are usually created by the PrimeFaces
      * framework and should not be created manually.
@@ -252,14 +294,14 @@ export class Core {
      * There are a few base classes defined by PrimeFaces that you can use when writing the client-side part of your
      * custom widget:
      *
-     * - {@link BaseWidget PrimeFaces.widget.BaseWidget}: Base class that you should extend if you do not require any
+     * - {@link BaseWidget | PrimeFaces.widget.BaseWidget}: Base class that you should extend if you do not require any
      * advanced functionality.
-     * - {@link DeferredWidget PrimeFaces.widget.DeferredWidget}: When you widget needs to be initialized on the client
+     * - {@link DeferredWidget | PrimeFaces.widget.DeferredWidget}: When you widget needs to be initialized on the client
      * in a way that requires the element to be visible, you can use this class as a base. A widget may not be visible,
      * for example, when it is inside a dialog or tab. The deferred widget provides the method 
-     * {@link DeferredWidget.addDeferredRender addDeferredRender} (to register a listener) and 
-     * {@link DeferredWidget.renderDeferred renderDeferred} (to render the widget once it is visible).
-     * - {@link DynamicOverlayWidget PrimeFaces.widget.DynamicOverlayWidget}: When your widget is an overlay with
+     * {@link DeferredWidget.addDeferredRender | addDeferredRender} (to register a listener) and 
+     * {@link DeferredWidget.renderDeferred | renderDeferred} (to render the widget once it is visible).
+     * - {@link DynamicOverlayWidget | PrimeFaces.widget.DynamicOverlayWidget}: When your widget is an overlay with
      * dynamically loaded content, you can use this base class.
      */
     widget: PrimeType.WidgetRegistry  = {
@@ -327,9 +369,36 @@ export class Core {
     readonly csp: Csp = csp;
 
     /**
+     * The object with functionality related to multiple window support in PrimeFaces applications.
+     */
+    readonly clientwindow: ClientWindow = clientwindow;
+
+    /**
      * The object with functionality related to the browser environment, such as information about the current browser.
      */
     readonly env: Environment = env;
+
+    /**
+     * The object providing the entry point for functions related to search expressions. 
+     */
+    readonly expressions: Expressions = expressions;
+
+    /**
+     * The object with functionality related to handling resources on the server, such as CSS and JavaScript files.
+     */
+    readonly resources: Resources = resources;
+
+    /**
+     * The object with various utility methods needed by PrimeFaces.
+     */
+    readonly utils: Utils = utils;
+
+    /**
+     * __PrimeFaces Client Side Validation Framework__
+     * 
+     * The object for enabling client side validation of form fields.
+     */
+    readonly validation: Validation = validation;
 
     private debounceTimer: number | undefined = undefined;
 
@@ -412,6 +481,89 @@ export class Core {
      */
     readonly VERSION: string = '${project.version}';
 
+
+    /**
+     * A shortcut for {@link AjaxRequest.handle | PrimeFaces.ajax.Request.handle(cfg, ext)}, with shorter option names. Sends an AJAX request to
+     * the server and processes the response. You can use this method if you need more fine-grained control over which
+     * components you want to update or process, or if you need to change some other AJAX options.
+     * @param cfg Configuration for the AJAX request, with shorthand
+     * options. The individual options are documented in {@link PrimeType.ajax.Configuration}.
+     * @param ext Optional extender with additional options that
+     * overwrite the options given in `cfg`.
+     * @return A promise that resolves once the AJAX requests is done. Use this
+     * to run custom JavaScript logic. When the AJAX request succeeds, the promise is fulfilled. Otherwise, when the
+     * AJAX request fails, the promise is rejected. If the promise is rejected, the rejection handler receives an object
+     * of type {@link PrimeType.ajax.FailedRequestData}.
+     */
+    ab(
+        cfg: PrimeType.ajax.ShorthandConfiguration,
+        ext?: PrimeType.ajax.ConfigurationExtender
+    ): PromiseLike<PrimeType.ajax.ResponseData> {
+        for (var option in cfg) {
+            if (!cfg.hasOwnProperty(option)) {
+                continue;
+            }
+    
+            // just pass though if no mapping is available
+            // @ts-expect-error
+            if (ajax.CFG_SHORTCUTS[option]) {
+                // @ts-expect-error
+                cfg[ajax.CFG_SHORTCUTS[option]] = cfg[option];
+                // @ts-expect-error
+                delete cfg[option];
+            }
+        }
+    
+        return ajax.Request.handle(cfg, ext);
+    }
+
+    /**
+     * Shortcut for is this CMD on MacOs or CTRL key on other OSes. 
+     * @deprecated Use {@link Utils.isMetaKey | PrimeFaces.utils.isMetaKey}
+     * @param e The key event that occurred.
+     * @return `true` if the key is a meta key, `false` or `undefined` otherwise.
+     */
+    metaKey(e: JQuery.TriggeredEvent): boolean | undefined {
+        return utils.isMetaKey(e);
+    }
+
+    /**
+     * A shortcut for `PrimeFaces.validation.validate` used by server-side renderers.
+     * If the `ajax` attribute is set to `true` (the default is `false`), all inputs configured by the `process` attribute are validated
+     * and all messages for the inputs configured by the `update` attribute are rendered.
+     * Otherwise, if the `ajax` attribute is set to the `false`, all inputs of the parent form, of the `source` attribute, are processed and updated.
+     * @param cfg An configuration.
+     * @return `true` if the request would not result in validation errors, or `false` otherwise.
+     */
+    vb(cfg: PrimeType.validation.ShorthandConfiguration): boolean {
+        const config = toArticulateValidationConfiguration(cfg);
+
+        const highlight = config.highlight || true;
+        const focus = config.focus || true;
+        const renderMessages = config.renderMessages || true;
+        const validateInvisibleElements = config.validateInvisibleElements || false;
+        const logUnrenderedMessages = config.logUnrenderedMessages || renderMessages;
+
+        const $source = utils.toJQuery(config.source);
+
+        const process = validation.Utils.resolveProcess(config, $source);
+        const update = validation.Utils.resolveUpdate(config, $source);
+
+        const result = validation.validate($source, process, update, highlight, focus, renderMessages, validateInvisibleElements, logUnrenderedMessages);
+        return result.valid;
+    }
+
+    /**
+     * A shortcut for `PrimeFaces.validation.validateInstant`. This is used by `p:clientValidator`.
+     * @param element The ID of an element to validate, or the element itself.
+     * @param highlight If the invalid element should be highlighted.
+     * @param renderMessages If messages should be rendered.
+     * @returns `true` if the element is valid, or `false` otherwise.
+     */
+    vi(element: string | HTMLElement | JQuery, highlight: boolean, renderMessages: boolean): boolean {
+        return validation.validateInstant(element, highlight, renderMessages);
+    }
+    
     /**
      * Creates an ID to a CSS ID selector that matches elements with that ID. For example:
      * ```
@@ -441,6 +593,18 @@ export class Core {
         else {
             element.on('load', listener);
         }
+    }
+
+    /**
+     * Finds a registered validator by its ID, if such a validator exists.
+     * @param id ID of the validator.
+     * @returns The validator with the given ID, or `undefined` if no such
+     * validator exists.
+     */
+    getValidatorById(id: string): PrimeType.validation.Validator | undefined {
+        return id !== "Highlighter" 
+            ? this.validator[id as Exclude<keyof PrimeType.validation.ValidatorInstanceMap, "Highlighter">] 
+            : undefined;
     }
 
     /**
@@ -608,7 +772,7 @@ export class Core {
      * response yet, as well as requests that are waiting in the queue and have not been sent yet.
      */
     abortXHRs(): void {
-        ajaxQueue.abortAll();
+        ajax.Queue.abortAll();
     }
 
     /**
@@ -849,7 +1013,7 @@ export class Core {
     bindButtonInlineAjaxStatus(widget: BaseWidget, button: JQuery, isXhrSource?: (widget: BaseWidget, settings: JQuery.AjaxSettings) => boolean): void {
         if (!isXhrSource) {
             isXhrSource = function(widget, settings) {
-                return ajaxUtils.isXhrSource(widget, settings);
+                return ajax.Utils.isXhrSource(widget, settings);
             };
         }
 
@@ -941,9 +1105,9 @@ export class Core {
 
     /**
      * Logs the given message at the `info` level.
-     * @param log Message to log
+     * @param log Message or error to log
      */
-    info(log: string): void {
+    info(log: unknown): void {
         if(this.logger) {
             this.logger.info(log);
         }
@@ -954,9 +1118,9 @@ export class Core {
 
     /**
      * Logs the given message at the `debug` level.
-     * @param log Message to log
+     * @param log Message or error to log
      */
-    debug(log: string): void {
+    debug(log: unknown): void {
         if(this.logger) {
             this.logger.debug(log);
         }
@@ -967,9 +1131,9 @@ export class Core {
 
     /**
      * Logs the given message at the `warn` level.
-     * @param log Message to log
+     * @param log Message or error to log
      */
-    warn(log: string): void {
+    warn(log: unknown): void {
         if(this.logger) {
             this.logger.warn(log);
         }
@@ -981,9 +1145,9 @@ export class Core {
 
     /**
      * Logs the given message at the `error` level.
-     * @param log Message to log
+     * @param log Message or error to log
      */
-    error(log: string): void {
+    error(log: unknown): void {
         if(this.logger) {
             this.logger.error(log);
         }
@@ -1076,7 +1240,7 @@ export class Core {
     escapeHTML(value: string, preventDoubleEscaping?: boolean | undefined): string {
         var regex = preventDoubleEscaping ? /[<>"'`=/]/g : /[&<>"'`=/]/g;
         return String(value).replace(regex, (s) => {
-            return entityMap[s] ?? "";
+            return this.entityMap[s] ?? "";
         });
     }
 
@@ -1124,7 +1288,7 @@ export class Core {
      * registry {@link widgets}. If this method is called in response to an AJAX request and the method
      * exists already, it is refreshed.
      * @typeParam WidgetName Name of the widget class, as registered in {@link PrimeType.WidgetRegistry}
-     * @param widgetName Name of the widget class, as registered in {@link widget PrimeFaces.widget}
+     * @param widgetName Name of the widget class, as registered in {@link widget | PrimeFaces.widget}
      * @param widgetVar Widget variable of the widget
      * @param cfg Configuration for the widget
      */
@@ -1708,7 +1872,7 @@ export class Core {
      * that does not handle `null` and `undefined`; and jQuery did handle this case.
      * This function allows a drop in replacement.
      *
-     * @deprecated Use {@link String.trim string?.trim() ?? ""}. TypeScript checks
+     * @deprecated Use {@link String.trim | string?.trim() ?? ""}. TypeScript checks
      * for null and undefined.
      * @param value The string to trim.
      * @return Trimmed value.
@@ -1752,11 +1916,11 @@ export class Core {
      * `z-index` to it.
      * Note that jQuery will no longer accept numeric values in {@link JQuery.css | $.fn.css} as of version 4.0.
      *
-     * @param element Element to apply new `z-index` to.
-     * @return The next `z-index` as a string.
+     * @param element If given, applies the new `z-index` to that element.
+     * @returns The next `z-index` as a string.
      */
-    nextZindex(element: JQuery): string {
-        var zIndex = String(++this.zindex);
+    nextZindex(element?: JQuery): string {
+        const zIndex = String(++this.zindex);
         if (element) {
             element.css('z-index', zIndex);
         }
@@ -1792,11 +1956,11 @@ export class Core {
     /**
      * Queue a microtask if delay is 0 or less and setTimeout if > 0.
      *
-     * @param fn the function to call after the delay
-     * @param delay the optional delay in milliseconds
-     * @return the id associated to the timeout or undefined if no timeout used
+     * @param fn The function to call after the delay.
+     * @param delay The optional delay in milliseconds.
+     * @return The id associated to the timeout or undefined if no timeout used.
      */
-    queueTask(fn: () => void, delay?: number): number {
+    queueTask(fn: () => void, delay?: number): number | undefined {
         return utils.queueTask(fn, delay);
     }
 

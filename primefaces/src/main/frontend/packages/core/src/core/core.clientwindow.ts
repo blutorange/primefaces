@@ -1,62 +1,53 @@
+import { core } from "./core.js";
+
 /**
  * The class with functionality related to multiple window support in PrimeFaces applications.
  */
 export class ClientWindow {
     /**
     * The name of the URL parameter holding the client window ID.
-    * @type {string}
-    * @readonly
     */
-    CLIENT_WINDOW_URL_PARAM = "jfwid";
+    readonly CLIENT_WINDOW_URL_PARAM: string = "jfwid";
     
     /**
     * The key for the session storage entry holding the client window ID.
-    * @type {string}
-    * @readonly
     */
-    CLIENT_WINDOW_SESSION_STORAGE = "pf.windowId";
+    readonly CLIENT_WINDOW_SESSION_STORAGE: string = "pf.windowId";
     
     /**
     * The value of the temporary client window ID, used for requesting a new ID, see
     * {@link requestNewClientWindowId}.
-    * @type {string}
-    * @readonly
     */
-    TEMP_CLIENT_WINDOW_ID = "temp";
+    readonly TEMP_CLIENT_WINDOW_ID: string = "temp";
     
     /**
     * The number of characters of the client window ID. Each client window ID must be of this length, or it is
     * invalid.
-    * @type {number}
-    * @readonly
     */
-    LENGTH_CLIENT_WINDOW_ID = 5;
+    readonly LENGTH_CLIENT_WINDOW_ID: number = 5;
     
     /**
     * Whether the {@link init} function was called already.
-    * @type {boolean}
     */
-    initialized = false;
+    initialized: boolean = false;
     
     /**
     * The current window ID, as received from the server. May be `null` when to ID was provided.
-    * @type {null | string}
     */
-    clientWindowId = null;
+    clientWindowId: null | string = null;
     
     /**
     * Whether the currently loaded page is from the first redirect.
-    * @type {boolean}
     */
-    initialRedirect = false;
+    initialRedirect: boolean = false;
     
     /**
     * Initializes the client window feature. Usually invoked on page load. This method should only be called once
     * per page.
-    * @param {string} clientWindowId The current client window ID.
-    * @param {boolean} initialRedirect Whether the currently loaded page is from the first redirect.
+    * @param clientWindowId The current client window ID.
+    * @param initialRedirect Whether the currently loaded page is from the first redirect.
     */
-    init(clientWindowId, initialRedirect) {
+    init(clientWindowId: string, initialRedirect: boolean): void {
         if (this.initialized === true) {
             return;
         }
@@ -73,7 +64,7 @@ export class ClientWindow {
     /**
     * Makes sure the temporary cookie for the client window ID is expired.
     */
-    cleanupCookies() {
+    cleanupCookies(): void {
         var urlWindowId = this.getUrlParameter(window.location.href, this.CLIENT_WINDOW_URL_PARAM);
         if (urlWindowId) {
             this.expireCookie('pf.initialredirect-' + urlWindowId);
@@ -84,7 +75,7 @@ export class ClientWindow {
     * Checks whether the client window ID is valid. If not, requests a new client window ID from the server via
     * reloading the current page.
     */
-    assertClientWindowId() {
+    assertClientWindowId(): void {
         var urlClientWindowId = this.getUrlParameter(window.location.href, this.CLIENT_WINDOW_URL_PARAM);
         var sessionStorageClientWindowId = sessionStorage.getItem(this.CLIENT_WINDOW_SESSION_STORAGE);
         
@@ -93,7 +84,7 @@ export class ClientWindow {
             // initial redirect
             // -> the windowId is valid - we don't need to a second request
             if (this.initialRedirect && urlClientWindowId === this.clientWindowId) {
-                sessionStorage.setItem(this.CLIENT_WINDOW_SESSION_STORAGE, this.clientWindowId);
+                sessionStorage.setItem(this.CLIENT_WINDOW_SESSION_STORAGE, this.clientWindowId ?? "");
             }
             // != initial redirect
             // -> request a new windowId to avoid multiple tabs with the same windowId
@@ -103,16 +94,20 @@ export class ClientWindow {
         }
         else if (sessionStorageClientWindowId === this.TEMP_CLIENT_WINDOW_ID) {
             // we triggered the windowId recreation last request
-            sessionStorage.setItem(this.CLIENT_WINDOW_SESSION_STORAGE, this.clientWindowId);
+            sessionStorage.setItem(this.CLIENT_WINDOW_SESSION_STORAGE, this.clientWindowId ?? "");
         }
         else if (sessionStorageClientWindowId.length !== this.LENGTH_CLIENT_WINDOW_ID) {
             // security check length
             this.requestNewClientWindowId();
         }
         else if (sessionStorageClientWindowId !== urlClientWindowId || sessionStorageClientWindowId !== this.clientWindowId) {
+            // There are subtle differences between
+            // window.location = "..." and window.location.href = "..."
+            // https://github.com/microsoft/TypeScript/issues/48949
+
             // session storage windowId doesn't match requested windowId
             // -> redirect to the same view with current windowId from the window name
-            window.location = this.replaceUrlParam(window.location.href, this.CLIENT_WINDOW_URL_PARAM, sessionStorageClientWindowId);
+            (window as Window).location = this.replaceUrlParam(window.location.href, this.CLIENT_WINDOW_URL_PARAM, sessionStorageClientWindowId);
         }
     }
     
@@ -120,22 +115,26 @@ export class ClientWindow {
     * Expires the current client window ID by replacing it with a temporary, invalid client window ID. Then reloads
     * the current page to request a new ID from the server.
     */
-    requestNewClientWindowId() {
+    requestNewClientWindowId(): void {
         sessionStorage.setItem(this.CLIENT_WINDOW_SESSION_STORAGE, this.TEMP_CLIENT_WINDOW_ID);
         
+        // There are subtle differences between
+        // window.location = "..." and window.location.href = "..."
+        // https://github.com/microsoft/TypeScript/issues/48949
+
         // we remove the windowId if available and redirect to the same url again to create a new windowId
-        window.location = this.replaceUrlParam(window.location.href, this.CLIENT_WINDOW_URL_PARAM, null);
+        (window as Window).location = this.replaceUrlParam(window.location.href, this.CLIENT_WINDOW_URL_PARAM, null);
     }
     
     /**
     * Returns the value of the URL parameter with the given name. When the URL contains multiple URL parameters
     * with the same name, the value of the first URL parameter is returned.
-    * @param {string} uri An URL from which to extract an URL parameter.
-    * @param {string} name Name of the URL parameter to retrieve.
-    * @return {string | null} The value of the given URL parameter. Returns the empty string when the URL parameter
+    * @param uri An URL from which to extract an URL parameter.
+    * @param name Name of the URL parameter to retrieve.
+    * @return The value of the given URL parameter. Returns the empty string when the URL parameter
     * is present, but has no value. Returns `null` when no URL parameter with the given name exists.
     */
-    getUrlParameter(uri, name) {
+    getUrlParameter(uri: string, name: string): string | null {
         // create an anchor object with the uri and let the browser parse it
         var a = document.createElement('a');
         a.href = uri;
@@ -148,7 +147,7 @@ export class ClientWindow {
             for (const queryParameterString of queryParameters) {
                 const queryParameter = queryParameterString.split("=");
                 if (queryParameter[0] === name) {
-                    return queryParameter.length > 1 ? decodeURIComponent(queryParameter[1]) : "";
+                    return queryParameter.length > 1 ? decodeURIComponent(queryParameter[1] ?? "") : "";
                 }
             }
         }
@@ -160,13 +159,13 @@ export class ClientWindow {
     * Given a URL, removes all URL parameters with the given name, adds a new URL parameter with the given value,
     * and returns the new URL with the replaced parameter. If the URL contains multiple URL parameters with the
     * same name, they are all removed.
-    * @param {string} uri The URL for which to change an URL parameter.
-    * @param {string} parameterName Name of the URL parameter to change.
-    * @param {string | null} [parameterValue] New value for the URL parameter. If `null` or not given, the empty
+    * @param uri The URL for which to change an URL parameter.
+    * @param parameterName Name of the URL parameter to change.
+    * @param parameterValue New value for the URL parameter. If `null` or not given, the empty
     * string is used.
-    * @return {string} The given URL, but with value of the given URL parameter changed to the new value.
+    * @return The given URL, but with value of the given URL parameter changed to the new value.
     */
-    replaceUrlParam (uri, parameterName, parameterValue) {
+    replaceUrlParam (uri: string, parameterName: string, parameterValue?: string | null): string {
         var a = document.createElement('a');
         a.href = uri;
         
@@ -220,11 +219,14 @@ export class ClientWindow {
     /**
     * Expires the cookie with the given name by setting a cookie with the appropriate `max-age` and `expires`
     * settings.
-    * @param {string} cookieName Name of the cookie to expire.
+    * @param cookieName Name of the cookie to expire.
     */
-    expireCookie(cookieName) {
-        PrimeFaces.setCookie(cookieName, 'true', { path: '/', expires: -10, 'max-age': '0' });
+    expireCookie(cookieName: string): void {
+        core.setCookie(cookieName, 'true', { path: '/', expires: -10, 'max-age': '0' });
     }
 }
 
-export const clientwindow = new ClientWindow();
+/**
+ * The object with functionality related to multiple window support in PrimeFaces applications.
+ */
+export const clientwindow: ClientWindow = new ClientWindow();

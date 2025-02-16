@@ -1,3 +1,5 @@
+/// <reference types="jquery" preserve="true" />
+
 import jQuery from "jquery";
 import type { Matchs } from "jquery.browser";
 import _jQBrowser from "jquery.browser";
@@ -36,7 +38,6 @@ declare global {
     }
 }
 
-/// <reference types="jquery" preserve="true" />
 Object.assign(window, { $: jQuery, jQuery });
 
 // Expose jqBrowser to the global scope

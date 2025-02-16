@@ -54,9 +54,9 @@ export class AjaxExceptionHandler<Cfg extends AjaxExceptionHandlerCfg = AjaxExce
      */
     handle(errorName: string, errorMessage: string): void {
         if (this.cfg.update) {
-            const options = {
-                source: this.id,
-                process: this.id,
+            const options: PrimeType.ajax.Configuration = {
+                source: this.getId(),
+                process: this.getId(),
                 update: this.cfg.update,
                 ignoreAutoUpdate: true,
                 global: false,

@@ -1,26 +1,25 @@
+import { core } from "./core.js";
+
 /**
  * The class with functionality related to handling resources on the server, such as CSS and JavaScript files.
  */
 export class Resources {
     /**
      * Base URL for PrimeFaces resources.
-     * @type {string}
      */
-    SCRIPT_URI;
+    SCRIPT_URI: string = "";
 
     /**
      * Whether the Faces resources handler uses the extension mapping. When enabled,
      * Faces resource URLs get the `.xhtml` ending.
-     * @type {boolean}
      */
-    IS_EXTENSION_MAPPING;
+    IS_EXTENSION_MAPPING: boolean = false;
 
     /**
-     * When {@link IS_EXTENSION_MAPPING extension mapping} is enabled, the extension for resource URLs,
+     * When {@link IS_EXTENSION_MAPPING | extension mapping} is enabled, the extension for resource URLs,
      * e.g. `.xhtml`.
-     * @type {string}
      */
-    RESOURCE_URL_EXTENSION;
+    RESOURCE_URL_EXTENSION: string = "";
 
     /**
     * Builds a JSF resource URL for given resource.
@@ -29,12 +28,12 @@ export class Resources {
     * getFacesResource("main.css", "pf", "4.2.0") // => "https://www.primefaces.org/showcase/javax.faces.resource/main.css.xhtml?ln=pf&v=4.2.0"
     * ```
     *
-    * @param {string} name The name of the resource, such as `primefaces.js`.
-    * @param {string} library The library of the resource, such as `primefaces`.
-    * @param {string} version The version of the library, such as `5.1`.
-    * @return {string} The JSF resource URL for loading the resource.
+    * @param name The name of the resource, such as `primefaces.js`.
+    * @param library The library of the resource, such as `primefaces`.
+    * @param version The version of the library, such as `5.1`.
+    * @return The JSF resource URL for loading the resource.
     */
-    getFacesResource(name, library, version) {
+    getFacesResource(name: string, library: string, version: string): string {
         // just get sure - name shouldn't start with a slash
         if (name.indexOf('/') === 0) {
             name = name.substring(1, name.length);
@@ -51,7 +50,7 @@ export class Resources {
         var libraryRegex = /[?&]([^&=]*)ln=(.*?)(&|$)/;
         
         // find library to replace e.g. 'ln=primefaces'
-        var currentLibraryName = 'ln=' + libraryRegex.exec(scriptURI)[2];
+        var currentLibraryName = 'ln=' + libraryRegex.exec(scriptURI)?.[2];
         
         // In a portlet environment, url parameters may be namespaced.
         var namespace = '';
@@ -59,7 +58,7 @@ export class Resources {
         scriptURI.indexOf('&'+ currentLibraryName) > -1);
         
         if (urlParametersAreNamespaced) {
-            namespace = new RegExp('[?&]([^&=]+)' + currentLibraryName + '($|&)').exec(scriptURI)[1];
+            namespace = new RegExp('[?&]([^&=]+)' + currentLibraryName + '($|&)').exec(scriptURI)?.[1] ?? "";
         }
         
         // If the parameters are namespaced, the namespace must be included
@@ -67,7 +66,7 @@ export class Resources {
         scriptURI = scriptURI.replace(namespace + currentLibraryName, namespace + 'ln=' + library);
         
         if (version) {
-            var extractedVersion = new RegExp('[?&]' + namespace + 'v=([^&]*)').exec(scriptURI)[1];
+            var extractedVersion = new RegExp('[?&]' + namespace + 'v=([^&]*)').exec(scriptURI)?.[1] ?? "";
             scriptURI = scriptURI.replace(namespace + 'v=' + extractedVersion, namespace + 'v=' + version);
         }
         
@@ -81,9 +80,9 @@ export class Resources {
     * - .jsf
     * - .xhtml
     * 
-    * @return {boolean} `true` if the FacesServlet is mapped with an extension mapping, `false` otherwise.
+    * @return `true` if the FacesServlet is mapped with an extension mapping, `false` otherwise.
     */
-    isExtensionMapping() {
+    isExtensionMapping(): boolean {
         if (!this.IS_EXTENSION_MAPPING) {
             var scriptURI = this.getResourceScriptURI();
             var scriptName = this.getResourceScriptName(scriptURI);
@@ -98,13 +97,13 @@ export class Resources {
     * 
     * This should only be used if extensions mapping is used, see `PrimeFaces.isExtensionMapping`.
     * 
-    * @return {string} The URL extension.
+    * @return The URL extension.
     */
-    getResourceUrlExtension() {
+    getResourceUrlExtension(): string {
         if (!this.RESOURCE_URL_EXTENSION) {
             var scriptURI = this.getResourceScriptURI();
             var scriptName = this.getResourceScriptName(scriptURI);
-            this.RESOURCE_URL_EXTENSION = RegExp(scriptName + '.([^?]*)').exec(scriptURI)[1];
+            this.RESOURCE_URL_EXTENSION = RegExp(scriptName + '.([^?]*)').exec(scriptURI)?.[1] ?? "";
         }
         
         return this.RESOURCE_URL_EXTENSION;
@@ -113,24 +112,23 @@ export class Resources {
     /**
     * Given a URI, find the name of the script, such as `primefaces-extensions.js`.
     * 
-    * @param {string} scriptURI The URI of a script
-    * @return {string} The name of the script.
+    * @param scriptURI The URI of a script
+    * @return The name of the script.
     */
-    getResourceScriptName(scriptURI) {
+    getResourceScriptName(scriptURI: string): string {
         // find script...normal is '/core.js' and portlets are '=core.js'
-        var scriptRegex = new RegExp('\\/?' + PrimeFaces.RESOURCE_IDENTIFIER + '(\\/|=)(.*?)\\.js');
-        return scriptRegex.exec(scriptURI)[2] + '.js';
+        var scriptRegex = new RegExp('\\/?' + core.RESOURCE_IDENTIFIER + '(\\/|=)(.*?)\\.js');
+        return scriptRegex.exec(scriptURI)?.[2] + '.js';
     }
     
     /**
     * Gets the resource URI of the first Javascript JS file served as a JSF resource.
     * 
-    * @return {string} The first JavasScript resource URI.
+    * @return The first JavasScript resource URI.
     */
-    getResourceScriptURI() {
+    getResourceScriptURI(): string {
         if (!this.SCRIPT_URI) {
-            /** @param {JQuery} scripts */
-            const findScriptWithVersionParam = (scripts) => {
+            const findScriptWithVersionParam = (scripts: JQuery) => {
                 for (const script of scripts) {
                     var src = $(script).attr('src');
                     if (src && src.indexOf('v=') !== -1) {
@@ -141,11 +139,11 @@ export class Resources {
             }
 
             // normal '/showcase/javax.faces.resource/jquery/jquery.js.xhtml?ln=primefaces&v=13.0.5'
-            findScriptWithVersionParam($('script[src*="/' + PrimeFaces.RESOURCE_IDENTIFIER + '/"]'));
+            findScriptWithVersionParam($('script[src*="/' + core.RESOURCE_IDENTIFIER + '/"]'));
             
             // portlet 'javax.faces.resource=jquery/jquery.js.xhtml?ln=primefaces&v=13.0.5'
             if (!this.SCRIPT_URI) {
-                findScriptWithVersionParam($('script[src*="' + PrimeFaces.RESOURCE_IDENTIFIER + '="]'));
+                findScriptWithVersionParam($('script[src*="' + core.RESOURCE_IDENTIFIER + '="]'));
             }
         }
         return this.SCRIPT_URI;
@@ -155,4 +153,4 @@ export class Resources {
 /**
  * The object with functionality related to handling resources on the server, such as CSS and JavaScript files.
  */
-export const resources = new Resources();
+export const resources: Resources = new Resources();

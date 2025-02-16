@@ -2,8 +2,8 @@ import { core } from "./core.js";
 import { utils } from "./core.utils.js";
 
 /**
- * The configuration for the {@link  BaseWidget| BaseWidget widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
+ * The configuration for the {@link BaseWidget | BaseWidget widget}.
+ * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg | BaseWidget.cfg}. Please note that this
  * configuration is usually meant to be read-only and should not be modified. This configuration is
  * always accessible via the `cfg` property of a widget and consists of key-value pairs. Please note that, in order
  * to save bandwidth, the server only sends a value for a given configuration key when the value differs from the
@@ -339,6 +339,25 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg>  {
     }
 
     /**
+     * Gets the ID of this widget's first container element. This is identical
+     * to {@link id} in case the widget only has one container element.  
+     * @returns The main ID of this widget.
+     */
+    getId(): string {
+        return typeof this.id === "string" ? this.id : (this.id[0] ?? "");
+    }
+
+    /**
+     * Gets the IDs of each of this widget's container elements, as an array.
+     * This is identical to {@link id} in case the widget has multiple container
+     * elements.
+     * @returns The IDs of this widget's container elements.
+     */
+    getIds(): string[] {
+        return typeof this.id === "string" ? [this.id] : this.id;
+    }
+
+    /**
      * Removes the widget's script block from the DOM. Currently, the ID of this script block consists of the
      * client-side ID of this widget with the prefix `_s`, but this is subject to change.
      *
@@ -396,7 +415,7 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg>  {
      * @param ext Additional configuration that is passed to the AJAX request for the server-side callback.
      * @since 7.0
      */
-    callBehavior(event: string, ext?: Partial<PrimeFaces.ajax.ConfigurationExtender>): void {
+    callBehavior(event: string, ext?: Partial<PrimeType.ajax.ConfigurationExtender>): void {
         if(this.hasBehavior(event)) {
             this.cfg.behaviors?.[event]?.call(this, ext);
         }
@@ -574,14 +593,14 @@ export class DynamicOverlayWidget<Cfg extends DynamicOverlayWidgetCfg = DynamicO
         }
 
         if(!overlayId) {
-            overlayId = typeof this.id === "string" ? this.id : "";
+            overlayId = this.getId();
         }
 
         if(!target) {
             target = this.jq;
         }
 
-        var ignoreAppendTo = this instanceof PrimeFaces.widget.Dialog;
+        var ignoreAppendTo = this instanceof core.widget.Dialog;
         if (!ignoreAppendTo) {
             this.cfg.appendTo = utils.resolveAppendTo(this, target, overlay);
         }

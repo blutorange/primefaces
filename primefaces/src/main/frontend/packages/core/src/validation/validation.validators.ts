@@ -1,142 +1,167 @@
+import { core } from "../core/core.js";
 import { utils } from "../core/core.utils.js";
 
-PrimeFaces.validator['javax.faces.Length'] = {
-    MINIMUM_MESSAGE_ID: 'javax.faces.validator.LengthValidator.MINIMUM',
-    MAXIMUM_MESSAGE_ID: 'javax.faces.validator.LengthValidator.MAXIMUM',
+function toNumber(value: unknown): number | undefined {
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+    if (typeof value === "number") {
+        return value;
+    }
+    if (typeof value === "string") {
+        return value.length > 0 ? parseFloat(value) : undefined;
+    }
+    if (typeof value === "boolean") {
+        return value ? 1 : 0;
+    }
+    return undefined;
+}
 
-    validate: function(element) {
-        var length = element.val().length,
-        min = element.data('p-minlength'),
-        max = element.data('p-maxlength'),
-        vc = PrimeFaces.validation.ValidationContext;
+class LengthValidator implements PrimeType.validation.Validator {
+    private readonly MINIMUM_MESSAGE_ID = 'javax.faces.validator.LengthValidator.MINIMUM';
+    private readonly MAXIMUM_MESSAGE_ID = 'javax.faces.validator.LengthValidator.MAXIMUM';
 
-        if(max !== undefined && length > max) {
+    validate(element: JQuery): void {
+        const value = element.val();
+        if (value === undefined) {
+            return;
+        }
+        const length = Array.isArray(value) || typeof value === "string" ? value.length : value.toString().length;
+        const min = toNumber(element.data('p-minlength'));
+        const max = toNumber(element.data('p-maxlength'));
+        const vc = core.validation.ValidationContext;
+
+        if (max !== undefined && length > max) {
             throw vc.getMessage(this.MAXIMUM_MESSAGE_ID, max, vc.getLabel(element));
         }
 
-        if(min !== undefined && length < min) {
+        if (min !== undefined && length < min) {
             throw vc.getMessage(this.MINIMUM_MESSAGE_ID, min, vc.getLabel(element));
         }
     }
-};
+}
 
-PrimeFaces.validator['javax.faces.LongRange'] = {
-    MINIMUM_MESSAGE_ID: 'javax.faces.validator.LongRangeValidator.MINIMUM',
-    MAXIMUM_MESSAGE_ID: 'javax.faces.validator.LongRangeValidator.MAXIMUM',
-    NOT_IN_RANGE_MESSAGE_ID: 'javax.faces.validator.LongRangeValidator.NOT_IN_RANGE',
-    TYPE_MESSAGE_ID: 'javax.faces.validator.LongRangeValidator.TYPE',
-    regex: /^-?\d+$/,
+class LongRangeValidator implements PrimeType.validation.Validator {
+    private readonly MINIMUM_MESSAGE_ID = 'javax.faces.validator.LongRangeValidator.MINIMUM';
+    private readonly MAXIMUM_MESSAGE_ID = 'javax.faces.validator.LongRangeValidator.MAXIMUM';
+    private readonly NOT_IN_RANGE_MESSAGE_ID = 'javax.faces.validator.LongRangeValidator.NOT_IN_RANGE';
+    private readonly TYPE_MESSAGE_ID = 'javax.faces.validator.LongRangeValidator.TYPE';
+    private readonly regex = /^-?\d+$/;
 
-    validate: function(element, value) {
-        if(value !== null) {
-            var min = element.data('p-minvalue'),
-            max = element.data('p-maxvalue'),
-            vc = PrimeFaces.validation.ValidationContext;
+    validate(element: JQuery, value: unknown): void {
+        if (value !== null) {
+            const min = toNumber(element.data('p-minvalue'));
+            const max = toNumber(element.data('p-maxvalue'));
+            const vc = core.validation.ValidationContext;
+            const stringValue = String(value);
+            const numberValue = parseFloat(stringValue);
 
-            if(!this.regex.test(value)) {
+            if (!this.regex.test(stringValue)) {
                 throw vc.getMessage(this.TYPE_MESSAGE_ID, vc.getLabel(element));
             }
 
-            if((max !== undefined && min !== undefined) && (value < min || value > max)) {
+            if ((max !== undefined && min !== undefined) && (numberValue < min || numberValue > max)) {
                 throw vc.getMessage(this.NOT_IN_RANGE_MESSAGE_ID, min, max, vc.getLabel(element));
             }
-            else if((max !== undefined && min === undefined) && (value > max)) {
+            else if ((max !== undefined && min === undefined) && (numberValue > max)) {
                 throw vc.getMessage(this.MAXIMUM_MESSAGE_ID, max, vc.getLabel(element));
             }
-            else if((min !== undefined && max === undefined) && (value < min)) {
+            else if ((min !== undefined && max === undefined) && (numberValue < min)) {
                 throw vc.getMessage(this.MINIMUM_MESSAGE_ID, min, vc.getLabel(element));
             }
         }
     }
-};
+}
 
-PrimeFaces.validator['javax.faces.DoubleRange'] = {
-    MINIMUM_MESSAGE_ID: 'javax.faces.validator.DoubleRangeValidator.MINIMUM',
-    MAXIMUM_MESSAGE_ID: 'javax.faces.validator.DoubleRangeValidator.MAXIMUM',
-    NOT_IN_RANGE_MESSAGE_ID: 'javax.faces.validator.DoubleRangeValidator.NOT_IN_RANGE',
-    TYPE_MESSAGE_ID: 'javax.faces.validator.DoubleRangeValidator.TYPE',
-    regex: /^[-+]?\d*(\.\d+)?[d]?$/,
+class DoubleRangeValidator implements PrimeType.validation.Validator {
+    private readonly MINIMUM_MESSAGE_ID = 'javax.faces.validator.DoubleRangeValidator.MINIMUM';
+    private readonly MAXIMUM_MESSAGE_ID = 'javax.faces.validator.DoubleRangeValidator.MAXIMUM';
+    private readonly NOT_IN_RANGE_MESSAGE_ID = 'javax.faces.validator.DoubleRangeValidator.NOT_IN_RANGE';
+    private readonly TYPE_MESSAGE_ID = 'javax.faces.validator.DoubleRangeValidator.TYPE';
+    private readonly regex = /^[-+]?\d*(\.\d+)?[d]?$/;
 
-    validate: function(element, value) {
-        if(value !== null) {
-            var min = element.data('p-minvalue'),
-            max = element.data('p-maxvalue'),
-            vc = PrimeFaces.validation.ValidationContext;
+    validate(element: JQuery, value: unknown): void {
+        if (value !== null) {
+            const min = toNumber(element.data('p-minvalue'));
+            const max = toNumber(element.data('p-maxvalue'));
+            const vc = core.validation.ValidationContext;
+            const stringValue = String(value);
+            const numberValue = parseFloat(stringValue);
 
-            if(!this.regex.test(value)) {
+            if(!this.regex.test(stringValue)) {
                 throw vc.getMessage(this.TYPE_MESSAGE_ID, vc.getLabel(element));
             }
 
-            if((max !== undefined && min !== undefined) && (value < min || value > max)) {
+            if ((max !== undefined && min !== undefined) && (numberValue < min || numberValue > max)) {
                 throw vc.getMessage(this.NOT_IN_RANGE_MESSAGE_ID, min, max, vc.getLabel(element));
             }
-            else if((max !== undefined && min === undefined) && (value > max)) {
+            else if ((max !== undefined && min === undefined) && (numberValue > max)) {
                 throw vc.getMessage(this.MAXIMUM_MESSAGE_ID, max, vc.getLabel(element));
             }
-            else if((min !== undefined && max === undefined) && (value < min)) {
+            else if ((min !== undefined && max === undefined) && (numberValue < min)) {
                 throw vc.getMessage(this.MINIMUM_MESSAGE_ID, min, vc.getLabel(element));
             }
         }
     }
-};
+}
 
-PrimeFaces.validator['javax.faces.RegularExpression'] = {
-    PATTERN_NOT_SET_MESSAGE_ID: 'javax.faces.validator.RegexValidator.PATTERN_NOT_SET',
-    NOT_MATCHED_MESSAGE_ID: 'javax.faces.validator.RegexValidator.NOT_MATCHED',
-    MATCH_EXCEPTION_MESSAGE_ID: 'javax.faces.validator.RegexValidator.MATCH_EXCEPTION',
+class RegularExpressionValidator implements PrimeType.validation.Validator {
+    private readonly PATTERN_NOT_SET_MESSAGE_ID = 'javax.faces.validator.RegexValidator.PATTERN_NOT_SET';
+    private readonly NOT_MATCHED_MESSAGE_ID = 'javax.faces.validator.RegexValidator.NOT_MATCHED';
 
-    validate: function(element, value) {
-        if(value !== null) {
-            var pattern = element.data('p-regex'),
-            vc = PrimeFaces.validation.ValidationContext;
+    validate(element: JQuery, value: unknown): void {
+        if (value !== null) {
+            const pattern = element.data('p-regex');
+            const vc = core.validation.ValidationContext;
+            const stringValue = String(value);
 
             if(!pattern) {
                 throw vc.getMessage(this.PATTERN_NOT_SET_MESSAGE_ID);
             }
 
             var regex = new RegExp(pattern);
-            if(!regex.test(value)) {
+            if(!regex.test(stringValue)) {
                 throw vc.getMessage(this.NOT_MATCHED_MESSAGE_ID, pattern);
             }
         }
     }
-};
+}
 
-PrimeFaces.validator['primefaces.File'] = {
-    FILE_LIMIT_MESSAGE_ID: 'primefaces.FileValidator.FILE_LIMIT',
-    ALLOW_TYPES_MESSAGE_ID: 'primefaces.FileValidator.ALLOW_TYPES',
-    SIZE_LIMIT_MESSAGE_ID: 'primefaces.FileValidator.SIZE_LIMIT',
+class FileValidator implements PrimeType.validation.Validator {
+    private readonly FILE_LIMIT_MESSAGE_ID = 'primefaces.FileValidator.FILE_LIMIT';
+    private readonly ALLOW_TYPES_MESSAGE_ID = 'primefaces.FileValidator.ALLOW_TYPES';
+    private readonly SIZE_LIMIT_MESSAGE_ID = 'primefaces.FileValidator.SIZE_LIMIT';
 
-    validate: function(element, value) {
-        if(value !== null) {
+    validate(element: JQuery, value: unknown): void {
+        if (value !== null && value instanceof FileList) {
 
-            var filelimit = element.data('p-filelimit'),
-                allowtypes = element.data('p-allowtypes'),
-                sizelimit = element.data('p-sizelimit'),
-                vc = PrimeFaces.validation.ValidationContext,
-                messages = [];
+            const fileLimit = element.data('p-filelimit');
+            const allowTypes = element.data('p-allowtypes');
+            const sizeLimit = element.data('p-sizelimit');
+            const vc = core.validation.ValidationContext;
+            const messages: PrimeType.BaseFacesMessage[] = [];
 
-            var allowtypesRegExp = null;
-            if (allowtypes) {
+            let allowTypesRegExp = null;
+            if (allowTypes) {
                 // normally a regex is a object like /(\.|\/)(csv)$/
                 // but as we parse the data-attribute from string to RegEx object, we must remove leading and ending slashes
-                var regexParts = allowtypes.match(/^\/(.*)\/([a-z]*)$/);
-                var transformedAllowtypes = regexParts[1];
-                var flags = regexParts[2];
-                allowtypesRegExp = new RegExp(transformedAllowtypes, flags);
+                const regexParts = allowTypes.match(/^\/(.*)\/([a-z]*)$/);
+                const transformedAllowTypes = regexParts[1];
+                const flags = regexParts[2];
+                allowTypesRegExp = new RegExp(transformedAllowTypes, flags);
             }
 
-            if (filelimit && value.length > filelimit) {
-                messages.push(vc.getMessage(this.FILE_LIMIT_MESSAGE_ID, filelimit));
+            if (fileLimit && value.length > fileLimit) {
+                messages.push(vc.getMessage(this.FILE_LIMIT_MESSAGE_ID, fileLimit));
             }
 
-            for (var file of value) {
-                if (allowtypesRegExp && (!allowtypesRegExp.test(file.type) && !allowtypesRegExp.test(file.name)))  {
-                    messages.push(vc.getMessage(this.ALLOW_TYPES_MESSAGE_ID, file.name, utils.formatAllowTypes(allowtypes)));
+            for (const file of value) {
+                if (allowTypesRegExp && (!allowTypesRegExp.test(file.type) && !allowTypesRegExp.test(file.name)))  {
+                    messages.push(vc.getMessage(this.ALLOW_TYPES_MESSAGE_ID, file.name, utils.formatAllowTypes(allowTypes)));
                 }
 
-                if (sizelimit && file.size > sizelimit) {
-                    messages.push(vc.getMessage(this.SIZE_LIMIT_MESSAGE_ID, file.name, utils.formatBytes(sizelimit)));
+                if (sizeLimit && file.size > sizeLimit) {
+                    messages.push(vc.getMessage(this.SIZE_LIMIT_MESSAGE_ID, file.name, utils.formatBytes(sizeLimit)));
                 }
             }
 
@@ -144,5 +169,14 @@ PrimeFaces.validator['primefaces.File'] = {
                 throw messages;
             }
         }
-    },
-};
+    }
+}
+
+export function registerCommonValidators(): void {
+    core.validator['javax.faces.Length'] = new LengthValidator();
+    core.validator['javax.faces.LongRange'] = new LongRangeValidator();
+    core.validator['javax.faces.DoubleRange'] = new DoubleRangeValidator();
+    core.validator['javax.faces.RegularExpression'] = new RegularExpressionValidator();
+    core.validator['primefaces.File'] = new FileValidator();
+}
+

@@ -1,3 +1,4 @@
+import { core } from "./core.js";
 import { ajax } from "./core.ajax.js";
 
 declare global {
@@ -63,7 +64,7 @@ export class Csp {
     isFacesForm(form: HTMLFormElement): boolean {
         if (form.method === 'post') {
             for (let child of form.children) {
-                if (child instanceof HTMLInputElement && child.name && child.name.includes(PrimeFaces.VIEW_STATE)) {
+                if (child instanceof HTMLInputElement && child.name && child.name.includes(core.VIEW_STATE)) {
                     return true;
                 }
             }
@@ -104,7 +105,7 @@ export class Csp {
             }
 
             //Collect some basic information about registered AJAXified event listeners
-            if (!PrimeFaces.isProductionProjectStage()) {
+            if (!core.isProductionProjectStage()) {
                 if (!this.EVENT_REGISTRY.has(id)) {
                     this.EVENT_REGISTRY.set(id, new Map());
                 }
@@ -120,7 +121,7 @@ export class Csp {
      * @return `true` if component has this AJAX event
      */
     hasRegisteredAjaxifiedEvent(id: string, event: string): boolean | undefined {
-        if (PrimeFaces.isProductionProjectStage()) {
+        if (core.isProductionProjectStage()) {
             console.error("PrimeFaces CSP registry may not be used in JSF Production mode.");
             return false;
         }

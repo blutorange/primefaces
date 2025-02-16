@@ -30,6 +30,33 @@ declare global {
         export type AnyNewable = Newable<never[], unknown>;
 
         /**
+         * Similar to `Disposable`. An object that can be used to remove a
+         * bound (enabled) feature.
+         */
+        export interface Unbindable {
+            /**
+             * Unbinds the feature, disabling it.
+             */
+            unbind: () => void;
+        }
+
+        /**
+         * An object that can be used to bind (enable) a feature.
+         */
+        export interface Bindable {
+            /**
+             * Binds the feature, enabling it.
+             */
+            bind: () => void;
+        }
+
+        /**
+         * An object that allows binding (enabling) and unbinding (disabling) a
+         * feature.
+         */
+        export interface Controllable extends Bindable, Unbindable {}
+        
+        /**
          * Constructs a new type by renaming the properties in `Base` according to the `RenameMap`.
          *
          * ```ts
@@ -168,18 +195,18 @@ declare global {
          * A reference to a function to call on an error, see {@link addOnError}.
          */
         export type OnErrorCallback =
-        /**
-         * @param data Data with details about the error and the received response.
-         */
-        (data: OnErrorCallbackData) => void;
+            /**
+             * @param data Data with details about the error and the received response.
+             */
+            (data: OnErrorCallbackData) => void;
         /**
          * A reference to a function to call on an event, see {@link addOnEvent}.
          */
         export type OnEventCallback =
-        /**
-         * @param data Data with details about the received response.
-         */
-        (data: OnEventCallbackData) => void;
+            /**
+             * @param data Data with details about the received response.
+             */
+            (data: OnEventCallbackData) => void;
         /**
          * Base data for an event callback, see {@link addOnError} and {@link addOnEvent}.
          * @typeParam T Type of the `type` property.
@@ -212,22 +239,50 @@ declare global {
             responseText?: string;
         }
         /**
-         * Data for the callback when an AJAX request fails, see {@link addOnError}.
+         * Base data for the callback when an AJAX request fails, see {@link addOnError}.
          */
-        export interface OnErrorCallbackData extends CallbackData<"error", ErrorStatus> {
-            /**
-             * Name of the error, if {@link status} is set to `serverError`.
-             */
-            errorName?: string;
-            /**
-             * Message of the error, if {@link status} is set to `serverError`.
-             */
-            errorMessage?: string;
+        export interface OnErrorCallbackDataBase<S extends ErrorStatus> extends CallbackData<"error", S> {
             /**
              * Human readable description of the error.
              */
             description: string;
         }
+        /**
+         * Data for the callback when an AJAX request fails due to an empty response,
+         * see {@link addOnError}.
+         */
+        export interface OnErrorCallbackDataEmptyResponse extends OnErrorCallbackDataBase<"emptyResponse"> {
+        }
+        /**
+         * Data for the callback when an AJAX request fails with an HTTP error,
+         * see {@link addOnError}.
+         */
+        export interface OnErrorCallbackDataHttpError extends OnErrorCallbackDataBase<"httpError"> {
+        }
+        /**
+         * Data for the callback when an AJAX request fails due to malformed XML,
+         * see {@link addOnError}.
+         */
+        export interface OnErrorCallbackDataMalformedXml extends OnErrorCallbackDataBase<"malformedXML"> {
+        }
+        /**
+         * Data for the callback when an AJAX request fails with a server error,
+         * see {@link addOnError}.
+         */
+        export interface OnErrorCallbackDataServerError extends OnErrorCallbackDataBase<"serverError"> {
+            /**
+             * Name of the error.
+             */
+            errorName: string;
+            /**
+             * Message of the error.
+             */
+            errorMessage: string;
+        }
+        /**
+         * Data for the callback when an AJAX request fails, see {@link addOnError}.
+         */
+        export type OnErrorCallbackData = OnErrorCallbackDataEmptyResponse | OnErrorCallbackDataHttpError | OnErrorCallbackDataMalformedXml| OnErrorCallbackDataServerError;
         /**
          * Data for the callback when an AJAX request succeeds, see {@link addOnEvent}.
          */

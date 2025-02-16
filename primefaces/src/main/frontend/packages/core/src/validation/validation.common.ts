@@ -1,148 +1,122 @@
-import { searchExpressionFacade } from "../core/core.expressions.js";
-import { BaseWidget } from "../core/core.widget.js";
+import { expressions } from "../core/core.expressions.js";
+import { core, type Core } from "../core/core.js";
+import type { BaseWidget } from "../core/core.widget.js";
+import { validationHighlighter } from "./validation.highlighters.js";
 
-/**
- * A shortcut for `PrimeFaces.validation.validate` used by server-side renderers.
- * If the `ajax` attribute is set to `true` (the default is `false`), all inputs configured by the `process` attribute are validated
- * and all messages for the inputs configured by the `update` attribute are rendered.
- * Otherwise, if the `ajax` attribute is set to the `false`, all inputs of the parent form, of the `source` attribute, are processed and updated.
- * @function
- * @param {Partial<PrimeFaces.validation.ShorthandConfiguration>} cfg An configuration.
- * @return {boolean} `true` if the request would not result in validation errors, or `false` otherwise.
- */
-PrimeFaces.vb = function(cfg) {
-    for (var option in cfg) {
-        if (!cfg.hasOwnProperty(option)) {
-            continue;
-        }
+function toBoolean(value: unknown): boolean {
+    if (value === undefined || value === null) {
+        return false;
+    }
+    if (typeof value === "boolean") {
+        return value;
+    }
+    if (typeof value === "number") {
+        return value !== 0 && !Number.isNaN(value);
+    }
+    if (typeof value === "string") {
+        const lower = value.toLowerCase();
+        return lower === "" || lower === "false" || lower === "off" || lower === "0" ? false : true;
+    }
+    return !!value;
+}
 
-        // just pass though if no mapping is available
-        if (PrimeFaces.validation.CFG_SHORTCUTS[option]) {
-            cfg[PrimeFaces.validation.CFG_SHORTCUTS[option]] = cfg[option];
-            delete cfg[option];
+function toError(value: unknown): Error {
+    return value instanceof Error ? value : new Error(String(value ?? ""));
+}
+
+function toMessageOrError(value: unknown): Error | PrimeType.BaseFacesMessage {
+    if (value instanceof Error) {
+        return value;
+    }
+    if (typeof value === "object" && value !== null) {
+        if ("summary" in value || "detail" in value) {
+            return value as PrimeType.BaseFacesMessage;
         }
     }
+    return toError(value);
+}
 
-    var highlight = cfg.highlight || true;
-    var focus = cfg.focus || true;
-    var renderMessages = cfg.renderMessages || true;
-    var validateInvisibleElements = cfg.validateInvisibleElements || false;
-    var logUnrenderedMessages = cfg.logUnrenderedMessages || renderMessages;
+function toMessageOrErrorList(value: unknown): (Error | PrimeType.BaseFacesMessage)[] {
+    // e.g. PrimeFaces.validator['primefaces.File'] may return an array of messages
+    return Array.isArray(value) ?  value.map(v => toMessageOrError(v)): [toMessageOrError(value)];
+}
 
-    var $source = $(cfg.source);
-
-    var process = PrimeFaces.validation.Utils.resolveProcess(cfg, $source);
-    var update = PrimeFaces.validation.Utils.resolveUpdate(cfg, $source);
-
-    var result = PrimeFaces.validation.validate($source, process, update, highlight, focus, renderMessages, validateInvisibleElements, logUnrenderedMessages);
-    return result.valid;
-};
-
-/**
- * A shortcut for `PrimeFaces.validation.validateInstant`. This is used by `p:clientValidator`.
- * @function
- * @param {string | HTMLElement | JQuery} element The ID of an element to validate, or the element itself.
- * @param {boolean} highlight If the invalid element should be highlighted.
- * @param {boolean} renderMessages If messages should be rendered.
- * @return {boolean} `true` if the element is valid, or `false` otherwise.
- */
-PrimeFaces.vi = function(element, highlight, renderMessages) {
-    return PrimeFaces.validation.validateInstant(element, highlight, renderMessages);
-};
-
-/**
- * PrimeFaces Client Side Validation Framework
- */
-$.extend(PrimeFaces.locales['en_US'],{
-    decimalSeparator: '.',
-    groupingSeparator: ',',
-    messages: {
-        'javax.faces.component.UIInput.REQUIRED': '{0}: Validation Error: Value is required.',
-        'javax.faces.converter.IntegerConverter.INTEGER': '{2}: \'{0}\' must be a number consisting of one or more digits.',
-        'javax.faces.converter.IntegerConverter.INTEGER_detail': '{2}: \'{0}\' must be a number between -2147483648 and 2147483647 Example: {1}',
-        'javax.faces.converter.LongConverter.LONG': '{2}: \'{0}\' must be a number consisting of one or more digits.',
-        'javax.faces.converter.LongConverter.LONG_detail': '{2}: \'{0}\' must be a number between -9223372036854775808 to 9223372036854775807 Example: {1}',
-        'javax.faces.converter.DoubleConverter.DOUBLE': '{2}: \'{0}\' must be a number consisting of one or more digits.',
-        'javax.faces.converter.DoubleConverter.DOUBLE_detail': '{2}: \'{0}\' must be a number between 4.9E-324 and 1.7976931348623157E308  Example: {1}',
-        'javax.faces.converter.BigDecimalConverter.DECIMAL': '{2}: \'{0}\' must be a signed decimal number.',
-        'javax.faces.converter.BigDecimalConverter.DECIMAL_detail': '{2}: \'{0}\' must be a signed decimal number consisting of zero or more digits, that may be followed by a decimal point and fraction.  Example: {1}',
-        'javax.faces.converter.BigIntegerConverter.BIGINTEGER': '{2}: \'{0}\' must be a number consisting of one or more digits.',
-        'javax.faces.converter.BigIntegerConverter.BIGINTEGER_detail': '{2}: \'{0}\' must be a number consisting of one or more digits. Example: {1}',
-        'javax.faces.converter.ByteConverter.BYTE': '{2}: \'{0}\' must be a number between -128 and 127.',
-        'javax.faces.converter.ByteConverter.BYTE_detail': '{2}: \'{0}\' must be a number between -128 and 127.  Example: {1}',
-        'javax.faces.converter.CharacterConverter.CHARACTER': '{1}: \'{0}\' must be a valid character.',
-        'javax.faces.converter.CharacterConverter.CHARACTER_detail': '{1}: \'{0}\' must be a valid ASCII character.',
-        'javax.faces.converter.ShortConverter.SHORT': '{2}: \'{0}\' must be a number consisting of one or more digits.',
-        'javax.faces.converter.ShortConverter.SHORT_detail': '{2}: \'{0}\' must be a number between -32768 and 32767 Example: {1}',
-        'javax.faces.converter.BooleanConverter.BOOLEAN': '{1}: \'{0}\' must be \'true\' or \'false\'',
-        'javax.faces.converter.BooleanConverter.BOOLEAN_detail': '{1}: \'{0}\' must be \'true\' or \'false\'.  Any value other than \'true\' will evaluate to \'false\'.',
-        'javax.faces.validator.LongRangeValidator.MAXIMUM': '{1}: Validation Error: Value is greater than allowable maximum of \'{0}\'',
-        'javax.faces.validator.LongRangeValidator.MINIMUM': '{1}: Validation Error: Value is less than allowable minimum of \'{0}\'',
-        'javax.faces.validator.LongRangeValidator.NOT_IN_RANGE': '{2}: Validation Error: Specified attribute is not between the expected values of {0} and {1}.',
-        'javax.faces.validator.LongRangeValidator.TYPE={0}': 'Validation Error: Value is not of the correct type.',
-        'javax.faces.validator.DoubleRangeValidator.MAXIMUM': '{1}: Validation Error: Value is greater than allowable maximum of \'{0}\'',
-        'javax.faces.validator.DoubleRangeValidator.MINIMUM': '{1}: Validation Error: Value is less than allowable minimum of \'{0}\'',
-        'javax.faces.validator.DoubleRangeValidator.NOT_IN_RANGE': '{2}: Validation Error: Specified attribute is not between the expected values of {0} and {1}',
-        'javax.faces.validator.DoubleRangeValidator.TYPE={0}': 'Validation Error: Value is not of the correct type',
-        'javax.faces.converter.FloatConverter.FLOAT': '{2}: \'{0}\' must be a number consisting of one or more digits.',
-        'javax.faces.converter.FloatConverter.FLOAT_detail': '{2}: \'{0}\' must be a number between 1.4E-45 and 3.4028235E38  Example: {1}',
-        'javax.faces.converter.DateTimeConverter.DATE': '{2}: \'{0}\' could not be understood as a date.',
-        'javax.faces.converter.DateTimeConverter.DATE_detail': '{2}: \'{0}\' could not be understood as a date. Example: {1}',
-        'javax.faces.converter.DateTimeConverter.TIME': '{2}: \'{0}\' could not be understood as a time.',
-        'javax.faces.converter.DateTimeConverter.TIME_detail': '{2}: \'{0}\' could not be understood as a time. Example: {1}',
-        'javax.faces.converter.DateTimeConverter.DATETIME': '{2}: \'{0}\' could not be understood as a date and time.',
-        'javax.faces.converter.DateTimeConverter.DATETIME_detail': '{2}: \'{0}\' could not be understood as a date and time. Example: {1}',
-        'javax.faces.converter.DateTimeConverter.PATTERN_TYPE': '{1}: A \'pattern\' or \'type\' attribute must be specified to convert the value \'{0}\'',
-        'javax.faces.converter.NumberConverter.CURRENCY': '{2}: \'{0}\' could not be understood as a currency value.',
-        'javax.faces.converter.NumberConverter.CURRENCY_detail': '{2}: \'{0}\' could not be understood as a currency value. Example: {1}',
-        'javax.faces.converter.NumberConverter.PERCENT': '{2}: \'{0}\' could not be understood as a percentage.',
-        'javax.faces.converter.NumberConverter.PERCENT_detail': '{2}: \'{0}\' could not be understood as a percentage. Example: {1}',
-        'javax.faces.converter.NumberConverter.NUMBER': '{2}: \'{0}\' is not a number.',
-        'javax.faces.converter.NumberConverter.NUMBER_detail': '{2}: \'{0}\' is not a number. Example: {1}',
-        'javax.faces.converter.NumberConverter.PATTERN': '{2}: \'{0}\' is not a number pattern.',
-        'javax.faces.converter.NumberConverter.PATTERN_detail': '{2}: \'{0}\' is not a number pattern. Example: {1}',
-        'javax.faces.validator.LengthValidator.MINIMUM': '{1}: Validation Error: Length is less than allowable minimum of \'{0}\'',
-        'javax.faces.validator.LengthValidator.MAXIMUM': '{1}: Validation Error: Length is greater than allowable maximum of \'{0}\'',
-        'javax.faces.validator.RegexValidator.PATTERN_NOT_SET': 'Regex pattern must be set.',
-        'javax.faces.validator.RegexValidator.PATTERN_NOT_SET_detail': 'Regex pattern must be set to non-empty value.',
-        'javax.faces.validator.RegexValidator.NOT_MATCHED': 'Regex Pattern not matched',
-        'javax.faces.validator.RegexValidator.NOT_MATCHED_detail': 'Regex pattern of \'{0}\' not matched',
-        'javax.faces.validator.RegexValidator.MATCH_EXCEPTION': 'Error in regular expression.',
-        'javax.faces.validator.RegexValidator.MATCH_EXCEPTION_detail': 'Error in regular expression, \'{0}\''
-    }
-});
+export function registerValidationMessages(): void {
+    $.extend(core.locales['en_US'], {
+        decimalSeparator: '.',
+        groupingSeparator: ',',
+        messages: {
+            'javax.faces.component.UIInput.REQUIRED': '{0}: Validation Error: Value is required.',
+            'javax.faces.converter.IntegerConverter.INTEGER': '{2}: \'{0}\' must be a number consisting of one or more digits.',
+            'javax.faces.converter.IntegerConverter.INTEGER_detail': '{2}: \'{0}\' must be a number between -2147483648 and 2147483647 Example: {1}',
+            'javax.faces.converter.LongConverter.LONG': '{2}: \'{0}\' must be a number consisting of one or more digits.',
+            'javax.faces.converter.LongConverter.LONG_detail': '{2}: \'{0}\' must be a number between -9223372036854775808 to 9223372036854775807 Example: {1}',
+            'javax.faces.converter.DoubleConverter.DOUBLE': '{2}: \'{0}\' must be a number consisting of one or more digits.',
+            'javax.faces.converter.DoubleConverter.DOUBLE_detail': '{2}: \'{0}\' must be a number between 4.9E-324 and 1.7976931348623157E308  Example: {1}',
+            'javax.faces.converter.BigDecimalConverter.DECIMAL': '{2}: \'{0}\' must be a signed decimal number.',
+            'javax.faces.converter.BigDecimalConverter.DECIMAL_detail': '{2}: \'{0}\' must be a signed decimal number consisting of zero or more digits, that may be followed by a decimal point and fraction.  Example: {1}',
+            'javax.faces.converter.BigIntegerConverter.BIGINTEGER': '{2}: \'{0}\' must be a number consisting of one or more digits.',
+            'javax.faces.converter.BigIntegerConverter.BIGINTEGER_detail': '{2}: \'{0}\' must be a number consisting of one or more digits. Example: {1}',
+            'javax.faces.converter.ByteConverter.BYTE': '{2}: \'{0}\' must be a number between -128 and 127.',
+            'javax.faces.converter.ByteConverter.BYTE_detail': '{2}: \'{0}\' must be a number between -128 and 127.  Example: {1}',
+            'javax.faces.converter.CharacterConverter.CHARACTER': '{1}: \'{0}\' must be a valid character.',
+            'javax.faces.converter.CharacterConverter.CHARACTER_detail': '{1}: \'{0}\' must be a valid ASCII character.',
+            'javax.faces.converter.ShortConverter.SHORT': '{2}: \'{0}\' must be a number consisting of one or more digits.',
+            'javax.faces.converter.ShortConverter.SHORT_detail': '{2}: \'{0}\' must be a number between -32768 and 32767 Example: {1}',
+            'javax.faces.converter.BooleanConverter.BOOLEAN': '{1}: \'{0}\' must be \'true\' or \'false\'',
+            'javax.faces.converter.BooleanConverter.BOOLEAN_detail': '{1}: \'{0}\' must be \'true\' or \'false\'.  Any value other than \'true\' will evaluate to \'false\'.',
+            'javax.faces.validator.LongRangeValidator.MAXIMUM': '{1}: Validation Error: Value is greater than allowable maximum of \'{0}\'',
+            'javax.faces.validator.LongRangeValidator.MINIMUM': '{1}: Validation Error: Value is less than allowable minimum of \'{0}\'',
+            'javax.faces.validator.LongRangeValidator.NOT_IN_RANGE': '{2}: Validation Error: Specified attribute is not between the expected values of {0} and {1}.',
+            'javax.faces.validator.LongRangeValidator.TYPE={0}': 'Validation Error: Value is not of the correct type.',
+            'javax.faces.validator.DoubleRangeValidator.MAXIMUM': '{1}: Validation Error: Value is greater than allowable maximum of \'{0}\'',
+            'javax.faces.validator.DoubleRangeValidator.MINIMUM': '{1}: Validation Error: Value is less than allowable minimum of \'{0}\'',
+            'javax.faces.validator.DoubleRangeValidator.NOT_IN_RANGE': '{2}: Validation Error: Specified attribute is not between the expected values of {0} and {1}',
+            'javax.faces.validator.DoubleRangeValidator.TYPE={0}': 'Validation Error: Value is not of the correct type',
+            'javax.faces.converter.FloatConverter.FLOAT': '{2}: \'{0}\' must be a number consisting of one or more digits.',
+            'javax.faces.converter.FloatConverter.FLOAT_detail': '{2}: \'{0}\' must be a number between 1.4E-45 and 3.4028235E38  Example: {1}',
+            'javax.faces.converter.DateTimeConverter.DATE': '{2}: \'{0}\' could not be understood as a date.',
+            'javax.faces.converter.DateTimeConverter.DATE_detail': '{2}: \'{0}\' could not be understood as a date. Example: {1}',
+            'javax.faces.converter.DateTimeConverter.TIME': '{2}: \'{0}\' could not be understood as a time.',
+            'javax.faces.converter.DateTimeConverter.TIME_detail': '{2}: \'{0}\' could not be understood as a time. Example: {1}',
+            'javax.faces.converter.DateTimeConverter.DATETIME': '{2}: \'{0}\' could not be understood as a date and time.',
+            'javax.faces.converter.DateTimeConverter.DATETIME_detail': '{2}: \'{0}\' could not be understood as a date and time. Example: {1}',
+            'javax.faces.converter.DateTimeConverter.PATTERN_TYPE': '{1}: A \'pattern\' or \'type\' attribute must be specified to convert the value \'{0}\'',
+            'javax.faces.converter.NumberConverter.CURRENCY': '{2}: \'{0}\' could not be understood as a currency value.',
+            'javax.faces.converter.NumberConverter.CURRENCY_detail': '{2}: \'{0}\' could not be understood as a currency value. Example: {1}',
+            'javax.faces.converter.NumberConverter.PERCENT': '{2}: \'{0}\' could not be understood as a percentage.',
+            'javax.faces.converter.NumberConverter.PERCENT_detail': '{2}: \'{0}\' could not be understood as a percentage. Example: {1}',
+            'javax.faces.converter.NumberConverter.NUMBER': '{2}: \'{0}\' is not a number.',
+            'javax.faces.converter.NumberConverter.NUMBER_detail': '{2}: \'{0}\' is not a number. Example: {1}',
+            'javax.faces.converter.NumberConverter.PATTERN': '{2}: \'{0}\' is not a number pattern.',
+            'javax.faces.converter.NumberConverter.PATTERN_detail': '{2}: \'{0}\' is not a number pattern. Example: {1}',
+            'javax.faces.validator.LengthValidator.MINIMUM': '{1}: Validation Error: Length is less than allowable minimum of \'{0}\'',
+            'javax.faces.validator.LengthValidator.MAXIMUM': '{1}: Validation Error: Length is greater than allowable maximum of \'{0}\'',
+            'javax.faces.validator.RegexValidator.PATTERN_NOT_SET': 'Regex pattern must be set.',
+            'javax.faces.validator.RegexValidator.PATTERN_NOT_SET_detail': 'Regex pattern must be set to non-empty value.',
+            'javax.faces.validator.RegexValidator.NOT_MATCHED': 'Regex Pattern not matched',
+            'javax.faces.validator.RegexValidator.NOT_MATCHED_detail': 'Regex pattern of \'{0}\' not matched',
+            'javax.faces.validator.RegexValidator.MATCH_EXCEPTION': 'Error in regular expression.',
+            'javax.faces.validator.RegexValidator.MATCH_EXCEPTION_detail': 'Error in regular expression, \'{0}\''
+        }
+    });
+}
 
 /**
- * An object with the client-side implementation of some faces validators. Used for implementing client-side
- * validation for quick feedback.
- * @type {Record<string, PrimeFaces.Validator>}
+ * __PrimeFaces Client Side Validation Framework__
+ * 
+ * The class for enabling client side validation of form fields.
  */
-PrimeFaces.validator = { };
-
-/**
- * An object with the client-side implementation of some faces converters.
- * @type {Record<string, PrimeFaces.Converter>}
- */
-PrimeFaces.converter = { };
-
-/**
- * The module for enabling client side validation of form fields.
- * @namespace
- */
-PrimeFaces.validation = {
-
+export class Validation {
     /**
      * Is the Ajax-complete-handler bound?
-     * @type {boolean}
-     * @private
      */
-    ajaxCompleteBound: false,
+    private ajaxCompleteBound: boolean = false;
 
     /**
-     * Parameter shortcut mapping for the method `PrimeFaces.vb`.
-     * @type {Record<string, string>}
+     * Parameter shortcut mapping for the method {@link Core.vb | PrimeFaces.vb}.
      */
-    CFG_SHORTCUTS : {
+    readonly CFG_SHORTCUTS: Record<string, string> = {
         's': 'source',
         'p': 'process',
         'u': 'update',
@@ -151,25 +125,45 @@ PrimeFaces.validation = {
         'f': 'focus',
         'r': 'renderMessages',
         'v': 'validateInvisibleElements'
-    },
+    };
+
+    /**
+     * The class with mostly internal utility methods used to validate data on the client.
+     */
+    readonly Utils: ValidationUtils = new ValidationUtils();
+
+    /**
+     * The object that contains functionality related to handling faces messages, especially validation errror messages.
+     * Contains methods for clearing message of an element or adding messages to an element.
+     */
+    readonly ValidationContext: ValidationContext = new ValidationContext();
 
     /**
      * Triggers client-side-validation of single or multiple containers (complex validation or simple inputs).
      * @function
-     * @param {JQuery} source The source element.
-     * @param {string | HTMLElement | JQuery} process The elements to be processed.
-     * @param {string | HTMLElement | JQuery} update The elements to be updated.
-     * @param {boolean} highlight If invalid elements should be highlighted.
-     * @param {boolean} focus If the first invalid element should be focused.
-     * @param {boolean} renderMessages If messages should be rendered.
-     * @param {boolean} validateInvisibleElements If invisible elements should be validated.
-     * @param {boolean} logUnrenderedMessages If unrendered messages should be logged.
-     * @return {PrimeFaces.validation.ValidationResult} The validation result.
+     * @param source The source element.
+     * @param process The elements to be processed.
+     * @param update The elements to be updated.
+     * @param highlight If invalid elements should be highlighted.
+     * @param focus If the first invalid element should be focused.
+     * @param renderMessages If messages should be rendered.
+     * @param validateInvisibleElements If invisible elements should be validated.
+     * @param logUnrenderedMessages If unrendered messages should be logged.
+     * @returns The validation result.
      */
-    validate : function(source, process, update, highlight, focus, renderMessages, validateInvisibleElements, logUnrenderedMessages) {
-        var vc = PrimeFaces.validation.ValidationContext;
+    validate(
+        source: JQuery,
+        process: string | HTMLElement | JQuery,
+        update: string | HTMLElement | JQuery,
+        highlight: boolean,
+        focus: boolean,
+        renderMessages: boolean,
+        validateInvisibleElements: boolean,
+        logUnrenderedMessages: boolean,
+    ): PrimeType.validation.ValidationResult {
+        const vc = this.ValidationContext;
 
-        process = searchExpressionFacade.resolveComponentsAsSelector(source, process);
+        process = expressions.SearchExpressionFacade.resolveComponentsAsSelector(source, process);
 
         // validate all inputs first
         var inputs = $();
@@ -186,12 +180,12 @@ PrimeFaces.validation = {
             inputs = inputs.filter(':visible');
         }
         for (var i = 0; i < inputs.length; i++) {
-            PrimeFaces.validation.validateInput(source, inputs.eq(i), highlight);
+            this.validateInput(source, inputs.eq(i), highlight);
         }
 
         // validate complex validations, which can be applied to any container element
         var nonInputs = $();
-        for (var i = 0; i < process.length; i++) {
+        for (let i = 0; i < process.length; i++) {
             var component = process.eq(i);
             if (component.is(':not(:input)')) {
                 nonInputs = nonInputs.add(component);
@@ -203,7 +197,7 @@ PrimeFaces.validation = {
             nonInputs = nonInputs.filter(':visible');
         }
         for (var i = 0; i < nonInputs.length; i++) {
-            PrimeFaces.validation.validateComplex(source, nonInputs.eq(i), highlight);
+            this.validateComplex(source, nonInputs.eq(i), highlight);
         }
 
         // early exit - we don't need to render messages
@@ -213,10 +207,10 @@ PrimeFaces.validation = {
 
         // render messages
         if (renderMessages === true) {
-            update = searchExpressionFacade.resolveComponentsAsSelector(source, update);
+            update = expressions.SearchExpressionFacade.resolveComponentsAsSelector(source, update);
             for (var i = 0; i < update.length; i++) {
                 var component = update.eq(i);
-                PrimeFaces.validation.Utils.renderMessages(vc.messages, component);
+                this.Utils.renderMessages(vc.messages, component);
             }
         }
 
@@ -224,7 +218,7 @@ PrimeFaces.validation = {
         if (focus === true) {
             for (var key in vc.messages) {
                 if (vc.messages.hasOwnProperty(key)) {
-                    var el = $(PrimeFaces.escapeClientId(key));
+                    var el = $(core.escapeClientId(key));
                     if (!el.is(':focusable')) {
                         el.find(':focusable:first').trigger('focus');
                     }
@@ -236,14 +230,14 @@ PrimeFaces.validation = {
             }
         }
 
-        var result = {
+        const result = {
             valid: vc.isEmpty(),
             messages : vc.messages,
             hasUnrenderedMessage: false
         };
 
-        for (let clientId in vc.messages) {
-            var msgs = vc.messages[clientId];
+        for (const clientId in vc.messages) {
+            const msgs = vc.messages[clientId] ?? [];
             for (let msg of msgs) {
                 if (!msg.rendered) {
                     result.hasUnrenderedMessage = true;
@@ -252,13 +246,13 @@ PrimeFaces.validation = {
         }
 
         if (renderMessages && logUnrenderedMessages && result.hasUnrenderedMessage) {
-            PrimeFaces.warn("There are some unhandled FacesMessages, this means not every FacesMessage had a chance to be rendered. These unhandled FacesMessages are:");
+            core.warn("There are some unhandled FacesMessages, this means not every FacesMessage had a chance to be rendered. These unhandled FacesMessages are:");
 
-            for (let clientId in vc.messages) {
-                var msgs = vc.messages[clientId];
-                for (let msg of msgs) {
+            for (const clientId in vc.messages) {
+                const msgs = vc.messages[clientId] ?? [];
+                for (const msg of msgs) {
                     if (!msg.rendered) {
-                        PrimeFaces.warn(msg.detail);
+                        core.warn(msg.detail);
                     }
                 }
             }
@@ -267,38 +261,37 @@ PrimeFaces.validation = {
         vc.clear();
 
         return result;
-    },
-
+    }
 
     /**
      * Searches for all CommandButtons with turned on dynamic CSV and triggers CSV.
-     * @function
      */
-    validateButtonsCsvRequirements: function () {
-        $('[data-pf-validateclient-dynamic]').each((index, btn) => {
-            this.validateButtonCsvRequirements(btn);
+    validateButtonsCsvRequirements (): void {
+        $('[data-pf-validateclient-dynamic]').each((_, btn) => {
+            if (btn instanceof HTMLButtonElement) {
+                this.validateButtonCsvRequirements(btn);
+            }
         });
-    },
+    }
 
     /**
-     * Validates the CSV-requirements of a CommandButton.
-     * @function
-     * @param {HTMLButtonElement} btn CommandButton which´s CSV-requirements should be validated.
+     * Validates the CSV requirements of a `CommandButton`.
+     * @param btn Command button whose CSV requirements should be validated.
      */
-    validateButtonCsvRequirements: function(btn) {
+    validateButtonCsvRequirements(btn: HTMLButtonElement): void {
         const $source = $(btn);
-        const cfg = {
-            ajax: btn.dataset.pfValidateclientAjax,
+        const cfg: PrimeType.validation.Configuration = {
+            ajax: toBoolean(btn.dataset.pfValidateclientAjax),
             process: btn.dataset.pfValidateclientProcess,
             update: btn.dataset.pfValidateclientUpdate
         };
-        const process = PrimeFaces.validation.Utils.resolveProcess(cfg, $source);
-        const update = PrimeFaces.validation.Utils.resolveUpdate(cfg, $source);
+        const process = this.Utils.resolveProcess(cfg, $source);
+        const update = this.Utils.resolveUpdate(cfg, $source);
 
-        const widget = PrimeFaces.getWidgetById(btn.id);
+        const widget = core.getWidgetById(btn.id);
 
         if (widget) {
-            if (PrimeFaces.validation.validate($source, process, update, false, false, false, false, false).valid) {
+            if (this.validate($source, process, update, false, false, false, false, false).valid) {
                 widget.jq.addClass('ui-state-csv-valid');
                 widget.jq.removeClass('ui-state-csv-invalid');
                 widget.enable();
@@ -311,45 +304,44 @@ PrimeFaces.validation = {
             console.warn('No widget found for ID ' + btn.id);
         }
 
-        PrimeFaces.validation.ValidationContext.clear();
-    },
+        this.ValidationContext.clear();
+    }
 
     /**
      * Performs a client-side validation of the given element. The context of this validation is a single field only.
      * If the element is valid, removes old messages from the element.
      * If the value of the element is invalid, adds the appropriate validation failure messages.
      * This is used by `p:clientValidator`.
-     * @function
-     * @param {string | HTMLElement | JQuery} el The ID of an input to validate, or the input itself.
-     * @param {boolean} highlight If the invalid element should be highlighted.
-     * @param {boolean} renderMessages If messages should be rendered.
-     * @return {boolean} `true` if the element is valid, or `false` otherwise.
+     * @param el The ID of an input to validate, or the input itself.
+     * @param highlight If the invalid element should be highlighted.
+     * @param renderMessages If messages should be rendered.
+     * @returns `true` if the element is valid, or `false` otherwise.
      */
-    validateInstant : function(el, highlight, renderMessages) {
+    validateInstant(el: string | HTMLElement | JQuery, highlight: boolean, renderMessages: boolean): boolean {
         highlight = (highlight === undefined) ? true : highlight;
         renderMessages = (renderMessages === undefined) ? true : renderMessages;
 
-        var vc = PrimeFaces.validation.ValidationContext;
+        const vc = this.ValidationContext;
 
-        var element = typeof el === 'string'
-            ? $(PrimeFaces.escapeClientId(el))
+        const element = typeof el === 'string'
+            ? $(core.escapeClientId(el))
             : $(el);
-        var clientId = element.data(PrimeFaces.CLIENT_ID_DATA) || element.attr('id');
+            const clientId = element.data(core.CLIENT_ID_DATA) || element.attr('id');
 
-        var messageComponentId = element.data('target-message');
-        var messageComponent = null;
+        const messageComponentId = element.data('target-message');
+        let messageComponent: JQuery | null = null;
         if (renderMessages === true) {
             if (messageComponentId) {
                 messageComponent = messageComponentId === 'p-unbound'
                     ? null
-                    : $(PrimeFaces.escapeClientId(messageComponentId));
+                    : $(core.escapeClientId(messageComponentId));
             }
             else {
                 var messageComponents = element.closest('form').find('div.ui-message');
-                messageComponent = PrimeFaces.validation.Utils.findTargetMessageComponent(clientId, messageComponents);
+                messageComponent = this.Utils.findTargetMessageComponent(clientId, messageComponents);
 
                 if (messageComponent) {
-                    element.data('target-message', messageComponent.attr('id'));
+                    element.data('target-message', messageComponent.attr('id') ?? "");
                 }
                 else {
                     element.data('target-message', 'p-unbound');
@@ -357,19 +349,19 @@ PrimeFaces.validation = {
             }
 
             if (messageComponent) {
-                var messageWidget = PrimeFaces.getWidgetById(messageComponent.attr('id'));
-                messageWidget.clearMessage();
+                const messageWidget = core.getWidgetById(messageComponent.attr('id') ?? "");
+                messageWidget?.clearMessage();
             }
         }
 
         this.validateButtonsCsvRequirements();
 
-        PrimeFaces.validation.validateInput(element, element, highlight);
+        this.validateInput(element, element, highlight);
 
         if (!vc.isEmpty()) {
             if (messageComponent) {
-                var messageWidget = PrimeFaces.getWidgetById(messageComponent.attr('id'));
-                messageWidget.renderMessage(vc.messages[clientId][0]);
+                const messageWidget = core.getWidgetById(messageComponent.attr('id') ?? "");
+                messageWidget?.renderMessage(vc.messages[clientId]?.[0]);
             }
 
             vc.clear();
@@ -379,25 +371,21 @@ PrimeFaces.validation = {
             vc.clear();
             return true;
         }
-    },
+    }
 
     /**
-     * __NOTE__: This is a internal method and should only by used by `PrimeFaces.validation.validate`.
-     *
      * Performs a client-side validation of (the value of) the given input element. If the element is valid, removes old
      * messages from the element. If the value of the element is invalid, adds the appropriate validation failure
      * messages.
-     * @function
-     * @internal
-     * @param {JQuery} source The source element.
-     * @param {JQuery} element A JQuery instance with a single input element to validate.
-     * @param {boolean} highlight If the invalid element should be highlighted.
+     * @param source The source element.
+     * @param element A JQuery instance with a single input element to validate.
+     * @param highlight If the invalid element should be highlighted.
      */
-    validateInput : function(source, element, highlight) {
-        var vc = PrimeFaces.validation.ValidationContext;
+    private validateInput(source: JQuery, element: JQuery, highlight: boolean): void {
+        var vc = this.ValidationContext;
 
         if (element.is(':checkbox,:radio') && element.data('p-grouped')) {
-            var groupName = element.attr('name');
+            const groupName = element.attr('name') ?? "";
 
             if (!vc.isGroupValidated(groupName)) {
                 vc.addElementGroup(groupName);
@@ -410,24 +398,28 @@ PrimeFaces.validation = {
             element = element.parent().children('input:hidden');
         }
 
-        var submittedValue = PrimeFaces.validation.Utils.getSubmittedValue(element),
-            valid = true,
-            converterId = element.data('p-con');
+        let submittedValue: number | string | string[] | FileList | null = this.Utils.getSubmittedValue(element);
+        let valid = true;
+        const converterId = element.data('p-con');
 
-        if (PrimeFaces.settings.considerEmptyStringNull && ((!submittedValue) || submittedValue.length === 0)) {
+        if (core.settings.considerEmptyStringNull && typeof submittedValue !== "number" && ((!submittedValue) || submittedValue.length === 0)) {
             submittedValue = null;
         }
 
-        var newValue = null;
+        let newValue: unknown = null;
         if (converterId) {
             try {
-                newValue = PrimeFaces.converter[converterId].convert(element, submittedValue);
+                newValue = core.converter[converterId]?.convert(element, submittedValue);
             }
             catch (ce) {
-                var converterMessageStr = element.data('p-cmsg'),
-                    converterMsg = (converterMessageStr) ? {summary:converterMessageStr,detail:converterMessageStr} : ce;
+                const converterMessageStr: unknown = element.data('p-cmsg');
+                const converterMsg = converterMessageStr 
+                    ? [{ summary: String(converterMessageStr), detail: String(converterMessageStr) }]
+                    : toMessageOrErrorList(ce); 
                 valid = false;
-                vc.addMessage(element, converterMsg);
+                for (const msg of converterMsg) {
+                    vc.addMessage(element, msg);
+                }
             }
         }
         else {
@@ -436,13 +428,13 @@ PrimeFaces.validation = {
 
         var required = element.data('p-required');
         if (required) {
-            element.attr('aria-required', true);
+            element.attr('aria-required', "true");
         }
 
         if (valid && required && (newValue === null || newValue === '')) {
-            var requiredMessageStr = element.data('p-rmsg');
-            var requiredMsg = requiredMessageStr
-                ? { summary: requiredMessageStr, detail: requiredMessageStr }
+            const requiredMessageStr: unknown = element.data('p-rmsg');
+            const requiredMsg = requiredMessageStr
+                ? { summary: String(requiredMessageStr), detail: String(requiredMessageStr) }
                 : vc.getMessage('javax.faces.component.UIInput.REQUIRED', vc.getLabel(element));
 
             vc.addMessage(element, requiredMsg);
@@ -450,32 +442,38 @@ PrimeFaces.validation = {
             valid = false;
         }
 
-        if (valid
-            && ((submittedValue !== null && PrimeFaces.trim(submittedValue).length > 0) || PrimeFaces.settings.validateEmptyFields)) {
-            var validatorIds = element.data('p-val');
+        let hasValue: boolean;
+        if (submittedValue === null) {
+            hasValue = false;
+        } else if (typeof submittedValue === "number") {
+            hasValue = true;
+        } else if (typeof submittedValue === "string") {
+            hasValue = core.trim(submittedValue).length > 0;
+        } else {
+            hasValue = submittedValue.length > 0;
+        }
+
+        if (valid && (hasValue || core.settings.validateEmptyFields)) {
+            let validatorIds = element.data('p-val');
             if (validatorIds) {
                 validatorIds = validatorIds.split(',');
 
-                for (var j = 0; j < validatorIds.length; j++) {
-                    var validatorId = validatorIds[j],
-                        validator = PrimeFaces.validator[validatorId];
+                for (let j = 0; j < validatorIds.length; j++) {
+                    const validatorId = validatorIds[j];
+                    const validator = core.getValidatorById(validatorId);
 
                     if (validator) {
                         try {
                             validator.validate(element, newValue);
                         }
                         catch (ve) {
-                            var validatorMessageStr = element.data('p-vmsg');
-                            var validatorMsg = validatorMessageStr
-                                ? {summary: validatorMessageStr, detail: validatorMessageStr}
-                                : ve;
+                            const validatorMessageStr: unknown = element.data('p-vmsg');
+                            const validatorMsg = validatorMessageStr
+                                ? [{summary: String(validatorMessageStr), detail: String(validatorMessageStr)}]
+                                : toMessageOrErrorList(ve);
 
-                            if (Array.isArray(validatorMsg)) {
-                                // e.g. PrimeFaces.validator['primefaces.File'] may return an array of messages
-                                validatorMsg.forEach((msg) => vc.addMessage(element, msg));
-                            }
-                            else {
-                                vc.addMessage(element, validatorMsg);
+                            for (const msg of validatorMsg) {
+                                vc.addMessage(element, msg);
                             }
 
                             valid = false;
@@ -485,45 +483,41 @@ PrimeFaces.validation = {
             }
         }
 
-        var highlighterType = element.data('p-hl') || 'default',
-            highlighter = PrimeFaces.validator.Highlighter.types[highlighterType];
+        const highlighterType = element.data('p-hl') || 'default';
+        const highlighter = validationHighlighter.types[highlighterType];
 
         if (valid) {
-            highlighter.unhighlight(element);
-            element.attr('aria-invalid', false);
+            highlighter?.unhighlight(element);
+            element.attr('aria-invalid', "false");
         }
         else {
             if (highlight) {
-                highlighter.highlight(element);
+                highlighter?.highlight(element);
             }
-            element.attr('aria-invalid', true);
+            element.attr('aria-invalid', "true");
         }
-    },
+    }
 
     /**
-     * __NOTE__: This is an internal method and should only be used by `PrimeFaces.validation.validate`.
-     *
      * Performs a client-side validation of (the value of) the given container element. If the element is valid,
      * removes old messages from the element. If the value of the element is invalid, adds the appropriate
      * validation failure messages.
-     * @function
-     * @internal
-     * @param {JQuery} source the source element.
-     * @param {JQuery} element A JQuery instance with a single input element to validate.
-     * @param {boolean} highlight If the invalid element should be highlighted.
-     * @returns {boolean} `true` if the value of the element is valid, `false` otherwise.
+     * @param source the source element.
+     * @param element A JQuery instance with a single input element to validate.
+     * @param highlight If the invalid element should be highlighted.
+     * @returns `true` if the value of the element is valid, `false` otherwise.
      */
-    validateComplex : function(source, element, highlight) {
-        var vc = PrimeFaces.validation.ValidationContext;
-        var valid = true;
+    private validateComplex(source: JQuery, element: JQuery, highlight: boolean): boolean {
+        const vc = this.ValidationContext;
+        let valid = true;
 
-        var validatorIds = element.data('p-val');
+        let validatorIds = element.data('p-val');
         if (validatorIds) {
             validatorIds = validatorIds.split(',');
 
-            for (var j = 0; j < validatorIds.length; j++) {
-                var validatorId = validatorIds[j],
-                    validator = PrimeFaces.validator[validatorId];
+            for (let j = 0; j < validatorIds.length; j++) {
+                const validatorId = validatorIds[j];
+                const validator = core.getValidatorById(validatorId);
 
                 if (validator) {
                     try {
@@ -532,30 +526,32 @@ PrimeFaces.validation = {
                     catch (ve) {
                         var validatorMessageStr = element.data('p-vmsg');
                         var validatorMsg = validatorMessageStr
-                            ? {summary: validatorMessageStr, detail: validatorMessageStr}
-                            : ve;
+                            ? [{summary: validatorMessageStr, detail: validatorMessageStr}]
+                            : toMessageOrErrorList(ve);
 
-                        vc.addMessage(element, validatorMsg);
+                        for (const msg of validatorMsg) {
+                            vc.addMessage(element, msg);
+                        }
 
                         valid = false;
 
                         var highlighterType = element.data('p-hl');
 
                         var highlighter = highlighterType
-                            ? PrimeFaces.validator.Highlighter.types[highlighterType]
-                            : PrimeFaces.validator.Highlighter.types[validatorId];
+                            ? validationHighlighter.types[highlighterType]
+                            : validationHighlighter.types[validatorId];
 
                         if (valid) {
                             if (highlighter) {
                                 highlighter.unhighlight(element);
                             }
-                            element.attr('aria-invalid', false);
+                            element.attr('aria-invalid', "false");
                         }
                         else {
                             if (highlight && highlighter) {
                                 highlighter.highlight(element);
                             }
-                            element.attr('aria-invalid', true);
+                            element.attr('aria-invalid', "true");
                         }
                     }
                 }
@@ -563,7 +559,7 @@ PrimeFaces.validation = {
         }
 
         return valid;
-    },
+    }
 
 
     /**
@@ -572,20 +568,21 @@ PrimeFaces.validation = {
      * Bind to Ajax-Complete-events to update CSV-state after an Ajax-call may have changed state.
      * @internal
      */
-    bindAjaxComplete: function() {
+    bindAjaxComplete(): void {
         if (this.ajaxCompleteBound) return;
 
         var $this = this;
 
-        $(document).on('pfAjaxComplete', function(e, xhr, settings, args) {
-            $this.validateButtonsCsvRequirements();
-        });
+        $(document).on('pfAjaxComplete', () => $this.validateButtonsCsvRequirements());
 
         // also bind to JSF (f:ajax) events
         // NOTE: PF always fires "complete" as last event, whereas JSF last events are either "success" or "error"
         if (window.jsf && jsf.ajax) {
-            jsf.ajax.addOnEvent(function(data) {
-                if(data.status === 'success' || data.status === 'error') {
+            jsf.ajax.addOnEvent((data) => {
+                // TODO For error (status === "error"), shouldn't we use jsf.ajax.addOnError ?
+                // An error event will never be passed to listeners registered via addOnEvent
+                const status: string = data.status;
+                if(status === 'success' || status === 'error') {
                     $this.validateButtonsCsvRequirements();
                 }
             });
@@ -596,89 +593,99 @@ PrimeFaces.validation = {
 };
 
 /**
- * The object that contains functionality related to handling faces messages, especially validation errror messages.
+ * The class that contains functionality related to handling faces messages, especially validation errror messages.
  * Contains methods for clearing message of an element or adding messages to an element.
- * @namespace
  */
-PrimeFaces.validation.ValidationContext = {
-
+export class ValidationContext {
     /**
      * A map between the client ID of an element and a list of faces message for that element.
-     * @type {Record<string, PrimeFaces.FacesMessage[]>}
      */
-    messages: {},
+    messages: Record<string, PrimeType.FacesMessage[]> = {};
 
     /**
      * A list of element groups to be validated. Usually corresponds to the name of single form element. For some
      * cases such as a select list of checkboxes, a group may correspond to multiple DOM elements.
-     * @type {string[]}
      */
-    elementGroups: [],
+    elementGroups: string[] = [];
 
     /**
      * Highlights the passed widget as invalid.
      *
-     * @param {string | HTMLElement | JQuery | BaseWidget} target The target widget / element.
+     * @param target The target widget / element.
      */
-    highlight: function(target) {
-        var element = PrimeFaces.resolveAs$(target);
-        var highlighterType = element.data('p-hl') || 'default';
-        var highlighter = PrimeFaces.validator.Highlighter.types[highlighterType];
+    highlight(target: string | HTMLElement | JQuery | BaseWidget): void {
+        const element = core.resolveAs$(target);
+        const highlighterType = element.data('p-hl') || 'default';
+        const highlighter = validationHighlighter.types[highlighterType];
 
-        highlighter.highlight(element);
-        element.attr('aria-invalid', true);
-    },
+        highlighter?.highlight(element);
+        element.attr('aria-invalid', "true");
+    }
 
     /**
      * Un-Highlights the passed widget as invalid.
      *
-     * @param {string | HTMLElement | JQuery | BaseWidget} target The target widget / element.
+     * @param target The target widget / element.
      */
-    unhighlight: function(target) {
-        var element = PrimeFaces.resolveAs$(target);
-        var highlighterType = element.data('p-hl') || 'default';
-        var highlighter = PrimeFaces.validator.Highlighter.types[highlighterType];
+    unhighlight(target: string | HTMLElement | JQuery | BaseWidget): void {
+        const element = core.resolveAs$(target);
+        const highlighterType = element.data('p-hl') || 'default';
+        const highlighter = validationHighlighter.types[highlighterType];
 
-        highlighter.unhighlight(element);
-        element.attr('aria-invalid', false);
-    },
+        highlighter?.unhighlight(element);
+        element.attr('aria-invalid', "false");
+    }
 
     /**
      * Adds a faces message to the given element.
-     * @param {string | HTMLElement | JQuery | BaseWidget} target Element or widget to which to add the message.
-     * @param {PrimeFaces.FacesMessage} msg Message to add to the given message.
+     * @param target Element or widget to which to add the message.
+     * @param msg Message to add to the given message.
      */
-    addMessage: function(target, msg) {
-        var clientId = PrimeFaces.resolveAsId(target);
+    addMessage(target: string | HTMLElement | JQuery | BaseWidget, msg: Error | PrimeType.BaseFacesMessage): void {
+        const clientId = core.resolveAsId(target);
 
-        if(!this.messages[clientId]) {
-            this.messages[clientId] = [];
-        }
+        this.messages[clientId] ??= [];
 
-        // in case of a exception -> lets wrap it into a 'unexcepted error'
-        if (!msg.hasOwnProperty('summary') && !msg.hasOwnProperty('detail')) {
-            msg = {
-                summary : PrimeFaces.getLocaleSettings()['unexpectedError'],
-                detail : msg.toString()
-            };
-        }
+        // in case of a exception -> lets wrap it into an 'unexpected error'
+        const newMessage: PrimeType.FacesMessage = msg instanceof Error
+            ? {
+                detail : msg.toString(),
+                rendered: false,
+                severity: "error",
+                summary : core.getLocaleSettings().unexpectedError,
+            }
+            : {
+                detail: msg.detail,
+                rendered: false,
+                severity: msg.severity ?? "error",
+                summary: msg.summary,
+        };
 
-        if (!msg.severity) {
-            msg.severity = "error";
-        }
+        // // in case of a exception -> lets wrap it into an 'unexpected error'
+        // if (!msg.hasOwnProperty('summary') && !msg.hasOwnProperty('detail')) {
+        //     msg = {
+        //         summary : core.getLocaleSettings()['unexpectedError'],
+        //         detail : msg.toString()
+        //     };
+        // }
 
-        msg.rendered = false;
+        // if (!msg.severity) {
+        //     msg.severity = "error";
+        // }
 
-        this.messages[clientId].push(msg);
-    },
+        // msg.rendered = false;
+
+        this.messages[clientId].push(newMessage);
+    }
 
     /**
      * Reports how many messages were added to this validation context. Note that each component may have several
      * messages.
-     * @return {number} The number of messages added to this validation context.
+     * @returns The number of messages added to this validation context.
      */
-    getMessagesLength: function() {
-        var length = 0, key;
+    getMessagesLength(): number {
+        let length = 0;
+        let key: string;
 
         for (key in this.messages) {
             if (this.messages.hasOwnProperty(key)) {
@@ -687,111 +694,109 @@ PrimeFaces.validation.ValidationContext = {
         }
 
         return length;
-    },
+    }
 
     /**
      * Checks whether this validation context contains any messages at all.
-     * @return {boolean} `true` if this validation context contains zero messages, or `false` otherwise.
+     * @returns `true` if this validation context contains zero messages, or `false` otherwise.
      */
-    isEmpty: function() {
+    isEmpty(): boolean {
         return this.getMessagesLength() === 0;
-    },
+    }
 
     /**
      * Removes all messages from this validation context.
      */
-    clear: function() {
+    clear(): void {
         this.messages = {};
         this.elementGroups = [];
-    },
+    }
 
     /**
-     * Shortcut for PrimeFaces.validation.Utils.getMessage.
-     * @param {string} key The i18n key of a message, such as `javax.faces.component.UIInput.REQUIRED` or
+     * Shortcut for {@link ValidationUtils.getMessage | PrimeFaces.validation.Utils.getMessage}.
+     * @param key The i18n key of a message, such as `javax.faces.component.UIInput.REQUIRED` or
      * `javax.faces.validator.LengthValidator.MINIMUM`.
-     * @return {PrimeFaces.FacesMessage | null} The localized faces message for the given key, or `null` if no
+     * @param params Optional parameters to insert into the message, e.g. `{0}`
+     * will be replaced with the first parameter.
+     * @returns The localized faces message for the given key, or `null` if no
      * translation was found for the key.
      */
-    getMessage: function(key) {
-        var params = Array.from(arguments);
-        params.shift(); // remove first param 'key'
-
-        return PrimeFaces.validation.Utils.getMessage(key, params);
-    },
+    getMessage(key: string, ...params: (number | string)[]): PrimeType.BaseFacesMessage {
+        return validation.Utils.getMessage(key, params);
+    }
 
     /**
-     * Shortcut for PrimeFaces.validation.Utils.getLabel.
-     * @param {JQuery} element A DOM element for which to find the label.
-     * @return {string} The label of the given element.
+     * Shortcut for {@link ValidationUtils.getLabel | PrimeFaces.validation.Utils.getLabel}.
+     * @param element A DOM element for which to find the label.
+     * @returns The label of the given element.
      */
-    getLabel: function(element) {
-        return PrimeFaces.validation.Utils.getLabel(element);
-    },
+    getLabel(element: JQuery): string {
+        return validation.Utils.getLabel(element);
+    }
 
     /**
      * Checks whether the given element group is in the list of groups to be validated. An element group is often
      * just the name of a single INPUT, TEXTAREA or SELECT element, but may also consist of multiple DOM elements,
      * such as in the case of a select list of checkboxes.
-     * @param {string} name Name of an element group to check.
-     * @return {boolean} `true` if the given group is to be validated, or `false` otherwise.
+     * @param name Name of an element group to check.
+     * @returns `true` if the given group is to be validated, or `false` otherwise.
      */
-    isGroupValidated: function(name) {
+    isGroupValidated(name: string): boolean {
         for (var i = 0; i < this.elementGroups.length; i++) {
             if (this.elementGroups[i] === name) {
                 return true;
             }
         }
         return false;
-    },
+    }
 
     /**
      * Adds a group to the list of element groups to validate. An element group is often just the name of a single
      * INPUT, TEXTAREA or SELECT element, but may also consist of multiple DOM elements, such as in the case of
      * select list of checkboxes.
-     * @param {string} name Name of an element group to add.
+     * @param name Name of an element group to add.
      */
-    addElementGroup: function(name) {
+    addElementGroup(name: string): void {
         this.elementGroups.push(name);
     }
 };
 
 /**
- * Mostly internal utility methods used to validate data on the client.
- * @namespace
+ * The class with mostly internal utility methods used to validate data on the client.
  */
-PrimeFaces.validation.Utils = {
-
+export class ValidationUtils {
     /**
      * Finds the localized text of the given message key. When the current locale does not contain a translation,
      * falls back to the default English locale.
-     * @param {string} key The i18n key of a message, such as `javax.faces.component.UIInput.REQUIRED` or
+     * @param key The i18n key of a message, such as `javax.faces.component.UIInput.REQUIRED` or
      * `javax.faces.validator.LengthValidator.MINIMUM`.
-     * @param {string[]} params A list of parameters for the placeholders.
-     * @return {PrimeFaces.FacesMessage | null} The localized faces message for the given key, or `null` if no
+     * @param params A list of parameters for the placeholders.
+     * @returns The localized faces message for the given key, or `null` if no
      * translation was found for the key.
      */
-    getMessage: function(key, params) {
-        var locale = PrimeFaces.getLocaleSettings();
-        var bundle = (locale.messages && locale.messages[key]) ? locale : PrimeFaces.locales['en_US'];
+    getMessage(key: string, params: (number | string)[]): PrimeType.BaseFacesMessage {
+        const locale = core.getLocaleSettings();
+        const bundle = (locale.messages && locale.messages[key]) ? locale : core.locales['en_US'];
 
-        var summary = bundle.messages[key];
+        let summary = bundle?.messages?.[key];
+        
         if (!summary) {
             return {
                 summary: "### Message '" + key + "' not found ###",
-                detail: "### Message '" + key + "' not found ###"
+                detail: "### Message '" + key + "' not found ###",
             };
         }
 
-        summary = PrimeFaces.validation.Utils.format(summary, params);
+        summary = this.format(summary, params);
 
-        var detail = bundle.messages[key + '_detail'];
-        detail = (detail) ? PrimeFaces.validation.Utils.format(detail, params) : summary;
+        let detail = bundle?.messages?.[key + '_detail'];
+        detail = detail ? this.format(detail, params) : summary;
 
         return {
             summary: summary,
-            detail: detail
+            detail: detail,
         };
-    },
+    }
 
     /**
      * Given a message with placeholders, replaces the placeholders with the given parameters. The format of the
@@ -800,64 +805,65 @@ PrimeFaces.validation.Utils = {
      * format("Value required for element {0}", ["email"]) // => "Value required for element email"
      * format("Use {0} braces like this: '{0}'", ["simple"]) // => "Use simple braces like this: 'simple'"
      * ```
-     * @param {string} str A message with placeholders.
-     * @param {string[]} params A list of parameters for the placeholders.
-     * @return {string} The string with the placeholders replaced with the given params.
+     * @param str A message with placeholders.
+     * @param params A list of parameters for the placeholders.
+     * @returns The string with the placeholders replaced with the given params.
      */
-    format: function(str, params) {
-        var s = str;
-        for(var i = 0; i < params.length; i++) {
-            var reg = new RegExp('\\{' + i + '\\}', 'gm');
-            s = s.replace(reg, params[i]);
+    format(str: string, params: (number | string)[]): string {
+        let s = str;
+        for(let i = 0; i < params.length; i++) {
+            const reg = new RegExp('\\{' + i + '\\}', 'gm');
+            s = s.replace(reg, String(params[i] ?? ""));
         }
 
         return s;
-    },
+    }
 
     /**
      * Finds the label of a DOM element. This is either a custom label set on a component, or just the ID of the
      * element. This label is used, for example, as part of a validation error message for the element.
-     * @param {JQuery} element A DOM element for which to find the label.
-     * @return {string} The label of the given element.
+     * @param element A DOM element for which to find the label.
+     * @returns The label of the given element.
      */
-    getLabel: function(element) {
+    getLabel(element: JQuery): string {
         return element.data('p-label') || element.attr('id');
-    },
+    }
 
     /**
      * Given a form element (such as input, textarea, select), finds the value that would be sent when the form is
      * submitted.
-     * @param {JQuery} element A form element for which to find its value.
-     * @return {string} The value of the form element, or the empty string when it does not have a value.
+     * @param element A form element for which to find its value.
+     * @returns The value of the form element, or the empty string when it does not have a value.
      */
-    getSubmittedValue: function(element) {
-        var value;
+    getSubmittedValue(element: JQuery): number | string | string[] | FileList {
+        let value: number | string | string[] | FileList | undefined;
 
         if (element.is(':radio')) {
-            value = $('input:radio[name="' + CSS.escape(element.attr('name')) + '"]:checked').val();
+            value = $('input:radio[name="' + CSS.escape(element.attr('name') ?? "") + '"]:checked').val();
         }
         else if (element.is(':checkbox')) {
-            value = element.data('p-grouped') ? $('input:checkbox[name="' + CSS.escape(element.attr('name')) + '"]:checked').val(): element.prop('checked').toString();
+            value = element.data('p-grouped') ? $('input:checkbox[name="' + CSS.escape(element.attr('name') ?? "") + '"]:checked').val(): element.prop('checked').toString();
         }
         else if (element.is(':file')) {
-            value = element[0].files;
+            const input = element[0];
+            value = input instanceof HTMLInputElement ? input.files ?? undefined : undefined;
         }
         else {
             value = element.val();
         }
 
-        return value === undefined ? '': value;
-    },
+        return value === undefined ? "" : value;
+    }
 
     /**
      * For a given ID of a component, finds the DOM element with the message for that component.
-     * @param {string} clientId ID of a component for which to find the ui message.
-     * @param {JQuery} messageComponents A JQuery instance with a list of `ui-message`s, or `null` if no
+     * @param clientId ID of a component for which to find the ui message.
+     * @param messageComponents A JQuery instance with a list of `ui-message`s, or `null` if no
      * such element exists.
-     * @return {JQuery | null} The DOM element with the messages for the given component, or `null` when no such
+     * @returns The DOM element with the messages for the given component, or `null` when no such
      * element could be found.
      */
-    findTargetMessageComponent: function(clientId, messageComponents) {
+    findTargetMessageComponent(clientId: string, messageComponents: JQuery): JQuery | null {
         for (var i = 0; i < messageComponents.length; i++) {
             var messageComponent = messageComponents.eq(i);
             if (messageComponent.data('target') === clientId) {
@@ -866,68 +872,67 @@ PrimeFaces.validation.Utils = {
         }
 
         return null;
-    },
-
+    }
 
     /**
      * Renders all given messages in the given container.
-     * @param {Record<string, PrimeFaces.FacesMessage[]>} messages The messages to render.
-     * @param {JQuery} container The container for the messages. Either the element with the class `ui-messages`, or
+     * @param messages The messages to render.
+     * @param containers The container for the messages. Either the element with the class `ui-messages`, or
      * a parent of such an element.
      */
-    renderMessages: function(messages, container) {
-        var messagesComponents = $(),
-            messageComponents = $(),
-            growlComponents = $();
+    renderMessages(messages: Record<string, PrimeType.FacesMessage[]>, containers: JQuery): void {
+        let messagesComponents = $();
+        let messageComponents = $();
+        let growlComponents = $();
 
-        container.each(function() {
-            var $this = $(this);
+        for (const container of containers) {
+            const $container = $(container);
 
-            if ($this.is('div.ui-messages')) {
-                messagesComponents = messagesComponents.add($this);
+            if ($container.is('div.ui-messages')) {
+                messagesComponents = messagesComponents.add($container);
             }
             else {
-                messagesComponents = messagesComponents.add($this.find('div.ui-messages'));
+                messagesComponents = messagesComponents.add($container.find('div.ui-messages'));
             }
 
-            if ($this.is('div.ui-message')) {
-                messageComponents = messageComponents.add($this);
+            if ($container.is('div.ui-message')) {
+                messageComponents = messageComponents.add($container);
             }
             else {
-                messageComponents = messageComponents.add($this.find('div.ui-message'));
+                messageComponents = messageComponents.add($container.find('div.ui-message'));
             }
 
-            if ($this.is('.ui-growl-pl')) {
-                growlComponents = growlComponents.add($this);
+            if ($container.is('.ui-growl-pl')) {
+                growlComponents = growlComponents.add($container);
             }
             else {
-                growlComponents = growlComponents.add($this.find('.ui-growl-pl'));
+                growlComponents = growlComponents.add($container.find('.ui-growl-pl'));
             }
-        });
+        }
 
         // filter out by severity
-        messagesComponents = messagesComponents.filter(function(idx) {
-            if ($(this).is('.ui-fileupload-messages')) {
+        messagesComponents = messagesComponents.filter((_, el) => {
+            if ($(el).is('.ui-fileupload-messages')) {
                 return false;
             }
-            return $(this).data('severity').indexOf('error') !== -1;
+            return $(el).data('severity').indexOf('error') !== -1;
         });
-        growlComponents = growlComponents.filter(function(idx) {
-            return $(this).data('severity').indexOf('error') !== -1;
+        growlComponents = growlComponents.filter((_, el) => {
+            return $(el).data('severity').indexOf('error') !== -1;
         });
 
-        for (var i = 0; i < messagesComponents.length; i++) {
-            var messagesComponent = messagesComponents.eq(i),
-                globalOnly = messagesComponent.data('global'),
-                redisplay = messagesComponent.data('redisplay'),
-                showSummary = messagesComponent.data('summary'),
-                showDetail = messagesComponent.data('detail'),
-                messagesWidget = PrimeFaces.getWidgetById(messagesComponent.attr('id'));
+        for (let i = 0; i < messagesComponents.length; i++) {
+            const messagesComponent = messagesComponents.eq(i);
+            const globalOnly = messagesComponent.data('global');
+            const redisplay = messagesComponent.data('redisplay');
+            const showSummary = messagesComponent.data('summary');
+            const showDetail = messagesComponent.data('detail');
+            const messagesWidget = core.getWidgetById(messagesComponent.attr('id') ?? "");
 
-            messagesWidget.clearMessages();
+            messagesWidget?.clearMessages();
 
-            for (let clientId in messages) {
-                for (let msg of messages[clientId]) {
+            for (const clientId in messages) {
+                for (const msg of messages[clientId] ?? []) {
                     if (globalOnly || (msg.rendered && !redisplay)) {
                         continue;
                     }
@@ -939,24 +944,24 @@ PrimeFaces.validation.Utils = {
                         msg.detail = '';
                     }
 
-                    messagesWidget.appendMessage(msg);
+                    messagesWidget?.appendMessage(msg);
                     msg.rendered = true;
                 }
             }
         }
 
-        for (var i = 0; i < growlComponents.length; i++) {
-            var growlComponent = growlComponents.eq(i),
-                redisplay = growlComponent.data('redisplay'),
-                globalOnly = growlComponent.data('global'),
-                showSummary = growlComponent.data('summary'),
-                showDetail = growlComponent.data('detail'),
-                growlWidget = PrimeFaces.getWidgetById(growlComponent.attr('id'));
+        for (let i = 0; i < growlComponents.length; i++) {
+            const growlComponent = growlComponents.eq(i);
+            const redisplay = growlComponent.data('redisplay');
+            const globalOnly = growlComponent.data('global');
+            const showSummary = growlComponent.data('summary');
+            const showDetail = growlComponent.data('detail');
+            const growlWidget = core.getWidgetById(growlComponent.attr('id') ?? "");
 
-            growlWidget.removeAll();
+            growlWidget?.removeAll();
 
-            for (let clientId in messages) {
-                for (let msg of messages[clientId]) {
+            for (const clientId in messages) {
+                for (const msg of messages[clientId] ?? []) {
                     if (globalOnly || (msg.rendered && !redisplay)) {
                         continue;
                     }
@@ -968,61 +973,68 @@ PrimeFaces.validation.Utils = {
                         msg.detail = '';
                     }
 
-                    growlWidget.renderMessage(msg);
+                    growlWidget?.renderMessage(msg);
                     msg.rendered = true;
                 }
             }
         }
 
-        for (var i = 0; i < messageComponents.length; i++) {
-            var messageComponent = messageComponents.eq(i),
-                target = messageComponent.data('target'),
-                redisplay = messageComponent.data('redisplay'),
-                messageWidget = PrimeFaces.getWidgetById(messageComponent.attr('id'));
+        for (let i = 0; i < messageComponents.length; i++) {
+            const messageComponent = messageComponents.eq(i);
+            const target = messageComponent.data('target');
+            const redisplay = messageComponent.data('redisplay');
+            const messageWidget = core.getWidgetById(messageComponent.attr('id') ?? "");
 
-            messageWidget.clearMessage();
+            messageWidget?.clearMessage();
 
-            for (let clientId in messages) {
+            for (const clientId in messages) {
                 if (target !== clientId) {
                     continue;
                 }
-                for (let msg of messages[clientId]) {
+                for (const msg of messages[clientId] ?? []) {
                     if (msg.rendered && !redisplay) {
                         continue;
                     }
 
-                    messageWidget.renderMessage(msg);
+                    messageWidget?.renderMessage(msg);
                     msg.rendered = true;
                 }
             }
         }
-    },
+    }
 
     /**
-     * Resolves process-attribute of a PrimeFaces-component. (e.g. CommandButton)
-     * @param {PrimeFaces.validation.Configuration} cfg Configuration of the PrimeFaces-component.
-     * @param {JQuery} source The source element.
-     * @returns {JQuery} Resolved jQuery-element.
+     * Resolves `process` attribute of a PrimeFaces component. (e.g. `CommandButton`)
+     * @param cfg Configuration of the PrimeFaces component.
+     * @param source The source element.
+     * @returns Resolved jQuery instance.
      */
-    resolveProcess: function(cfg, source) {
+    resolveProcess(cfg: PrimeType.validation.Configuration, source: JQuery): JQuery {
         if (cfg.ajax && cfg.process) {
-            return searchExpressionFacade.resolveComponentsAsSelector(source, cfg.process);
+            return expressions.SearchExpressionFacade.resolveComponentsAsSelector(source, cfg.process);
         } else {
             return source.closest('form');
         }
-    },
+    }
 
     /**
-     * Resolves update-attribute of a PrimeFaces-component. (e.g. CommandButton)
-     * @param {PrimeFaces.validation.Configuration} cfg Configuration of the PrimeFaces-component.
-     * @param {JQuery} source The source element.
-     * @returns {JQuery} Resolved jQuery-element.
+     * Resolves `update` attribute of a PrimeFaces component. (e.g. `CommandButton`).
+     * @param cfg Configuration of the PrimeFaces component.
+     * @param source The source element.
+     * @returns Resolved jQuery instance.
      */
-    resolveUpdate: function(cfg, source) {
+    resolveUpdate(cfg: PrimeType.validation.Configuration, source: JQuery): JQuery {
         if (cfg.ajax && cfg.update) {
-            return searchExpressionFacade.resolveComponentsAsSelector(source, cfg.update);
+            return expressions.SearchExpressionFacade.resolveComponentsAsSelector(source, cfg.update);
         } else {
             return source.closest('form');
         }
     }
 };
+
+/**
+ * __PrimeFaces Client Side Validation Framework__
+ * 
+ * The object for enabling client side validation of form fields.
+ */
+export const validation: Validation = new Validation();

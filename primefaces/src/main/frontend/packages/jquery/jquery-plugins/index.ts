@@ -1,3 +1,5 @@
+/// <reference types="rangyinputs" preserve="true" />
+
 import "@types/jqueryui";
 
 import "./src/jquery.ui.js";

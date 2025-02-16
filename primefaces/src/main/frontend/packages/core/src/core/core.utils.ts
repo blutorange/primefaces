@@ -1,17 +1,16 @@
-import { ajaxQueue } from "./core.ajax.js";
+import { ajax } from "./core.ajax.js";
 import { env } from "./core.env.js";
-import { searchExpressionFacade } from "./core.expressions.js";
+import { expressions } from "./core.expressions.js";
 import { BaseWidget, DynamicOverlayWidget } from "./core.widget.js";
 import { Poll } from "../poll/poll.js";
+import { core } from "./core.js";
 
 /**
-* Shortcut for is this CMD on MacOs or CTRL key on other OSes. 
-* @deprecated Use {@link Utils.isMetaKey PrimeFaces.utils.isMetaKey}
-* @param {JQuery.TriggeredEvent} e The key event that occurred.
-* @return {boolean} `true` if the key is a meta key, or `false` otherwise.
-*/
-export function metaKey(e) {
-    return utils.isMetaKey(e);
+ * Rounds a number towards 0, e.g. `-3.9` => `-3` and `3.9` => `3`.
+ * @param value Ro
+ */
+function roundTowardsZero(value: number): number {
+    return parseInt(String(value));
 }
 
 /**
@@ -20,21 +19,21 @@ export function metaKey(e) {
 export class Utils {
     /**
      * TextEncoder instance used for string encoding operations.
-     * Initialized as null and typically set to a TextEncoder instance when needed.
-     * @type {TextEncoder|null}
-     * @private
+     * 
+     * Initialized as `null` and typically set to a {@Link TextEncoder} instance
+     * when needed.
      */
-    TEXT_ENCODER = null;
+    private TEXT_ENCODER: TextEncoder | null = null;
 
     /**
      * Finds the element to which the overlay panel should be appended. If none is specified explicitly, append the
      * panel to the body.
-     * @param {DynamicOverlayWidget} widget A widget that has a panel to be appended.
-     * @param {JQuery} target The DOM element that is the target of this overlay
-     * @param {JQuery} overlay The DOM element for the overlay.
-     * @return {string | null} The search expression for the element to which the overlay panel should be appended.
+     * @param widget A widget that has a panel to be appended.
+     * @param target The DOM element that is the target of this overlay
+     * @param overlay The DOM element for the overlay.
+     * @return The search expression for the element to which the overlay panel should be appended.
      */
-    resolveAppendTo(widget, target, overlay) {
+    resolveAppendTo(widget: DynamicOverlayWidget, target: JQuery, overlay: JQuery): string | null | undefined {
         if (widget && target && target[0]) {
             var dialog = target[0].closest('.ui-dialog');
 
@@ -62,12 +61,12 @@ export class Utils {
     /**
      * Finds the container element to which an overlay widget should be appended. This is either the element
      * specified by the widget configurations's `appendTo` attribute, or the document BODY element otherwise.
-     * @param {DynamicOverlayWidget} widget A widget to be displayed as an overlay.
-     * @return {JQuery} The container DOM element to which the overlay is to be appended.
+     * @param widget A widget to be displayed as an overlay.
+     * @return The container DOM element to which the overlay is to be appended.
      */
-    resolveDynamicOverlayContainer(widget) {
+    resolveDynamicOverlayContainer(widget: DynamicOverlayWidget): JQuery {
         return widget.cfg.appendTo
-            ? searchExpressionFacade.resolveComponentsAsSelector(widget.jq, widget.cfg.appendTo)
+            ? expressions.SearchExpressionFacade.resolveComponentsAsSelector(widget.jq, widget.cfg.appendTo)
             : $(document.body);
     }
 
@@ -83,12 +82,12 @@ export class Utils {
      * 1. The old, detached overlay, as a child of the element specified by `appendTo` attribute
      *
      * We now need to remove the detached overlay. This is done by this function.
-     * @param {DynamicOverlayWidget} widget The (old) overlay widget instance.
-     * @param {JQuery} overlay The DOM element for the overlay.
-     * @param {string} overlayId ID of the overlay, usually the widget ID.
-     * @param {JQuery} appendTo The container to which the overlay is appended.
+     * @param widget The (old) overlay widget instance.
+     * @param overlay The DOM element for the overlay.
+     * @param overlayId ID of the overlay, usually the widget ID.
+     * @param appendTo The container to which the overlay is appended.
      */
-    cleanupDynamicOverlay(widget, overlay, overlayId, appendTo) {
+    cleanupDynamicOverlay(widget: DynamicOverlayWidget, overlay: JQuery, overlayId: string, appendTo: JQuery): void {
         if (widget.cfg.appendTo) {
             var overlays = $("[id='" + overlayId + "']");
             if (overlays.length > 1) {
@@ -99,24 +98,25 @@ export class Utils {
 
     /**
      * Removes the overlay from the overlay container as specified by the `appendTo` attribute.
-     * @param {DynamicOverlayWidget} widget The overlay widget instance.
-     * @param {JQuery} overlay The (new) DOM element of the overlay.
-     * @param {string} overlayId ID of the the overlay, usually the widget ID.
-     * @param {JQuery} appendTo The container to which the overlay is appended.
+     * @param widget The overlay widget instance.
+     * @param overlay The (new) DOM element of the overlay. These will not be
+     * removed. Pass null to remove all overlays with the matching ID.
+     * @param overlayId ID of the the overlay, usually the widget ID.
+     * @param appendTo The container to which the overlay is appended.
      */
-    removeDynamicOverlay(widget, overlay, overlayId, appendTo) {
-        appendTo.children("[id='" +  overlayId + "']").not(overlay).remove();
+    removeDynamicOverlay(widget: DynamicOverlayWidget, overlay: JQuery | null, overlayId: string, appendTo: JQuery): void {
+        appendTo.children("[id='" +  overlayId + "']").not(overlay ?? (() => false)).remove();
     }
 
     /**
      * An overlay widget is moved in the DOM to the position as specified by the `appendTo` attribute. This function
      * moves the widget to its position in the DOM and removes old elements from previous AJAX updates.
-     * @param {BaseWidget} widget The overlay widget instance.
-     * @param {JQuery} overlay The DOM element for the overlay.
-     * @param {string} overlayId ID of the overlay, usually the widget ID.
-     * @param {JQuery} appendTo The container to which the overlay is appended.
+     * @param widget The overlay widget instance.
+     * @param overlay The DOM element for the overlay.
+     * @param overlayId ID of the overlay, usually the widget ID.
+     * @param appendTo The container to which the overlay is appended.
      */
-    appendDynamicOverlay(widget, overlay, overlayId, appendTo) {
+    appendDynamicOverlay(widget: DynamicOverlayWidget, overlay: JQuery, overlayId: string, appendTo: JQuery): void {
         var elementParent = overlay.parent();
 
         // skip when the parent currently is already the same
@@ -134,22 +134,22 @@ export class Utils {
     /**
      * Creates a new (empty) container for a modal overlay. A modal overlay is an overlay that blocks the content
      * below it. To remove the modal overlay, use {@link removeModal}.
-     * @param {BaseWidget} widget An overlay widget instance.
-     * @param {JQuery} overlay The modal overlay element should be a DIV.
-     * @param {() => JQuery} tabbablesCallback A supplier function that return a list of tabbable elements. A
+     * @param widget An overlay widget instance.
+     * @param overlay The modal overlay element should be a DIV.
+     * @param tabbablesCallback A supplier function that return a list of tabbable elements. A
      * tabbable element is an element to which the user can navigate to via the tab key.
-     * @return {JQuery} The DOM element for the newly added modal overlay container.
+     * @return The DOM element for the newly added modal overlay container.
      */
-    addModal(widget, overlay, tabbablesCallback) {
-        var id = widget.id,
-            zIndex = overlay.css('z-index') - 1;
+    addModal(widget: BaseWidget, overlay: JQuery, tabbablesCallback: () => JQuery): JQuery {
+        const id = widget.getId();
+        const zIndex = parseInt(overlay.css('z-index')) - 1;
 
-        var role = widget instanceof PrimeFaces.widget.ConfirmDialog ? 'alertdialog' : 'dialog';
+        const role = widget instanceof core.widget.ConfirmDialog ? 'alertdialog' : 'dialog';
         overlay.attr({
-            'role': role
-            ,'aria-hidden': false
-            ,'aria-modal': true
-            ,'aria-live': 'polite'
+            'role': role,
+            'aria-hidden': false,
+            'aria-modal': true,
+            'aria-live': 'polite',
         });
 
         this.preventTabbing(widget, id, zIndex, tabbablesCallback);
@@ -169,13 +169,13 @@ export class Utils {
     /**
      * Given a modal overlay, prevents navigating via the tab key to elements outside of that modal overlay. Use
      * {@link enableTabbing} to restore the original behavior.
-     * @param {BaseWidget} widget An overlay widget instance.
-     * @param {string} id ID of a modal overlay widget.
-     * @param {number} zIndex The z-index of the modal overlay.
-     * @param {() => JQuery} tabbablesCallback A supplier function that return a list of tabbable elements. A
+     * @param widget An overlay widget instance.
+     * @param id ID of a modal overlay widget.
+     * @param zIndex The z-index of the modal overlay.
+     * @param tabbablesCallback A supplier function that return a list of tabbable elements. A
      * tabbable element is an element to which the user can navigate to via the tab key.
      */
-    preventTabbing(widget, id, zIndex, tabbablesCallback) {
+    preventTabbing(widget: BaseWidget, id: string, zIndex: number, tabbablesCallback: () => JQuery): void {
         //Disable tabbing out of modal and stop events from targets outside of the overlay element
         var $documentInIframe = widget.cfg && widget.cfg.iframe ? widget.cfg.iframe.get(0).contentWindow.document : undefined;
         var $document = $($documentInIframe ? [document, $documentInIframe] : document);
@@ -233,10 +233,10 @@ export class Utils {
     /**
      * Given a modal overlay widget, removes the modal overlay element from the DOM. This reverts the changes as
      * made by {@link addModal}.
-     * @param {BaseWidget} widget A modal overlay widget instance.
-     * @param {JQuery | null} [overlay] The modal overlay element should be a DIV.
+     * @param widget A modal overlay widget instance.
+     * @param overlay The modal overlay element should be a DIV.
      */
-    removeModal(widget, overlay) {
+    removeModal(widget: BaseWidget, overlay?: JQuery | null): void {
         var id = widget.id;
         var modalId = id + '_modal';
 
@@ -249,7 +249,7 @@ export class Utils {
         }
 
         // if the id contains a ':'
-        $(PrimeFaces.escapeClientId(modalId)).remove();
+        $(core.escapeClientId(modalId)).remove();
 
         // if the id does NOT contain a ':'
         $(document.body).children("[id='" + modalId + "']").remove();
@@ -263,10 +263,10 @@ export class Utils {
     /**
      * Enables navigating to an element via the tab key outside an overlay widget. Usually called when a modal
      * overlay is removed. This reverts the changes as made by {@link preventTabbing}.
-     * @param {BaseWidget} widget A modal overlay widget instance.
-     * @param {string} id ID of a modal overlay, usually the widget ID.
+     * @param widget A modal overlay widget instance.
+     * @param id ID of a modal overlay, usually the widget ID.
      */
-    enableTabbing(widget, id) {
+    enableTabbing(widget: BaseWidget, id: string): void {
         var $documentInIframe = widget.cfg && widget.cfg.iframe ? widget.cfg.iframe.get(0).contentWindow.document : undefined;
         var $document = $($documentInIframe ? [document, $documentInIframe] : document);
 
@@ -275,41 +275,47 @@ export class Utils {
 
     /**
      * Checks if a modal with the given ID is currently displayed.
-     * @param {string} id The base ID of a modal overlay, usually the widget ID.
-     * @return {boolean} Whether the modal with the given ID is displayed.
+     * @param id The base ID of a modal overlay, usually the widget ID.
+     * @return Whether the modal with the given ID is displayed.
      */
-    isModalActive(id) {
+    isModalActive(id: string): boolean {
         var modalId = id + '_modal';
 
-        return $(PrimeFaces.escapeClientId(modalId)).length === 1
+        return $(core.escapeClientId(modalId)).length === 1
             || $(document.body).children("[id='" + modalId + "']").length === 1;
     }
 
     /**
      * Is this scrollable parent a type that should be bound to the window element.
      *
-     * @param {JQuery | undefined | null} jq An element to check if should be bound to window scroll. 
-     * @return {boolean} true this this JQ should be bound to the window scroll event
+     * @param jq An element to check if should be bound to window scroll. 
+     * @return true this this JQ should be bound to the window scroll event
      */
-    isScrollParentWindow(jq) {
-        return jq && (jq.is('body') || jq.is('html') || jq[0].nodeType === 9); // nodeType 9 is for document element;
+    isScrollParentWindow(jq: JQuery | undefined | null): boolean {
+        // nodeType 9 is for document element;
+        return jq !== undefined && jq !== null && (jq.is('body') || jq.is('html') || jq[0]?.nodeType === 9);
     }
 
     /**
      * Registers a callback on the document that is invoked when the user clicks on an element outside the overlay
      * widget.
      *
-     * @param {BaseWidget} widget An overlay widget instance.
-     * @param {string} hideNamespace A click event with a namespace to listen to, such as `mousedown.widgetId`.
-     * @param {JQuery} overlay The DOM element for the overlay.
-     * @param {((event: JQuery.TriggeredEvent) => JQuery) | undefined} resolveIgnoredElementsCallback The callback which
+     * @param widget An overlay widget instance.
+     * @param hideNamespace A click event with a namespace to listen to, such as `mousedown.widgetId`.
+     * @param overlay The DOM element for the overlay.
+     * @param resolveIgnoredElementsCallback The callback which
      * resolves the elements to ignore when the user clicks outside the overlay. The `hideCallback` is not invoked
      * when the user clicks on one those elements.
-     * @param {(event: JQuery.TriggeredEvent, eventTarget: JQuery) => void} hideCallback A callback that is invoked when the
-     * user clicks on an element outside the overlay widget.
-     * @return {PrimeFaces.UnbindCallback} Unbind callback handler
+     * @param hideCallback A callback that is invoked when the user clicks on an element outside the overlay widget.
+     * @returns Object that can be used to remove the registered handler.
      */
-    registerHideOverlayHandler(widget, hideNamespace, overlay, resolveIgnoredElementsCallback, hideCallback) {
+    registerHideOverlayHandler(
+        widget: BaseWidget,
+        hideNamespace: string,
+        overlay: JQuery,
+        resolveIgnoredElementsCallback: PrimeType.OverlayResolveIgnoredElementCallback | undefined,
+        hideCallback: PrimeType.OverlayHideCallback
+    ): PrimeType.Unbindable {
 
         widget.addDestroyListener(() => {
             $(document).off(hideNamespace);
@@ -320,19 +326,22 @@ export class Utils {
                 return;
             }
 
-            var $eventTarget = $(e.target);
+            var $eventTarget: JQuery<any> = $(e.target);
 
             // do nothing when the element should be ignored
             if (resolveIgnoredElementsCallback) {
-                var elementsToIgnore = resolveIgnoredElementsCallback(e);
+                var elementsToIgnore: JQuery<any> = resolveIgnoredElementsCallback(e);
                 if (elementsToIgnore) {
-                    if (elementsToIgnore.is($eventTarget) || elementsToIgnore.has($eventTarget).length > 0) {
+                    if (elementsToIgnore.is($eventTarget) || 
+                        // @ts-expect-error @types/jquery is wrong, "has" accepts a JQuery instance
+                        elementsToIgnore.has($eventTarget)
+                        .length > 0) {
                         return;
                     }
                 }
             }
 
-            if (PrimeFaces.hideOverlaysOnViewportChange === true) {
+            if (core.hideOverlaysOnViewportChange === true) {
                 hideCallback(e, $eventTarget);
             }
         });
@@ -346,16 +355,22 @@ export class Utils {
 
     /**
      * Registers a callback that is invoked when the window is resized.
-     * @param {BaseWidget} widget A widget instance for which to register a resize handler.
-     * @param {string} resizeNamespace A resize event with a namespace to listen to, such as `resize.widgetId`.
-     * @param {JQuery | undefined} element An element that prevents the callback from being invoked when it is not
+     * @param widget A widget instance for which to register a resize handler.
+     * @param resizeNamespace A resize event with a namespace to listen to, such as `resize.widgetId`.
+     * @param element An element that prevents the callback from being invoked when it is not
      * visible, usually a child element of the widget.
-     * @param {(event: JQuery.TriggeredEvent) => void} resizeCallback A callback that is invoked when the window is resized.
-     * @param {string} [params] Optional CSS selector. If given, the callback is invoked only when the resize event
+     * @param resizeCallback A callback that is invoked when the window is resized.
+     * @param params Optional CSS selector. If given, the callback is invoked only when the resize event
      * is triggered on an element the given selector.
-     * @return {PrimeFaces.UnbindCallback} Unbind callback handler
+     * @returns Object that can be used to remove the registered handler.
      */
-    registerResizeHandler(widget, resizeNamespace, element, resizeCallback, params) {
+    registerResizeHandler(
+        widget: BaseWidget,
+        resizeNamespace: string,
+        element: JQuery | undefined,
+        resizeCallback: PrimeType.ResizeCallback,
+        params?: string
+    ): PrimeType.Unbindable {
 
         const unbindResizeHandler = () => {
             $(window).off(resizeNamespace);
@@ -381,45 +396,58 @@ export class Utils {
     }
 
     /**
-     * Registers a MutationObserver/ResizeObserver to watch for DOM changes that may affect element sizing/positioning.
-     * @param {BaseWidget} widget The widget instance to register the observer for
-     * @param {JQuery | HTMLElement} element The element to observe for changes
-     * @param {() => void} resizeCallback Callback function to execute when relevant mutations occur
-     * @return {{bind: () => void, unbind: () => void}} Object containing bind and unbind functions for the observer
+     * Registers a MutationObserver and ResizeObserver to watch for DOM changes
+     * that may affect element's position and dimensions.
+     * @param widget The widget instance to register the observer for
+     * @param element The element to observe for changes
+     * @param mutationCallback Callback function to execute when relevant
+     * mutations occur.
+     * @return Object containing bind and unbind functions for the observer
      */
-    registerMutationObserver(widget, element, resizeCallback) {
-        const domElement = element instanceof jQuery ? element.get(0) : element;
+    registerMutationObserver(
+        widget: BaseWidget,
+        element: JQuery | HTMLElement,
+        mutationCallback: PrimeType.MutationCallback,
+    ): PrimeType.Controllable {
+        const domElement = this.isJQuery(element) ? element.get(0) : element;
+
+        if (domElement === undefined) {
+            return { bind:() => {}, unbind: () => {} };
+        }
 
         const resizeObserver = new ResizeObserver(entries => {
-            const $entry = $(entries[0].target);
+            const entry = entries[0];
+            const $entry = entry ? $(entry.target) : $();
             if ($entry && ($entry.is(":hidden") || $entry.css('visibility') === 'hidden')) {
                 return;
             }
-            resizeCallback();
+            mutationCallback();
         });
+
+        let rafId: number | undefined;
 
         const mutationObserver = new MutationObserver(mutations => {
             // Check if mutation involves DOM position changes
             const shouldCallback = mutations.some(mutation => {
                 const {type, target, attributeName} = mutation;
-                return (type === "childList" && target.id === domElement.id) ||
-                       (type === "attributes" && attributeName === "style" && target.id === domElement.id) ||
+                return (type === "childList" && target instanceof Element && target.id === domElement.id) ||
+                       (type === "attributes" && target instanceof Element && attributeName === "style" && target.id === domElement.id) ||
                        (type === "attributes" && attributeName === "class");
             });
 
             if (shouldCallback) {
                 // Debounce multiple mutations using requestAnimationFrame
-                if (mutationObserver.rafId) {
-                    window.cancelAnimationFrame(mutationObserver.rafId);
+                if (rafId) {
+                    window.cancelAnimationFrame(rafId);
                 }
-                mutationObserver.rafId = window.requestAnimationFrame(() => {
-                    resizeCallback();
+                rafId = window.requestAnimationFrame(() => {
+                    mutationCallback();
                 });
             }
         });
 
         // Cleanup function to disconnect both observers
-        const unbindMutationObserver = function () {
+        const unbindMutationObserver = () => {
             resizeObserver.unobserve(domElement);
             mutationObserver.disconnect();
         };
@@ -430,7 +458,7 @@ export class Utils {
         widget.addRefreshListener(unbindMutationObserver);
 
         // Start observing DOM mutations
-        const bindMutationObserver = function () {
+        const bindMutationObserver = () => {
             mutationObserver.observe(document.body, {
                 childList: true,
                 subtree: true,
@@ -452,12 +480,12 @@ export class Utils {
     /**
      * Sets up an overlay widget. Appends the overlay widget to the element as specified by the `appendTo`
      * attribute. Also makes sure the overlay widget is handled properly during AJAX updates.
-     * @param {DynamicOverlayWidget} widget An overlay widget instance.
-     * @param {JQuery} overlay The DOM element for the overlay.
-     * @param {string} overlayId The ID of the overlay, usually the widget ID.
-     * @return {JQuery} The overlay that was passed to this function.
+     * @param widget An overlay widget instance.
+     * @param overlay The DOM element for the overlay.
+     * @param overlayId The ID of the overlay, usually the widget ID.
+     * @return The overlay that was passed to this function.
      */
-    registerDynamicOverlay(widget, overlay, overlayId) {
+    registerDynamicOverlay(widget: DynamicOverlayWidget, overlay: JQuery, overlayId: string): JQuery {
 
         if (widget.cfg.appendTo) {
             var appendTo = this.resolveDynamicOverlayContainer(widget);
@@ -480,15 +508,19 @@ export class Utils {
 
     /**
      * Registers a callback that is invoked when a scroll event is triggered on the DOM element for the widget.
-     * @param {BaseWidget} widget A widget instance for which to register a scroll handler.
-     * @param {string} scrollNamespace A scroll event with a namespace, such as `scroll.widgetId`.
-     * @param {(event: JQuery.TriggeredEvent) => void} scrollCallback A callback that is invoked when a scroll event
+     * @param widget A widget instance for which to register a scroll handler.
+     * @param scrollNamespace A scroll event with a namespace, such as `scroll.widgetId`.
+     * @param scrollCallback A callback that is invoked when a scroll event
      * occurs on the widget.
-     * @return {PrimeFaces.UnbindCallback} unbind callback handler
+     * @return unbind callback handler
      */
-    registerScrollHandler(widget, scrollNamespace, scrollCallback) {
-        var widgetJq = widget.getJQ();
-        var scrollParent = (widgetJq && typeof widgetJq.scrollParent === 'function') ? widgetJq.scrollParent() : null;
+    registerScrollHandler(
+        widget: BaseWidget,
+        scrollNamespace: string,
+        scrollCallback: PrimeType.ScrollCallback,
+    ): PrimeType.Unbindable {
+        let widgetJq = widget.getJQ();
+        let scrollParent: JQuery<any> | null = (widgetJq && typeof widgetJq.scrollParent === 'function') ? widgetJq.scrollParent() : null;
 
         if (!scrollParent || this.isScrollParentWindow(scrollParent)) {
             scrollParent = $(window);
@@ -496,7 +528,7 @@ export class Utils {
 
         // To avoid holding the $(window) variable explicitly, you can directly bind and unbind 
         // the scroll event on the window within the function itself.
-        var scrollHandler = (e) => {
+        var scrollHandler = (e: JQuery.TriggeredEvent) => {
             scrollCallback(e);
         };
 
@@ -519,17 +551,21 @@ export class Utils {
     /**
      * Registers a callback that is invoked when a scroll event is triggered on The DOM element for the widget that
      * has a connected overlay.
-     * @param {BaseWidget} widget A widget instance for which to register a scroll handler.
-     * @param {string} scrollNamespace A scroll event with a namespace, such as `scroll.widgetId`.
-     * @param {JQuery | undefined} element A DOM element used to find scrollable parents.
-     * @param {(event: JQuery.TriggeredEvent) => void} scrollCallback A callback that is invoked when a scroll event
-     * occurs on the widget.
-     * @return {PrimeFaces.UnbindCallback} unbind callback handler
+     * @param widget A widget instance for which to register a scroll handler.
+     * @param scrollNamespace A scroll event with a namespace, such as `scroll.widgetId`.
+     * @param element A DOM element used to find scrollable parents.
+     * @param scrollCallback A callback that is invoked when a scroll event occurs on the widget.
+     * @return Unbind callback handler
      */
-    registerConnectedOverlayScrollHandler(widget, scrollNamespace, element, scrollCallback) {
-        var scrollableParents = this.getScrollableParents((element || widget.getJQ()).get(0));
+    registerConnectedOverlayScrollHandler(
+        widget: BaseWidget,
+        scrollNamespace: string,
+        element: JQuery | undefined,
+        scrollCallback: PrimeType.ScrollCallback
+    ): PrimeType.Unbindable {
+        const scrollableParents = this.getScrollableParents((element ?? widget.getJQ()).get(0));
 
-        const scrollHandler = (e) => {
+        const scrollHandler = (e: JQuery.TriggeredEvent) => {
             scrollCallback(e);
         };
 
@@ -553,17 +589,17 @@ export class Utils {
     }
 
     /**
-     * Finds scrollable parents (not  the document).
-     * @param {Element} element An element used to find its scrollable parents.
-     * @return {Element[]} the list of scrollable parents.
+     * Finds scrollable parents (not the document).
+     * @param element An element used to find its scrollable parents.
+     * @returns The list of scrollable parents.
      */
-    getScrollableParents(element) {
-        var scrollableParents = [];
-        var getParents = (element, parents) => {
-            return element['parentNode'] == null ? parents : getParents(element.parentNode, parents.concat([element.parentNode]));
+    getScrollableParents(element: Element | undefined): (Window | Element)[] {
+        const scrollableParents: (Window | Element)[] = [];
+        const getParents = (element: ParentNode, parents: ParentNode[]): ParentNode[] => {
+            return element.parentNode == null ? parents : getParents(element.parentNode, parents.concat([element.parentNode]));
         };
 
-        const addScrollableParent = (node) => {
+        const addScrollableParent = (node: HTMLElement): void => {
             if (this.isScrollParentWindow($(node))) {
                 scrollableParents.push(window);
             } else {
@@ -572,26 +608,26 @@ export class Utils {
         };
 
         if (element) {
-            var parents = getParents(element, []);
-            var overflowRegex = /(auto|scroll)/;
-            var overflowCheck = (node) => {
-                var styleDeclaration = window['getComputedStyle'](node, null);
+            const parents = getParents(element, []);
+            const overflowRegex = /(auto|scroll)/;
+            const overflowCheck = (node: Element) => {
+                const styleDeclaration = window.getComputedStyle(node, null);
                 return overflowRegex.test(styleDeclaration.getPropertyValue('overflow')) || overflowRegex.test(styleDeclaration.getPropertyValue('overflowX')) || overflowRegex.test(styleDeclaration.getPropertyValue('overflowY'));
             };
 
             for (const parent of parents) {
-                var scrollSelectors = parent.nodeType === 1 && parent.dataset['scrollselectors'];
+                const scrollSelectors = parent instanceof HTMLElement && parent.dataset['scrollselectors'];
                 if (scrollSelectors) {
-                    var selectors = scrollSelectors.split(',');
+                    const selectors = scrollSelectors.split(',');
                     for (const selector of selectors) {
-                        var el = parent.querySelector(selector);
-                        if (el && overflowCheck(el)) {
+                        const el = parent.querySelector(selector);
+                        if (el instanceof HTMLElement && overflowCheck(el)) {
                             addScrollableParent(el);
                         }
                     }
                 }
 
-                if (parent.nodeType !== 9 && overflowCheck(parent)) {
+                if (parent instanceof HTMLElement && overflowCheck(parent)) {
                     addScrollableParent(parent);
                 }
             }
@@ -607,10 +643,10 @@ export class Utils {
 
     /**
      * Removes a scroll handler as registered by {@link registerScrollHandler}.
-     * @param {BaseWidget} widget A widget instance for which a scroll handler was registered.
-     * @param {string} scrollNamespace A scroll event with a namespace, such as `scroll.widgetId`.
+     * @param widget A widget instance for which a scroll handler was registered.
+     * @param scrollNamespace A scroll event with a namespace, such as `scroll.widgetId`.
      */
-    unbindScrollHandler(widget, scrollNamespace) {
+    unbindScrollHandler(widget: BaseWidget, scrollNamespace: string): void {
         var scrollParent = widget.getJQ().scrollParent();
         if (this.isScrollParentWindow(scrollParent)) {
             $(window).off(scrollNamespace); // Unbind directly from window
@@ -623,31 +659,31 @@ export class Utils {
      * Prevents the user from scrolling the document BODY element. You can enable scrolling again via
      * {@link enableScrolling}.
      */
-    preventScrolling() {
+    preventScrolling(): void {
         $(document.body).addClass('ui-overflow-hidden');
     }
 
     /**
      * Enables scrolling again if previously disabled via {@link preventScrolling}.
      */
-    enableScrolling() {
+    enableScrolling(): void {
         $(document.body).removeClass('ui-overflow-hidden');
     }
 
     /**
      * Calculates an element offset relative to the current scroll position of the window.
-     * @param {JQuery} element An element for which to calculate the scroll position.
-     * @return {JQuery.Coordinates} The offset of the given element, relative to the current scroll position of the
+     * @param element An element for which to calculate the scroll position.
+     * @return The offset of the given element, relative to the current scroll position of the
      * window.
      */
-    calculateRelativeOffset(element) {
-        var result = {
+    calculateRelativeOffset(element: JQuery): JQuery.Coordinates {
+        const result: JQuery.Coordinates = {
             left : 0,
-            top : 0
+            top : 0,
         };
-        var offset = element.offset();
-        var scrollTop = $(window).scrollTop();
-        var scrollLeft = $(window).scrollLeft();
+        const offset = element.offset() ?? { left: 0, top: 0 };
+        const scrollTop = $(window).scrollTop() ?? 0;
+        const scrollLeft = $(window).scrollLeft() ?? 0;
         result.top = offset.top - scrollTop;
         result.left = offset.left - scrollLeft;
         return result;
@@ -656,10 +692,10 @@ export class Utils {
     /**
      * Blocks the enter key for an event like `keyup` or `keydown`. Useful in filter input events in many
      * components.
-     * @param {JQuery.TriggeredEvent} e The key event that occurred.
-     * @return {boolean} `true` if ENTER key was blocked, false if not.
+     * @param e The key event that occurred.
+     * @returns `true` if ENTER key was blocked, false if not.
      */
-    blockEnterKey(e) {
+    blockEnterKey(e: JQuery.TriggeredEvent): boolean {
         if(e.key === 'Enter') {
             e.preventDefault();
             e.stopPropagation();
@@ -670,44 +706,44 @@ export class Utils {
     
     /**
      * Is this CMD on MacOs or CTRL key on other OSes. 
-     * @param {JQuery.TriggeredEvent} e The key event that occurred.
-     * @return {boolean} `true` if the key is a meta key, or `false` otherwise.
+     * @param e The key event that occurred.
+     * @return `true` if the key is a meta key, `false` or `undefined` otherwise.
      */
-    isMetaKey(e) {
-        if (e.originalEvent) {
-            // original event returns the metakey value at the time the event was generated
-            return env.browser.mac ? e.originalEvent.metaKey : e.originalEvent.ctrlKey;
+    isMetaKey(e: JQuery.TriggeredEvent): boolean | undefined {
+        if (e.originalEvent instanceof KeyboardEvent || e.originalEvent instanceof MouseEvent || e.originalEvent instanceof TouchEvent) {
+            // original event returns the metaKey value at the time the event was generated
+            return env.browser?.mac ? e.originalEvent.metaKey : e.originalEvent.ctrlKey;
         }
         else {
             // jQuery returns the real time value of the meta key
-            return env.browser.mac ? e.metaKey  : e.ctrlKey;
+            return env.browser?.mac ? e.metaKey  : e.ctrlKey;
         }
     }
 
     /**
      * Is this SPACE or ENTER key. Used throughout codebase to trigger and action.
-     * @param {JQuery.TriggeredEvent} e The key event that occurred.
-     * @return {boolean} `true` if the key is an action key, or `false` otherwise.
+     * @param e The key event that occurred.
+     * @returns `true` if the key is an action key, or `false` otherwise.
      */
-    isActionKey(e) {
+    isActionKey(e: JQuery.KeyboardEventBase): boolean {
         return e.code === 'Space' || e.key === 'Enter';
     }
 
     /**
      * Checks if the key pressed is a printable key like 'a' or '4' etc.
-     * @param {JQuery.TriggeredEvent} e The key event that occurred.
-     * @return {boolean} `true` if the key is a printable key, or `false` otherwise.
+     * @param e The key event that occurred.
+     * @returns `true` if the key is a printable key, or a falsy value otherwise.
      */
-    isPrintableKey(e) {
+    isPrintableKey(e: JQuery.TriggeredEvent | undefined | null): string | boolean | null | undefined {
         return e && e.key && (e.key.length === 1 || e.key === 'Unidentified');
     }
     
     /**
      * Checks if the key pressed is cut, copy, or paste.
-     * @param {JQuery.TriggeredEvent} e The key event that occurred.
+     * @param e The key event that occurred.
      * @return {boolean} `true` if the key is cut/copy/paste, or `false` otherwise.
      */
-    isClipboardKey(e) {
+    isClipboardKey(e: JQuery.TriggeredEvent): boolean | undefined {
         switch (e.key) {
             case 'a':
             case 'A':
@@ -725,10 +761,10 @@ export class Utils {
 
     /**
      * Ignores unprintable keys on filter input text box. Useful in filter input events in many components.
-     * @param {JQuery.TriggeredEvent} e The key event that occurred.
+     * @param e The key event that occurred.
      * @return {boolean} `true` if the one of the keys to ignore was pressed, or `false` otherwise.
      */
-    ignoreFilterKey(e) {
+    ignoreFilterKey(e: JQuery.KeyboardEventBase): boolean {
         // cut copy paste allows filter to trigger
         if (this.isClipboardKey(e)) {
             return false;
@@ -757,10 +793,10 @@ export class Utils {
     /**
      * Helper to open a new URL and if CTRL is held down open in new browser tab.
      *
-     * @param {JQuery.TriggeredEvent} event The click event that occurred.
-     * @param {JQuery} link The URL anchor link that was clicked.
+     * @param event The click event that occurred.
+     * @param link The URL anchor link that was clicked.
      */
-    openLink(event, link) {
+    openLink(event: JQuery.TriggeredEvent, link: JQuery): void {
         var href = link.attr('href');
         var win;
         if(href && href !== '#') {
@@ -780,10 +816,10 @@ export class Utils {
     /**
      * Enables a widget for editing and sets it style as enabled.
      *
-     * @param {JQuery} jq a required jQuery element to enable
-     * @param {JQuery | undefined | null} [input] an optional jQuery input to enable (will use jq if null)
+     * @param jq a required jQuery element to enable
+     * @param input an optional jQuery input to enable (will use jq if null)
      */
-    enableInputWidget(jq, input) {
+    enableInputWidget(jq: JQuery, input?: JQuery | undefined | null): void {
         if(!input) {
             input = jq;
         }
@@ -796,10 +832,10 @@ export class Utils {
     /**
      * Disables a widget from editing and sets it style as disabled.
      *
-     * @param {JQuery} jq a required jQuery element to disable
-     * @param {JQuery | undefined | null} [input] an optional jQuery input to disable (will use jq if null)
+     * @param jq a required jQuery element to disable
+     * @param input an optional jQuery input to disable (will use jq if null)
      */
-    disableInputWidget(jq, input) {
+    disableInputWidget(jq: JQuery, input: JQuery | undefined | null): void {
         if(!input) {
             input = jq;
         }
@@ -812,9 +848,9 @@ export class Utils {
     /**
      * Enables a button.
      *
-     * @param {JQuery} jq a required jQuery element to enable
+     * @param jq a required jQuery element to enable
      */
-    enableButton(jq) {
+    enableButton(jq: JQuery): void {
         if (jq) {
             jq.removeClass('ui-state-disabled')
               .prop( "disabled", false)
@@ -825,9 +861,9 @@ export class Utils {
     /**
      * Disables a button from being clicked.
      *
-     * @param {JQuery} jq a required jQuery button to disable
+     * @param jq a required jQuery button to disable
      */
-    disableButton(jq) {
+    disableButton(jq: JQuery): void {
         if (jq) {
             jq.removeClass('ui-state-hover ui-state-focus ui-state-active')
               .addClass('ui-state-disabled')
@@ -839,30 +875,30 @@ export class Utils {
     /**
      * Enables CSS and jQuery animation.
      */
-    enableAnimations() {
+    enableAnimations(): void {
         $.fx.off = false;
-        PrimeFaces.animationEnabled = true;
+        core.animationEnabled = true;
     }
 
     /**
      * Disables CSS and jQuery animation.
      */
-    disableAnimations() {
+    disableAnimations(): void {
         $.fx.off = true;
-        PrimeFaces.animationEnabled = false;
+        core.animationEnabled = false;
     }
 
     /**
      * CSS Transition method for overlay panels such as SelectOneMenu/SelectCheckboxMenu/Datepicker's panel etc.
-     * @param {JQuery | undefined | null} element An element for which to execute the transition.
-     * @param {string | undefined | null} className Class name used for transition phases.
-     * @return {PrimeFaces.CssTransitionHandler | null} Two handlers named `show` and `hide` that should be invoked
+     * @param element An element for which to execute the transition.
+     * @param className Class name used for transition phases.
+     * @return Two handlers named `show` and `hide` that should be invoked
      * when the element gets shown and hidden. If the given element or className property is `undefined` or `null`,
      * this function returns `null`.
      */
-    registerCSSTransition(element, className) {
+    registerCSSTransition(element: JQuery | undefined | null, className: string | undefined | null): PrimeType.CssTransitionHandler | null {
         if (element && className != null) {
-            var classNameStates = {
+            const classNameStates = {
                'enter': className + '-enter',
                'enterActive': className + '-enter-active',
                'enterDone': className + '-enter-done',
@@ -870,10 +906,12 @@ export class Utils {
                'exitActive': className + '-exit-active',
                'exitDone': className + '-exit-done'
             };
-            var callTransitionEvent = (callbacks, key, param) => {
-                if (callbacks != null && callbacks[key] != null) {
-                    callbacks[key].call(param);
-                }
+            const callTransitionEvent = <K extends keyof PrimeType.CssTransitionCallback>(
+                callbacks: PrimeType.CssTransitionCallback | null | undefined,
+                key: K,
+                param: ThisParameterType<Exclude<PrimeType.CssTransitionCallback[K], undefined>>
+            ) => {
+                callbacks?.[key]?.call(param as any);
             };
 
             return {
@@ -882,13 +920,13 @@ export class Utils {
                     element.removeClass([classNameStates.exit, classNameStates.exitActive, classNameStates.exitDone]);
 
                     if (element.is(':hidden')) {
-                        if (PrimeFaces.animationEnabled) {
-                            PrimeFaces.animationActive = true;
+                        if (core.animationEnabled) {
+                            core.animationActive = true;
                             element.css('display', 'block').addClass(classNameStates.enter);
-                            callTransitionEvent(callbacks, 'onEnter');
+                            callTransitionEvent(callbacks, 'onEnter', window);
 
                             requestAnimationFrame(() => {
-                                PrimeFaces.queueTask(() => {
+                                core.queueTask(() => {
                                     element.addClass(classNameStates.enterActive);
                                 });
 
@@ -896,20 +934,20 @@ export class Utils {
                                     callTransitionEvent(callbacks, 'onEntering', event);
                                 }).one('transitioncancel.css-transition-show', () => {
                                     element.removeClass([classNameStates.enter, classNameStates.enterActive, classNameStates.enterDone]);
-                                    PrimeFaces.animationActive = false;
+                                    core.animationActive = false;
                                 }).one('transitionend.css-transition-show', (event) => {
                                     element.removeClass([classNameStates.enterActive, classNameStates.enter]).addClass(classNameStates.enterDone);
                                     callTransitionEvent(callbacks, 'onEntered', event);
-                                    PrimeFaces.animationActive = false;
+                                    core.animationActive = false;
                                 });
                             });
                         }
                         else {
                             // animation globally disabled still call downstream callbacks
                             element.css('display', 'block');
-                            callTransitionEvent(callbacks, 'onEnter');
-                            callTransitionEvent(callbacks, 'onEntering');
-                            callTransitionEvent(callbacks, 'onEntered');
+                            callTransitionEvent(callbacks, 'onEnter', window);
+                            callTransitionEvent(callbacks, 'onEntering', window);
+                            callTransitionEvent(callbacks, 'onEntered', window);
                         }
                     }
                 },
@@ -918,12 +956,12 @@ export class Utils {
                     element.removeClass([classNameStates.enter, classNameStates.enterActive, classNameStates.enterDone]);
 
                     if (element.is(':visible')) {
-                        if (PrimeFaces.animationEnabled) {
-                            PrimeFaces.animationActive = true;
+                        if (core.animationEnabled) {
+                            core.animationActive = true;
                             element.addClass(classNameStates.exit);
-                            callTransitionEvent(callbacks, 'onExit');
+                            callTransitionEvent(callbacks, 'onExit', window);
 
-                            PrimeFaces.queueTask(() => {
+                            core.queueTask(() => {
                                 element.addClass(classNameStates.exitActive);
                             });
 
@@ -931,18 +969,18 @@ export class Utils {
                                 callTransitionEvent(callbacks, 'onExiting', event);
                             }).one('transitioncancel.css-transition-hide', () => {
                                 element.removeClass([classNameStates.exit, classNameStates.exitActive, classNameStates.exitDone]);
-                                PrimeFaces.animationActive = false;
+                                core.animationActive = false;
                             }).one('transitionend.css-transition-hide', (event) => {
                                 element.css('display', 'none').removeClass([classNameStates.exitActive, classNameStates.exit]).addClass(classNameStates.exitDone);
                                 callTransitionEvent(callbacks, 'onExited', event);
-                                PrimeFaces.animationActive = false;
+                                core.animationActive = false;
                             });
                         }
                         else {
                             // animation globally disabled still call downstream callbacks
-                            callTransitionEvent(callbacks, 'onExit');
-                            callTransitionEvent(callbacks, 'onExiting');
-                            callTransitionEvent(callbacks, 'onExited');
+                            callTransitionEvent(callbacks, 'onExit', window);
+                            callTransitionEvent(callbacks, 'onExiting', window);
+                            callTransitionEvent(callbacks, 'onExited', window);
                             element.css('display', 'none');
                         }
                     }
@@ -954,12 +992,11 @@ export class Utils {
     }
 
     /**
-     * Count the bytes of the inputtext. Handles ASCII, UTF-8, and emojis.
-     * @private
-     * @param {string} text Text to count bytes from.
-     * @return {number} the byte count
+     * Count the bytes of the given text. Handles ASCII, UTF-8, and emojis.
+     * @param text Text to count bytes from.
+     * @return The byte count
      */
-    countBytes(text) {
+    countBytes(text: string): number {
         // lazy load TextEncoder so its only created once
         if (!this.TEXT_ENCODER) {
             this.TEXT_ENCODER = new TextEncoder();
@@ -969,10 +1006,10 @@ export class Utils {
 
     /**
      * Formats the allowTypes regex pattern in a more human-friendly format.
-     * @param {string} allowTypes The allowTypes regex pattern to format
-     * @return {string} The allowTypes formatted in a more human-friendly format.
+     * @param allowTypes The allowTypes regex pattern to format
+     * @return The allowTypes formatted in a more human-friendly format.
      */
-    formatAllowTypes(allowTypes) {
+    formatAllowTypes(allowTypes: string): string {
         if (!allowTypes) {
             return allowTypes;
         }
@@ -985,13 +1022,13 @@ export class Utils {
         // formats like /(\.|\/)(gif|jpeg|jpg|png)$/
         let match = allowTypes.match(/\/\(\\\.\|\\\/\)\(?(.*?)\)?\$?\//);
         if (match) {
-            return '.' + match[1].replace(/\|/g, ', .');
+            return '.' + match[1]?.replace(/\|/g, ', .');
         }
 
         // formats like .*\.(xls|xlsx|csv|txt)
         match = allowTypes.match(/\/\.\*\\\.\(?(.*?)\)?\$?\//);
         if (match) {
-            return '.' + match[1].replace(/\|/g, ', .');
+            return '.' + match[1]?.replace(/\|/g, ', .');
         }
 
         // others return unchanged
@@ -1000,66 +1037,63 @@ export class Utils {
 
     /**
      * Formats the given data size in a more human-friendly format, e.g., `1.5 MB` etc.
-     * @param {number} bytes File size in bytes to format
-     * @return {string} The given file size, formatted in a more human-friendly format.
+     * @param bytes File size in bytes to format
+     * @return The given file size, formatted in a more human-friendly format.
      */
-    formatBytes(bytes) {
-        if (bytes === undefined)
+    formatBytes(bytes: number): string {
+        if (bytes === undefined) {
             return '';
-
-        if (bytes === 0)
-            return 'N/A';
-
-        var sizes = PrimeFaces.getLocaleLabel('fileSizeTypes');
-        var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-        if (i === 0)
-            return bytes + ' ' + sizes[i];
-        else
-            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
-    }
-
-    /**
-     * This method concatenates the classes into a string according to the condition of the arguments and returns it.
-     * @private
-     * @return {string} class
-     */
-    styleClass() {
-        var args = Array.prototype.slice.call(arguments);
-
-        if (args) {
-            var classes = [];
-
-            for (const className of args) {
-
-                if (!className) continue;
-
-                var type = typeof className;
-
-                if (type === 'string' || type === 'number') {
-                    classes.push(className);
-                }
-                else if (type === 'object') {
-                    var _classes = Array.isArray(className) ? className : Object.keys(className).map((key) => { return className[key] ? key : null });
-
-                    classes = _classes.length ? classes.concat(_classes.filter((c) => { return !!c })) : classes;
-                }
-            }
-
-            return classes.join(' ');
         }
 
-        return undefined;
+        if (bytes === 0) {
+            return 'N/A';
+        }
+
+        const sizes = core.getLocaleLabel('fileSizeTypes');
+        const i = roundTowardsZero(Math.floor(Math.log(bytes) / Math.log(1024)));
+        if (i === 0) {
+            return bytes + ' ' + sizes[i];
+        }
+        else {
+            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+        }
     }
 
     /**
-     * When configuring numeric value like 'showDelay' and the user wants '0' we can't treat 0 as Falsey 
-     * so we make the value 0.  Otherwise Falsey returns the default value.
-     *
-     * @param {number|undefined} value the original value
-     * @param {number} defaultValue the required default value if value is not set
-     * @return {number} the calculated value
+     * This method concatenates the classes into a string and returns it. Numbers
+     * are converted to strings. If an object is given, adds the keys mapped to
+     * `true` to the list of style classes.
+     * @returns The concatenated style classes.
      */
-    defaultNumeric(value, defaultValue) {
+    styleClass(...args: (number | string | (number | string | null | undefined)[] | Record<string, boolean>)[]): string {
+        let classes: string[] = [];
+
+        for (const className of args) {
+
+            if (!className) continue;
+
+            if (typeof className === 'string' || typeof className === 'number') {
+                classes.push(String(className));
+            }
+            else if (typeof className === 'object') {
+                const _classes = Array.isArray(className) ? className : Object.keys(className).map((key) => className[key] ? key : null);
+
+                classes = _classes.length ? classes.concat(_classes.filter((c) => !!c).map(c => String(c))) : classes;
+            }
+        }
+
+        return classes.join(' ');
+    }
+
+    /**
+     * When configuring numeric value like 'showDelay' and the user wants '0' we can't treat 0 as falsy 
+     * so we make the value 0.  Otherwise falsy returns the default value.
+     *
+     * @param value The original value
+     * @param defaultValue The required default value if value is not set
+     * @return The calculated value
+     */
+    defaultNumeric(value: number | undefined, defaultValue: number): number {
         if (value === 0) {
             return 0;
         }
@@ -1069,10 +1103,10 @@ export class Utils {
     /**
      * Is this component wrapped in a float label?
      *
-     * @param {JQuery | undefined | null} jq An element to check if wrapped in float label. 
-     * @return {boolean} true this this JQ has a float label parent
+     * @param jq An element to check if wrapped in float label. 
+     * @returns `true` this this JQ has a float label parent
      */
-    hasFloatLabel(jq) {
+    hasFloatLabel(jq: JQuery | undefined | null): boolean {
         if (!jq || !jq.parent()) {
             return false;
         }
@@ -1081,12 +1115,12 @@ export class Utils {
 
     /**
      * Handles floating label CSS if wrapped in a floating label.
-     * @private
-     * @param {JQuery | undefined} element the to add the CSS classes to
-     * @param {JQuery | undefined} inputs the input(s) to check if filled
-     * @param {boolean | undefined} hasFloatLabel true if this is wrapped in a floating label
+     * @param element the to add the CSS classes to
+     * @param inputs the input(s) to check if filled
+     * @param hasFloatLabel true if this is wrapped in a floating label
+     * @returns `undefined` if any parameter is missing, `false`, if the float label was not updated, `undefined` if it was. 
      */
-    updateFloatLabel(element, inputs, hasFloatLabel) {
+    updateFloatLabel(element: JQuery | undefined, inputs: JQuery | undefined, hasFloatLabel: boolean | undefined): boolean | undefined {
         if (!element || !inputs || !hasFloatLabel) {
             return;
         }
@@ -1120,30 +1154,32 @@ export class Utils {
         else {
             element.addClass('ui-inputwrapper-filled');
         }
+
+        return undefined;
     }
 
     /**
      * Decode escaped XML into regular string.
      *
-     * @param {string | undefined} input the input to check if filled
-     * @return {string | undefined} either the original string or escaped XML
+     * @param input The input to check if filled.
+     * @return Either the original string or escaped XML.
      */
-    decodeXml(input) {
-        if (/&amp;|&quot;|&#39;|'&lt;|&gt;/.test(input)) {
-            var doc = new DOMParser().parseFromString(input, "text/html");
+    decodeXml(input: string | undefined): string | undefined | null {
+        if (/&amp;|&quot;|&#39;|'&lt;|&gt;/.test(input ?? "")) {
+            var doc = new DOMParser().parseFromString(input ?? "", "text/html");
             return doc.documentElement.textContent;
         }
         return input;
     }
     
     /**
-     * Queue a microtask if delay is 0 or less and setTimeout if > 0.
+     * Queue a microtask if delay is 0 or less and `setTimeout` if `> 0`.
      *
-     * @param {() => void} fn the function to call after the delay
-     * @param {number | undefined} [delay] the optional delay in milliseconds
-     * @return {number | undefined} the id associated to the timeout or undefined if no timeout used
+     * @param fn The function to call after the delay
+     * @param delay The optional delay in milliseconds
+     * @return The id associated to the timeout or undefined if no timeout used.
      */
-    queueTask(fn, delay) {
+    queueTask(fn: () => void, delay?: number | undefined): number | undefined {
         // if delay is 0 use microtask
         if (!delay || delay <= 0) {
             // queueMicrotask adds the function (task) into a queue and each function is executed one by one (FIFO)
@@ -1158,21 +1194,21 @@ export class Utils {
 
     /**
      * Killswitch that kills all AJAX requests, running Pollers and IdleMonitors.
-     * @see {@link https://github.com/primefaces/primefaces/issues/10299|GitHub Issue 10299}
+     * @see {@link https://github.com/primefaces/primefaces/issues/10299 | GitHub Issue 10299}
      */
-    killswitch() {
-        PrimeFaces.warn("Abort all AJAX requests!");
-        ajaxQueue.abortAll();
+    killswitch(): void {
+        core.warn("Abort all AJAX requests!");
+        ajax.Queue.abortAll();
 
         // stop all pollers and idle monitors
-        for (var item in PrimeFaces.widgets) {
-            var widget = PrimeFaces.widgets[item];
+        for (var item in core.widgets) {
+            var widget = core.widgets[item];
             if (widget instanceof Poll) {
-                PrimeFaces.warn("Stopping Poll");
+                core.warn("Stopping Poll");
                 widget.stop();
             }
-            if (PrimeFaces.widget.IdleMonitor && widget instanceof PrimeFaces.widget.IdleMonitor) {
-                PrimeFaces.warn("Stopping IdleMonitor");
+            if (core.widget.IdleMonitor && widget instanceof core.widget.IdleMonitor) {
+                core.warn("Stopping IdleMonitor");
                 widget.pause();
             }
         }
@@ -1184,24 +1220,24 @@ export class Utils {
      * is present or when there are multiple sticky elements on the page, necessitating a z-index 
      * one lower than the highest among them.
      *
-     * @return {string} the next `z-index` as a string.
-     * @see {@link https://github.com/primefaces/primefaces/issues/10299|GitHub Issue 10299}
-     * @see {@link https://github.com/primefaces/primefaces/issues/9259|GitHub Issue 9259}
+     * @return The next `z-index` as a string.
+     * @see {@link https://github.com/primefaces/primefaces/issues/10299 | GitHub Issue 10299}
+     * @see {@link https://github.com/primefaces/primefaces/issues/9259 | GitHub Issue 9259}
      */
-    nextStickyZindex() {
+    nextStickyZindex(): number {
         // Get the z-index of the highest visible sticky, or use PrimeFaces.nextZindex() + 1 if none found
-        var highestStickyZIndex = parseInt($('.ui-sticky:visible').last().zIndex()) || parseInt(PrimeFaces.nextZindex()) + 1;
+        var highestStickyZIndex = roundTowardsZero($('.ui-sticky:visible').last().zIndex()) || parseInt(core.nextZindex()) + 1;
 
         // GitHub #9295 Adjust z-index based on overlays
         var overlays = $('.ui-widget-overlay:visible');
         if (overlays.length) {
             for (const overlay of overlays) {
-                var overlayZIndex = parseInt($(overlay).zIndex()) - 1;
+                var overlayZIndex = roundTowardsZero($(overlay).zIndex()) - 1;
                 highestStickyZIndex = Math.min(overlayZIndex, highestStickyZIndex);
             }
         } else {
             // #12151 Adjust z-index for sticky elements when an overlay mask is not present
-            PrimeFaces.zindex = highestStickyZIndex - 1;
+            core.zindex = highestStickyZIndex - 1;
         }
 
         // Decrease zIndex by 1 and return
@@ -1212,13 +1248,13 @@ export class Utils {
      * Deletes all events, 'on' attributes, data, and the element itself in a recursive manner, 
      * ensuring that the garbage collector does not retain any references to this element or its children.
      *
-     * @param {JQuery | undefined} jq jQuery object to cleanse
-     * @param {boolean} [clearData] flag to clear data off elements (default to true)
-     * @param {boolean} [removeElement] flag to remove the element from DOM (default to true)
-     * @see {@link https://github.com/primefaces/primefaces/issues/11696|GitHub Issue 11696}
-     * @see {@link https://github.com/primefaces/primefaces/issues/11702|GitHub Issue 11702}
+     * @param jq jQuery object to cleanse
+     * @param clearData flag to clear data off elements (default to true)
+     * @param removeElement flag to remove the element from DOM (default to true)
+     * @see {@link https://github.com/primefaces/primefaces/issues/11696 | GitHub Issue 11696}
+     * @see {@link https://github.com/primefaces/primefaces/issues/11702 | GitHub Issue 11702}
      */
-    cleanseDomElement(jq, clearData = true, removeElement = true) {
+    cleanseDomElement(jq: JQuery | undefined, clearData: boolean = true, removeElement: boolean = true): void {
         if (!jq || !jq.length) {
             return;
         }
@@ -1231,7 +1267,7 @@ export class Utils {
             }
         }
         // Remove inline event attributes
-        var attributes = jq[0].attributes;
+        const attributes = jq[0]?.attributes ?? [];
         for (const attribute of attributes) {
             const attributeName = attribute.name;
             if (attributeName.startsWith("on")) {
@@ -1243,7 +1279,7 @@ export class Utils {
         // IMPORTANT: This must occur before jq.off() to ensure the on("remove") events remain registered.
         if (removeElement) {
             jq.triggerHandler("remove");
-            jq.get(0).remove()
+            jq.get(0)?.remove()
         }
 
         // Remove event listeners
@@ -1259,23 +1295,23 @@ export class Utils {
      * Replaces a specific CSS icon class on an element and appends a new icon class.
      * If the target class is found, all classes after it are removed and the new class is added.
      *
-     * @param {JQuery | undefined} jq - The jQuery element to modify.
-     * @param {string} addIcon - The new CSS icon class to add.
+     * @param jq - The jQuery element to modify.
+     * @param addIcon - The new CSS icon class to add.
      */
-    replaceIcon(jq, addIcon) {
+    replaceIcon(jq: JQuery | undefined, addIcon: string): void {
         if (!jq || !jq.length) {
             return;
         }
         // Get the value of the 'class' attribute and split it into an array
-        var classes = jq.attr('class').split(' ');
+        const classes = jq.attr('class')?.split(' ') ?? [];
 
         // Find the index of the target class
-        var targetIndex = classes.indexOf('ui-c');
+        const targetIndex = classes.indexOf('ui-c');
 
         // If the target class is found, remove all classes after it and add the new class
         if (targetIndex !== -1) {
             // Create the new class string by keeping classes up to and including the target class, then adding the new class
-            var newClasses = classes.slice(0, targetIndex + 1).join(' ') + ' ' + addIcon;
+            const newClasses = classes.slice(0, targetIndex + 1).join(' ') + ' ' + addIcon;
 
             // Set the new class string on the element and store the new class in the 'p-icon' data attribute
             jq.attr('class', newClasses).data('p-icon', addIcon);
@@ -1283,23 +1319,55 @@ export class Utils {
     }
 
     /**
-     * Checks if an element is currently visible within the browser viewport, with an optional offset.
-     * @param {string | HTMLElement | JQuery} element The element to check visibility for. Can be either a DOM element or jQuery object.
-     * @param {number} [offset=0] Optional offset in pixels to expand/contract the viewport boundaries.
-     * @return {boolean} True if the element is visible within the viewport, false otherwise.
+     * Checks if the given value is a JQuery instance (usually DOM elements
+     * in a JQuery wrapper).
+     * 
+     * Note to TypeScript users: This is a type predicate that can be useful
+     * for narrowing, since `instanceof $` does not work as `$` is not a proper
+     * class.
+     * @param value Value to check.
+     * @returns `true` if the value is a JQuery instance, `false` otherwise.
      */
-    isVisibleInViewport(element, offset = 0) {
+    isJQuery(value: unknown): value is JQuery {
+        return value instanceof $;
+    }
+
+    /**
+     * Wraps the given element in a JQuery instance, if not already such an
+     * instance. If a string is given, interprets it as a CSS selector and
+     * returns a JQuery instance with all element in the page matching that
+     * selector. 
+     * @param value Value to wrap. 
+     * @returns The value wrapped in a JQuery instance.
+     */
+    toJQuery(value: string | HTMLElement | JQuery | undefined | null): JQuery {
+        if (value === undefined || value === null) {
+            return $();
+        }
+        if (this.isJQuery(value)) {
+            return value;
+        }
+        return typeof value === "string" ? $(value) : $(value);
+    }
+
+    /**
+     * Checks if an element is currently visible within the browser viewport, with an optional offset.
+     * @param element The element to check visibility for. Can be either a DOM element or jQuery object.
+     * @param offset Optional offset in pixels to expand/contract the viewport boundaries.
+     * @returns boolean True if the element is visible within the viewport, false otherwise.
+     */
+    isVisibleInViewport(element: string | HTMLElement | JQuery, offset: number = 0): boolean {
         if (!element) {
             return false;
         }
         
-        var $element = element instanceof jQuery ? element : $(element);
-        var elementTop = $element.offset().top;
-        var elementBottom = elementTop + $element.outerHeight();
+        var $element = this.toJQuery(element);
+        var elementTop = $element.offset()?.top ?? 0;
+        var elementBottom = elementTop + ($element.outerHeight() ?? 0);
     
         var $window = $(window);
-        var viewportTop = $window.scrollTop() - offset;
-        var viewportBottom = viewportTop + $window.height() + offset;
+        var viewportTop = ($window.scrollTop() ?? 0) - offset;
+        var viewportBottom = viewportTop + ($window.height() ?? 0) + offset;
     
         return elementBottom > viewportTop && elementTop < viewportBottom;
     }
@@ -1308,12 +1376,12 @@ export class Utils {
 /**
  * The object with various utilities needed by PrimeFaces.
  */
-export const utils = new Utils();
+export const utils: Utils = new Utils();
 
-export function globalUtilsSetup() {
+export function globalUtilsSetup(): void {
     // set animation state globally
     if (env.prefersReducedMotion) {
         utils.disableAnimations();
-        PrimeFaces.warn("Animations are disabled because OS has requested prefers-reduced-motion: reduce")
+        core.warn("Animations are disabled because OS has requested prefers-reduced-motion: reduce")
     }
 }

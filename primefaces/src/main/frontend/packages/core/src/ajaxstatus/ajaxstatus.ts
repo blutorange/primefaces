@@ -52,7 +52,7 @@ export interface AjaxStatusCfg extends BaseWidgetCfg {
  */
 export class AjaxStatus<Cfg extends AjaxStatusCfg = AjaxStatusCfg> extends BaseWidget<Cfg> {
     private hasSuccessOrErrorFacet: boolean = false;
-    private timeout: number | null = null;
+    private timeout: number | null | undefined = null;
 
     override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);

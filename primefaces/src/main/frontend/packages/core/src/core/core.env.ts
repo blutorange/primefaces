@@ -1,3 +1,4 @@
+import { core } from "./core.js";
 import type { BaseWidgetCfg } from "./core.widget.js";
 
 import type { Matchs } from "jquery.browser";
@@ -60,7 +61,7 @@ export class Environment {
      * @return The current theme, such as `omega` or `luna-amber`. Empty string when no theme is loaded.
      */
     getTheme(): string {
-        var themeLink = PrimeFaces.getThemeLink();
+        var themeLink = core.getThemeLink();
         if (themeLink.length === 0) {
             return "";
         }

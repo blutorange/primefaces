@@ -303,11 +303,12 @@ __metadata:
     "@types/jquery": "npm:3.5.32"
     "@types/jquery-mousewheel": "npm:3.1.12"
     "@types/jquery.browser": "npm:0.1.4"
-    "@types/jqueryui": "npm:^1.12.23"
+    "@types/jqueryui": "npm:1.12.23"
     "@types/js-cookie": "npm:3.0.6"
     "@types/jscrollpane": "npm:2.0.35"
     "@types/node": "npm:22.10.1"
     "@types/pnpapi": "npm:^0.0.5"
+    "@types/rangyinputs": "npm:^1.2.5"
     "@types/raphael": "npm:2.3.9"
     autonumeric: "patch:autonumeric@npm%3A4.10.7#~/.yarn/patches/autonumeric-npm-4.10.7-09183d353f.patch"
     autosize: "npm:6.0.1"
@@ -406,7 +407,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jqueryui@npm:^1.12.23":
+"@types/jqueryui@npm:1.12.23":
   version: 1.12.23
   resolution: "@types/jqueryui@npm:1.12.23"
   dependencies:
@@ -444,6 +445,15 @@ __metadata:
   version: 0.0.5
   resolution: "@types/pnpapi@npm:0.0.5"
   checksum: 10c0/2ade69b20d0ad5d16e6f709b1a40a8c43034ae5e8ca3b979a7fc7c26fbf0cc75791b7e8539f84e98c0e910b9c31d805fb420840e73482c6ed7bba9760ee938be
+  languageName: node
+  linkType: hard
+
+"@types/rangyinputs@npm:^1.2.5":
+  version: 1.2.5
+  resolution: "@types/rangyinputs@npm:1.2.5"
+  dependencies:
+    "@types/jquery": "npm:*"
+  checksum: 10c0/09900cd941b682aedd862beec752797e656bc5c0bdea3f96bd8862c150a34f3dd5454484754af2481477ea10f53b200ee351646a3d92390c13828f4a3db0e01e
   languageName: node
   linkType: hard
 
