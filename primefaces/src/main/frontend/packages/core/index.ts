@@ -1164,7 +1164,7 @@ declare global {
             "passwordHide"?: string;
             "passwordShow"?: string;
             "previous"?: string;
-            "previousPageLabel"?: string;
+            "prevPageLabel"?: string;
             "rotateLeft"?: string;
             "rotateRight"?: string;
             "rowsPerPageLabel"?: string;

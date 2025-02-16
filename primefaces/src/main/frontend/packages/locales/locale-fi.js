@@ -105,7 +105,6 @@ if (window.PrimeFaces) {
       passwordHide: "Piilota salasana",
       passwordShow: "Näytä salasana",
       previous: "Edellinen",
-      previousPageLabel: "Edellinen sivu",
       prevPageLabel: "Edellinen sivu",
       rotateLeft: "Pyöritä vasemmalle",
       rotateRight: "Pyöritä oikealle",
