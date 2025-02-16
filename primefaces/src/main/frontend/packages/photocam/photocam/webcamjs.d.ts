@@ -219,7 +219,7 @@ declare module "webcamjs" {
 
         /**
          * Updates a global webcam setting with the given new value.
-         * @typeparam K Name of the setting.
+         * @typeParam K Name of the setting.
          * @param setting Name of a settings to change.
          * @param newValue New value for the setting.
          */
@@ -306,7 +306,7 @@ declare module "webcamjs" {
     
         /**
          * Register an event listener for a given event. Pass in the event name, and a callback function.
-         * @typeparam K Name of the event.
+         * @typeParam K Name of the event.
          * @param eventName Name of the event for which to attach a listener.
          * @param eventCallback Callback to attach.
          */
@@ -315,7 +315,7 @@ declare module "webcamjs" {
         /**
          * Remove an event listener for a given event. Pass in the event name, and the callback function to remove. Omit the
          * callback reference to remove all listeners.
-         * @typeparam K Name of the event.
+         * @typeParam K Name of the event.
          * @param eventName Name of the event for which to remove a listener.
          * @param eventCallback Callback to remove. If omitted, removes all callback for the given event.
          */
