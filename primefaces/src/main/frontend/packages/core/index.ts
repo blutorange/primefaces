@@ -6,7 +6,7 @@ import { globalUtilsSetup } from "./src/core/core.utils.js";
 
 import { AjaxExceptionHandler } from "./src/ajaxexceptionhandler/ajaxexceptionhandler.js";
 import { AjaxStatus } from "./src/ajaxstatus/ajaxstatus.js";
-import { BaseWidget, DeferredWidget, DynamicOverlayWidget } from "./src/core/core.widget.js";
+import { BaseWidget, DeferredWidget, DynamicOverlayWidget, type BaseWidgetCfg } from "./src/core/core.widget.js";
 import { Poll } from "./src/poll/poll.js";
 
 import { registerCommonConverters } from "./src/validation/validation.converters.js";
@@ -20,6 +20,11 @@ import { registerCommonHighlighters } from "./src/validation/validation.highligh
 declare global {
     namespace PrimeType {
         export type EntityMap = Record<string, string>;
+
+        /**
+         * The kind of a theme, either "light" or "dark".
+         */
+        export type ThemeKind = "light" | "dark";
 
         /**
          * A callback that is invoked when the user clicks on an element outside
@@ -286,11 +291,6 @@ declare global {
              */
             viewId: string;
         }
-
-        /**
-         * The kind of a theme, either "light" or "dark".
-         */
-        export type ThemeKind = "light" | "dark";
     }
 }
 
@@ -1015,6 +1015,38 @@ declare global {
          * ```
          */
         export type WidgetCfg<Widget extends PrimeType.Newable<[], BaseWidget<any>>> = Widget extends PrimeType.Newable<[], BaseWidget<infer Cfg>> ? Cfg : never;
+
+        export interface ToggleableWidgetCfg extends BaseWidgetCfg {
+            /**
+             * Whether the widget should be disabled during AJAX postback requests.
+             * E.g. a button could get disabled so that it cannot be pressed
+             * again until the request finishes. (Since requests need to be
+             * queued as mandated by the Faces spec, the user would have to wait
+             * anyway.)
+             */
+            disableOnAjax: boolean;
+        }
+
+        export interface OptionallyToggleableWidget<Cfg extends ToggleableWidgetCfg> extends BaseWidget<Cfg> {
+            /**
+             * Disables this widget, so that the user cannot interact with it anymore.
+             */
+            disable?(): void;
+            /**
+             * Enables this widget, so that the user can interact with it.
+             */
+            enable?(): void;
+        }
+
+        export interface ToggleableWidget<Cfg extends ToggleableWidgetCfg> extends OptionallyToggleableWidget<Cfg> {
+            disable(): void;
+            enable(): void;
+        }
+
+        export interface AjaxOptionallyToggleableWidget<Cfg extends ToggleableWidgetCfg> extends OptionallyToggleableWidget<Cfg> {
+            ajaxCount: number;
+            ajaxStart?: number;
+        }
 
         /*
          * __Note__: Do not parametrize the this context via a type parameter. This would require changing the return type

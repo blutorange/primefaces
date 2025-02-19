@@ -74,7 +74,7 @@ export class AjaxUtils {
      * @return The selector for the forms, or `null` when no forms need to be updated.
      */
     getPorletForms(form: JQuery, parameterPrefix: string): string | null {
-        var encodedURLInput = form.children("input[name*='javax.faces.encodedURL']");
+        const encodedURLInput = form.children("input[name*='javax.faces.encodedURL']");
 
         if (encodedURLInput.length > 0) {
             return 'form[id*="' + parameterPrefix + '"]';
@@ -1216,7 +1216,14 @@ export class AjaxRequest {
      * @param ignoreAutoUpdate If true, components which use `p:autoUpdate` will not be updated for this request.
      * @return The newly created form data.
      */
-    createFacesAjaxFormData(form: JQuery, parameterPrefix: string, source: string, process?: string, update?: string, ignoreAutoUpdate?: boolean): FormData {
+    createFacesAjaxFormData(
+        form: JQuery,
+        parameterPrefix: string | undefined | null,
+        source: string,
+        process?: string | null,
+        update?: string | null,
+        ignoreAutoUpdate?: boolean
+    ): FormData {
         var formData = new FormData();
 
         this.addFormData(formData, core.PARTIAL_REQUEST_PARAM, "true", parameterPrefix);
@@ -1268,7 +1275,7 @@ export class AjaxResponse {
         xml: XMLDocument,
         status: JQuery.Ajax.SuccessTextStatus,
         xhr: PrimeType.ajax.pfXHR,
-        updateHandler?: PrimeType.ajax.UpdateHandler<Widget>
+        updateHandler?: PrimeType.ajax.UpdateHandler<Widget> | null
     ): void {
         if (xml === undefined || xml === null) {
             return;
@@ -1429,7 +1436,7 @@ export class AjaxResponseProcessor {
      * @param xhr The XHR request to which a response was received.
      * @param updateHandler Optional handler for the update.
      */
-    doUpdate<Widget extends BaseWidget>(node: Node, xhr: PrimeType.ajax.pfXHR, updateHandler?: PrimeType.ajax.UpdateHandler<Widget>): void {
+    doUpdate<Widget extends BaseWidget>(node: Node, xhr: PrimeType.ajax.pfXHR, updateHandler?: PrimeType.ajax.UpdateHandler<Widget> | null): void {
         if (!(node instanceof Element)) {
             return;
         }

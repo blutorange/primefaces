@@ -134,9 +134,6 @@ export interface DeferredWidgetCfg extends BaseWidgetCfg {
  * @prop {string} key The key of the JSON object.
  */
 export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg>  {
-    ajaxCount: number = 0;
-    ajaxStart?: number = 0;
-
     /**
      * The configuration of this widget instance. Please note that
      * no property is guaranteed to be present, you should always check for `undefined` before accessing a property.

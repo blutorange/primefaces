@@ -1,41 +1,86 @@
+import { Menu, type MenuCfg } from "./menu.base.widget.js";
+
+/**
+ * The configuration for the {@link  TieredMenu} widget.
+ * 
+ * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
+ * configuration is usually meant to be read-only and should not be modified.
+ */
+export interface TieredMenuCfg extends MenuCfg {
+    /**
+     * Defines whether the first level of submenus will be displayed on mouseover or not.
+     * When set to `false`, click event is required to display this tiered menu.
+     */
+    autoDisplay: boolean;
+    /**
+     * Number of milliseconds before hiding menu, if 0 not hidden until document.click.
+     */
+    hideDelay: number;
+    /**
+     * Number of milliseconds before displaying menu. Default to 0 immediate.
+     */
+    showDelay: number;
+    /**
+     * Event to toggle the submenus.
+     */
+    toggleEvent: PrimeType.widget.TieredMenu.ToggleEvent;
+}
+    
 /**
  * __PrimeFaces TieredMenu Widget__
  * 
  * TieredMenu is used to display nested submenus with overlays.
- * 
- * @typedef {"hover" | "click"} PrimeFaces.widget.TieredMenu.ToggleEvent Allowed event types for toggling a tiered menu.
- * 
- * @prop {boolean} [active] Whether the menu is currently active.
- * @prop {JQuery | null} [activeitem] The active menu item, if any.
- * @prop {JQuery | null} [lastFocusedItem] The last root menu that had focus, if any.
- * @prop {boolean} [itemClick] Set to `true` an item was clicked and se to `false` when the user clicks
- * outside the menu.
- * @prop {JQuery} links DOM element with all links for the menu entries of this tiered menu.
- * @prop {JQuery} rootLinks DOM element with all links for the root (top-level) menu entries of this tiered menu.
- * @prop {number} [timeoutId] Timeout ID, used for the animation when the menu is shown.
- * @prop {boolean} isRTL Whether the writing direction is set to right-to-left.
- * @prop {boolean} isVertical Whether component is vertical orientation like TieredMenu.
- * @prop {boolean} isHorizontal Whether component is horizontal orientation like MenuBar.
- * 
- * @interface {PrimeFaces.widget.TieredMenuCfg} cfg The configuration for the {@link  TieredMenu| TieredMenu widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.MenuCfg} cfg 
- * 
- * @prop {boolean} cfg.autoDisplay Defines whether the first level of submenus will be displayed on mouseover or not.
- * When set to `false`, click event is required to display this tiered menu.
- * @prop {number} cfg.showDelay Number of milliseconds before displaying menu. Default to 0 immediate.
- * @prop {number} cfg.hideDelay Number of milliseconds before hiding menu, if 0 not hidden until document.click.
- * @prop {PrimeFaces.widget.TieredMenu.ToggleEvent} cfg.toggleEvent Event to toggle the submenus.
  */
-PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
+export class TieredMenu<Cfg extends TieredMenuCfg> extends Menu<Cfg> {
+    /**
+     * Whether the menu is currently active.
+     */
+    active?: boolean;
 
     /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
+     * The active menu item, if any.
      */
-    init(cfg) {
+    activeitem?: JQuery | null;
+
+    /**
+     * Whether this tiered menu is oriented horizontally.
+     */
+    isHorizontal: boolean = false;
+
+    /**
+     * Whether the writing direction is set to right-to-left.
+     */
+    isRTL: boolean = false;
+
+    /**
+     * Whether this tiered menu is oriented vertically.
+     */
+    isVertical: boolean = false;
+
+    /**
+     * Set to `true` an item was clicked and se to `false` when the user clicks
+     * outside the menu.
+     */
+    itemClick?: boolean;
+
+    protected lastFocusedItem?: JQuery;
+
+    /**
+     * DOM element with all links for the menu entries of this tiered menu.
+     */
+    links: JQuery = $();
+
+    /**
+     * DOM element with all links for the root (top-level) menu entries of this tiered menu.
+     */
+    rootLinks: JQuery = $();
+
+    /**
+     * Timeout ID, used for the animation when the menu is shown.
+     */
+    timeoutId?: number;
+
+    override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);
 
         this.cfg.toggleEvent = this.cfg.toggleEvent || 'hover';
@@ -53,9 +98,8 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Sets up all event listeners required by this widget.
-     * @protected
      */
-    bindEvents() {
+    protected bindEvents(): void {
         this.bindItemEvents();
         this.bindKeyEvents();
         this.bindDocumentHandler();
@@ -64,9 +108,8 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Sets up all event listeners for the mouse events on the menu entries (`click` / `hover`).
-     * @protected
      */
-    bindItemEvents() {
+    protected bindItemEvents(): void {
         if (this.cfg.toggleEvent === 'click' || PrimeFaces.env.isTouchable(this.cfg))
             this.bindClickModeEvents();
         else if (this.cfg.toggleEvent === 'hover')
@@ -78,9 +121,8 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
      * - Making the first menu item focusable by setting its tabindex
      * - Handling mouse enter and click events to manage focus state
      * - Handling focus events to highlight active menu items
-     * @protected
      */
-    bindFocusEvents() {
+    protected bindFocusEvents(): void {
         var $this = this;
 
         // Make first menu item focusable
@@ -112,9 +154,8 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Sets up all event listeners when `toggleEvent` is set to `hover`.
-     * @protected
      */
-    bindHoverModeEvents() {
+    protected bindHoverModeEvents(): void {
         var $this = this;
 
         this.links.on("mouseenter.tieredHover", function() {
@@ -129,7 +170,7 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
             }
         }).on("mouseleave.tieredHover", function() {
             // clear timeout of possible delayed show event if mouseleave is fired before showDelay was over
-            if (($this.cfg.autoDisplay || $this.active) && $this.cfg.showDelay > 0 && $this.timeoutId) {
+            if (($this.cfg.autoDisplay || $this.active) && ($this.cfg.showDelay ?? 0) > 0 && $this.timeoutId) {
                 clearTimeout($this.timeoutId);
             }
         });
@@ -166,9 +207,8 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Sets up all event listeners when `toggleEvent` is set to `click`.
-     * @protected
      */
-    bindClickModeEvents() {
+    protected bindClickModeEvents(): void {
         var $this = this;
 
         this.links.filter('.ui-submenu-link').on('click.tieredClick', function(e) {
@@ -194,10 +234,9 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
     }
 
     /**
-     * Sets up all event listners required for keyboard interactions.
-     * @protected
+     * Sets up all event listeners required for keyboard interactions.
      */
-    bindKeyEvents() {
+    protected bindKeyEvents(): void {
         var $this = this;
 
         this.links.on('keydown.tieredMenu', function(e) {
@@ -210,8 +249,8 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
                 isRootLink = !menuitem.closest('ul').hasClass('ui-menu-child')
             }
 
-            // Helper functionto navigate to a menu item
-            function navigateTo(item) {
+            // Helper function to navigate to a menu item
+            function navigateTo(item: JQuery) {
                 if (item.length && item.children('a.ui-menuitem-link').length) {
                     $this.deactivate(menuitem);
                     $this.activate(item, true, false);
@@ -248,7 +287,7 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
                 }
             }
 
-            switch (e.code) {
+            switch ("code" in e ? e.code : e.key) {
                 case 'Home':
                 case 'PageUp':
                     navigateTo(menuitem.prevAll('.ui-menuitem:last'));
@@ -333,9 +372,8 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Registers a delegated event listener for a mouse click on a menu entry.
-     * @protected
      */
-    bindDocumentHandler() {
+    protected bindDocumentHandler(): void {
         var $this = this,
             clickNS = 'click.' + this.id;
 
@@ -354,10 +392,10 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Deactivates a menu item so that it cannot be clicked and interacted with anymore.
-     * @param {JQuery} menuitem Menu item (`LI`) to deactivate.
-     * @param {boolean} [animate] `true` to animate the transition to the disabled state, `false` otherwise.
+     * @param menuitem Menu item (`LI`) to deactivate.
+     * @param animate `true` to animate the transition to the disabled state, `false` otherwise.
      */
-    deactivate(menuitem, animate) {
+    deactivate(menuitem: JQuery, animate?: boolean): void {
         var $this = this;
         this.activeitem = null;
         menuitem.removeClass('ui-menuitem-active ui-menuitem-highlight');
@@ -385,11 +423,11 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
     /**
      * Activates a menu item so that it can be clicked and interacted with.
      * 
-     * @param {JQuery} menuitem - The menu item to activate.
-     * @param {boolean} [focus=true] - If false, does not focus the menu item.
-     * @param {boolean} [showSubMenu=true] - If false, does not show the submenu.
+     * @param menuitem - The menu item to activate.
+     * @param focus=true] - If false, does not focus the menu item.
+     * @param showSubMenu - If false, does not show the submenu.
      */
-    activate(menuitem, focus = true, showSubMenu = true) {
+    activate(menuitem: JQuery, focus: boolean = true, showSubMenu: boolean = true): void {
         this.highlight(menuitem);
 
         // if this is a root menu item.
@@ -413,9 +451,9 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
     /**
      * Highlights the given menu item by applying the proper CSS classes and focusing the associated link.
      *
-     * @param {JQuery} menuitem - The menu item to highlight.
+     * @param menuitem - The menu item to highlight.
      */
-    highlight(menuitem) {
+    highlight(menuitem: JQuery): void {
         this.activeitem = menuitem;
         menuitem.addClass('ui-menuitem-active ui-menuitem-highlight');
         menuitem.children('a.ui-menuitem-link').addClass('ui-state-hover');
@@ -423,11 +461,11 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Shows the given submenu of a menu item.
-     * @param {JQuery} menuitem A menu item (`LI`) with children.
-     * @param {JQuery} submenu A child of the menu item.
-     * @param {boolean} [focus=true] - If false, does not focus the submenu.
+     * @param menuitem A menu item (`LI`) with children.
+     * @param submenu A child of the menu item.
+     * @param focus - If false, does not focus the submenu.
      */
-    showSubmenu(menuitem, submenu, focus = true) {
+    showSubmenu(menuitem: JQuery, submenu: JQuery, focus: boolean = true): void {
         var pos = {
             my: this.isRTL ? 'right top' : 'left top',
             at: this.isRTL ? 'left top' : 'right top',
@@ -460,7 +498,7 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
      * Deactivates all items and resets the state of this widget to its orignal state such that only the top-level menu
      * items are shown. 
      */
-    reset() {
+    reset(): void {
         var $this = this;
         this.active = false;
 
@@ -477,9 +515,9 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
     /**
      * Deactivates the current active menu item and resets the menu state after a delay.
      * 
-     * @param {Event} [e] - The event object (optional).
+     * @param e - The event object (optional).
      */
-    deactivateAndReset(e) {
+    deactivateAndReset(e?: JQuery.TriggeredEvent): void {
         var $this = this;
 
         // Deactivate the current active menu item if it exists
@@ -488,7 +526,7 @@ PrimeFaces.widget.TieredMenu = class TieredMenu extends PrimeFaces.widget.Menu {
         }
 
         // If hideDelay is configured, reset the menu state after the delay
-        if (this.cfg.hideDelay > 0) {
+        if ((this.cfg.hideDelay ?? 0) > 0) {
             this.timeoutId = PrimeFaces.queueTask(() => {
                 $this.reset();
             }, this.cfg.hideDelay);

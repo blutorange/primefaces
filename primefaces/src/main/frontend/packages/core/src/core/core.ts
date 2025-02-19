@@ -1006,20 +1006,24 @@ export class Core {
 
     /**
      * Applies the inline AJAX status (ui-state-loading) to the given widget / button.
-     * @param widget the widget.
+     * 
+     * If the widget defines a `disable` method, it will be disabled during
+     * the AJAX call, if the `disableOnAjax` property of its configuration is
+     * set to `true`.
+     *
+     * @param widget The widget.
      * @param button The button DOM element.
      * @param isXhrSource Callback that checks if the widget is the source of the current AJAX request.
      */
-    bindButtonInlineAjaxStatus(widget: BaseWidget, button: JQuery, isXhrSource?: (widget: BaseWidget, settings: JQuery.AjaxSettings) => boolean): void {
-        if (!isXhrSource) {
-            isXhrSource = function(widget, settings) {
-                return ajax.Utils.isXhrSource(widget, settings);
-            };
-        }
+    bindButtonInlineAjaxStatus<
+        Cfg extends PrimeType.widget.ToggleableWidgetCfg,
+        Widget extends PrimeType.widget.AjaxOptionallyToggleableWidget<Cfg>
+    >(widget: Widget, button: JQuery, isXhrSource?: (widget: BaseWidget, settings: JQuery.AjaxSettings) => boolean): void {
+        isXhrSource ??= (widget, settings) => ajax.Utils.isXhrSource(widget, settings);
 
         const $this = this;
         widget.ajaxCount = 0;
-        var namespace = '.' + widget.id;
+        const namespace = '.' + widget.id;
         $(document).on('pfAjaxSend' + namespace, function(e, xhr, settings) {
             if (isXhrSource.call(this, widget, settings)) {
                 widget.ajaxCount++;
@@ -1030,13 +1034,12 @@ export class Core {
                 button.addClass('ui-state-loading');
                 widget.ajaxStart = Date.now();
 
-                if (typeof widget.disable === 'function'
-                    && widget.cfg.disableOnAjax !== false) {
-                    widget.disable();
+                if (widget.cfg.disableOnAjax !== false) {
+                    widget.disable?.();
                 }
 
-                var loadIcon = $('<span class="ui-icon-loading ui-icon ui-c pi pi-spin pi-spinner"></span>');
-                var uiIcon = button.find('.ui-icon');
+                const loadIcon = $('<span class="ui-icon-loading ui-icon ui-c pi pi-spin pi-spinner"></span>');
+                const uiIcon = button.find('.ui-icon');
                 if (uiIcon.length) {
                     var prefix = 'ui-button-icon-';
                     loadIcon.addClass(prefix + uiIcon.attr('class')?.includes(prefix + 'left') ? 'left' : 'right');
@@ -1051,7 +1054,7 @@ export class Core {
                 }
 
                 $this.queueTask(
-                    function(){ $this.buttonEndAjaxDisabled(widget, button); },
+                    () => $this.buttonEndAjaxDisabled(widget, button),
                     Math.max(PrimeFaces.ajax.minLoadAnimation + (widget.ajaxStart ?? 0) - Date.now(), 0)
                 );
                 delete widget.ajaxStart;

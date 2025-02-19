@@ -153,8 +153,8 @@ export class Validation {
      */
     validate(
         source: JQuery,
-        process: string | HTMLElement | JQuery,
-        update: string | HTMLElement | JQuery,
+        process: string | HTMLElement | JQuery | undefined | null,
+        update: string | HTMLElement | JQuery | undefined | null,
         highlight: boolean,
         focus: boolean,
         renderMessages: boolean,
@@ -207,9 +207,9 @@ export class Validation {
 
         // render messages
         if (renderMessages === true) {
-            update = expressions.SearchExpressionFacade.resolveComponentsAsSelector(source, update);
-            for (var i = 0; i < update.length; i++) {
-                var component = update.eq(i);
+            const toUpdate = expressions.SearchExpressionFacade.resolveComponentsAsSelector(source, update);
+            for (var i = 0; i < toUpdate.length; i++) {
+                var component = toUpdate.eq(i);
                 this.Utils.renderMessages(vc.messages, component);
             }
         }
@@ -278,7 +278,7 @@ export class Validation {
      * Validates the CSV requirements of a `CommandButton`.
      * @param btn Command button whose CSV requirements should be validated.
      */
-    validateButtonCsvRequirements(btn: HTMLButtonElement): void {
+    validateButtonCsvRequirements(btn: HTMLElement): void {
         const $source = $(btn);
         const cfg: PrimeType.validation.Configuration = {
             ajax: toBoolean(btn.dataset.pfValidateclientAjax),

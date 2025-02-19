@@ -27,7 +27,7 @@ import "./src/forms/forms.selectlistbox.widget.js";
 import "./src/forms/forms.selectonelistbox.widget.js";
 import "./src/forms/forms.selectmanymenu.widget.js";
 import "./src/forms/forms.cascadeselect.widget.js";
-import "./src/forms/forms.commandbutton.widget.js";
+import { CommandButton } from "./src/forms/forms.commandbutton.widget.js";
 import "./src/forms/forms.commandlink.widget.js";
 import "./src/forms/forms.button.widget.js";
 import "./src/forms/forms.linkbutton.widget.js";
@@ -41,13 +41,13 @@ import "./src/forms/forms.splitbutton.widget.js";
 import "./src/forms/forms.multiselectlistbox.widget.js";
 import "./src/growl/growl.widget.js";
 import "./src/inplace/inplace.widget.js";
-import "./src/menu/menu.base.widget.js";
+import { Menu } from "./src/menu/menu.base.widget.js";
 import "./src/menu/menu.breadcrumb.widget.js";
-import "./src/menu/menu.tieredmenu.widget.js";
+import { TieredMenu } from "./src/menu/menu.tieredmenu.widget.js";
 import "./src/menu/menu.menubar.widget.js";
 import "./src/menu/menu.slidemenu.widget.js";
 import "./src/menu/menu.plainmenu.widget.js";
-import "./src/menu/menu.menubutton.widget.js";
+import { MenuButton } from "./src/menu/menu.menubutton.widget.js";
 import "./src/menu/menu.contextmenu.widget.js";
 import "./src/menu/menu.megamenu.widget.js";
 import "./src/menu/menu.panelmenu.widget.js";
@@ -89,10 +89,42 @@ import "./src/dataview/dataview.widget.js";
 import "./src/toggleswitch/toggleswitch.widget.js";
 
 declare global {
+    namespace PrimeType.widget.TieredMenu {
+        /**
+         * Allowed event types for toggling a tiered menu.
+         */
+        export type ToggleEvent = "hover" | "click";
+    }
+}
+
+declare global {
     interface Window {
         autosize: typeof autosize;
     }
 }
 
+declare global {
+    namespace PrimeType {
+        export interface WidgetRegistry {
+            CommandButton: typeof CommandButton;
+            Menu: typeof Menu;
+            MenuButton: typeof MenuButton;
+            TieredMenu: typeof TieredMenu;
+        }
+    }
+    namespace PrimeType.widget {
+        export type CommandButtonCfg = import("./src/forms/forms.commandbutton.widget.js").CommandButtonCfg;
+        export type MenuCfg = import("./src/menu/menu.base.widget.js").MenuCfg;
+        export type MenuButtonCfg = import("./src/menu/menu.menubutton.widget.js").MenuButtonCfg;
+        export type TieredMenuCfg = import("./src/menu/menu.tieredmenu.widget.js").TieredMenuCfg;
+    }
+}
+
+
 // Expose autosize to the global scope
 Object.assign(window, { autosize });
+
+PrimeFaces.widget.CommandButton = CommandButton;
+PrimeFaces.widget.Menu = Menu;
+PrimeFaces.widget.MenuButton = MenuButton;
+PrimeFaces.widget.TieredMenu = TieredMenu;

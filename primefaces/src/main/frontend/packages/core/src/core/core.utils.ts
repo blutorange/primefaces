@@ -6,14 +6,6 @@ import { Poll } from "../poll/poll.js";
 import { core } from "./core.js";
 
 /**
- * Rounds a number towards 0, e.g. `-3.9` => `-3` and `3.9` => `3`.
- * @param value Ro
- */
-function roundTowardsZero(value: number): number {
-    return parseInt(String(value));
-}
-
-/**
  * The class with various utilities needed by PrimeFaces.
  */
 export class Utils {
@@ -68,6 +60,14 @@ export class Utils {
         return widget.cfg.appendTo
             ? expressions.SearchExpressionFacade.resolveComponentsAsSelector(widget.jq, widget.cfg.appendTo)
             : $(document.body);
+    }
+
+    /**
+     * Rounds a number towards 0, e.g. `-3.9` => `-3` and `3.9` => `3`.
+     * @param value Ro
+     */
+    roundTowardsZero(value: number): number {
+        return parseInt(String(value), 10);
     }
 
     /**
@@ -725,8 +725,8 @@ export class Utils {
      * @param e The key event that occurred.
      * @returns `true` if the key is an action key, or `false` otherwise.
      */
-    isActionKey(e: JQuery.KeyboardEventBase): boolean {
-        return e.code === 'Space' || e.key === 'Enter';
+    isActionKey(e: JQuery.KeyboardEventBase | JQuery.TriggeredEvent): boolean {
+        return ("code" in e && e.code === 'Space') || e.key === 'Enter';
     }
 
     /**
@@ -1050,7 +1050,7 @@ export class Utils {
         }
 
         const sizes = core.getLocaleLabel('fileSizeTypes');
-        const i = roundTowardsZero(Math.floor(Math.log(bytes) / Math.log(1024)));
+        const i = this.roundTowardsZero(Math.floor(Math.log(bytes) / Math.log(1024)));
         if (i === 0) {
             return bytes + ' ' + sizes[i];
         }
@@ -1226,13 +1226,13 @@ export class Utils {
      */
     nextStickyZindex(): number {
         // Get the z-index of the highest visible sticky, or use PrimeFaces.nextZindex() + 1 if none found
-        var highestStickyZIndex = roundTowardsZero($('.ui-sticky:visible').last().zIndex()) || parseInt(core.nextZindex()) + 1;
+        var highestStickyZIndex = this.roundTowardsZero($('.ui-sticky:visible').last().zIndex()) || parseInt(core.nextZindex()) + 1;
 
         // GitHub #9295 Adjust z-index based on overlays
         var overlays = $('.ui-widget-overlay:visible');
         if (overlays.length) {
             for (const overlay of overlays) {
-                var overlayZIndex = roundTowardsZero($(overlay).zIndex()) - 1;
+                var overlayZIndex = this.roundTowardsZero($(overlay).zIndex()) - 1;
                 highestStickyZIndex = Math.min(overlayZIndex, highestStickyZIndex);
             }
         } else {

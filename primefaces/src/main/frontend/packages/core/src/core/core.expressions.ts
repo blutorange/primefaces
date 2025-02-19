@@ -13,7 +13,7 @@ export class SearchExpressionFacade {
      * @param expressions A search expression with one or multiple components to resolve.
      * @return A list with the resolved components.
      */
-    resolveComponentsAsSelector(source: JQuery, expressions: string | HTMLElement | JQuery): JQuery {
+    resolveComponentsAsSelector(source: JQuery, expressions: string | HTMLElement | JQuery | undefined | null): JQuery {
 
         if (utils.isJQuery(expressions)) {
             return expressions;
@@ -152,7 +152,11 @@ export class SearchExpressionFacade {
     /**
      * Splits the given search expression into its components. The components of a search expression are separated
      * by either a command or a whitespace.
-     * ```javascript
+     * 
+     * When the expression is empty, returns an empty array.
+     *
+     * @example
+     * ```js
      * splitExpressions("") // => [""]
      * splitExpressions("form") // => ["form"]
      * splitExpressions("form,input") // => ["form", "input"]
@@ -162,14 +166,15 @@ export class SearchExpressionFacade {
      * @param expression A search expression to split.
      * @return The individual components of the given search expression.
      */
-    splitExpressions(expression: string): string[] {
+    splitExpressions(expression: string | undefined | null): string[] {
+        if (!expression) {
+            return [];
+        }
 
         const expressions: string[] = [];
         let buffer = '';
-
         let parenthesesCounter = 0;
-
-        if (!expression) {return expressions;}
+        
         for (const c of expression) {
 
             if (c === '(') {

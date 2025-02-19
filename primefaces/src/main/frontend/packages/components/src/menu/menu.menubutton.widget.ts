@@ -1,3 +1,30 @@
+import { TieredMenu, type TieredMenuCfg } from "./menu.tieredmenu.widget.js";
+
+/**
+ * The configuration for the {@link  MenuButton} widget.
+ * 
+ * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
+ * configuration is usually meant to be read-only and should not be modified.
+ */
+export interface MenuButtonCfg extends TieredMenuCfg {
+    /**
+     * When the positioned element overflows the window in some direction, move it to an
+     * alternative position. Similar to my and at, this accepts a single value or a pair for horizontal/vertical,
+     * e.g., `flip`, `fit`, `fit flip`, `fit none`.
+     */
+    collision: string;
+
+    /**
+     * The delay before showing sub menus.
+     */
+    delay: number;
+
+    /**
+     * Whether this menu button is initially disabled.
+     */
+    disabled: boolean;
+}
+
 /**
  * __PrimeFaces MenuButton Widget__
  *
@@ -8,25 +35,29 @@
  * @prop {PrimeFaces.CssTransitionHandler | null} [transition] Handler for CSS transitions used by this widget.
  * @prop {number} [timeoutId] Timeout ID used for the animation when the menu is shown.
  * @forcedProp {number} [ajaxCount] Number of concurrent active Ajax requests.
- *
- * @interface {PrimeFaces.widget.MenuButtonCfg} cfg The configuration for the {@link  MenuButton| MenuButton widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.TieredMenuCfg} cfg
- *
- * @prop {boolean} cfg.disabled Whether this menu button is initially disabled.
- * @prop {string} cfg.collision When the positioned element overflows the window in some direction, move it to an
- * alternative position. Similar to my and at, this accepts a single value or a pair for horizontal/vertical,
- * e.g., `flip`, `fit`, `fit flip`, `fit none`.
  */
-PrimeFaces.widget.MenuButton = class MenuButton extends PrimeFaces.widget.TieredMenu {
+export class MenuButton<Cfg extends MenuButtonCfg> extends TieredMenu<Cfg> {
+    /**
+     * The DOM element for the menu button.
+     */
+    button: JQuery = $();
 
     /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
+     * The DOM element for the menu overlay panel.
      */
-    init(cfg) {
+    menu: JQuery | null = null;
+
+    /**
+     * Client ID of the menu overlay panel.
+     */
+    menuId: string = "";
+
+    /**
+     * The DOM elements for the individual menu entries.
+     */
+    menuitems: JQuery = $();
+
+    override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);
 
         this.menu = null;
@@ -41,12 +72,7 @@ PrimeFaces.widget.MenuButton = class MenuButton extends PrimeFaces.widget.Tiered
         this.setupDialogSupport();
     }
 
-    /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
-     */
-    refresh(cfg) {
+    override refresh(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         this.trigger.off('.menubutton');
         $(document).off('.' + this.id);
 
@@ -56,22 +82,15 @@ PrimeFaces.widget.MenuButton = class MenuButton extends PrimeFaces.widget.Tiered
     /**
      * Retrieves the jQuery object representing the menu DOM element.
      * @returns {JQuery} The jQuery object for the menu.
-     * @override
      */
-    getMenuElement() {
+    override getMenuElement(): JQuery {
         if (!this.menu) {
             this.menu = this.jq.children('.ui-menu');
         }
         return this.menu;
     }
 
-    /**
-     * @override
-     * @inheritdoc
-     * @param {JQuery} menuitem
-     * @param {JQuery} submenu
-     */
-    showSubmenu(menuitem, submenu) {
+    override showSubmenu(menuitem: JQuery, submenu: JQuery): void {
         var pos = {
             my: 'left top',
             at: 'right top',
@@ -96,20 +115,19 @@ PrimeFaces.widget.MenuButton = class MenuButton extends PrimeFaces.widget.Tiered
 
     /**
      * Sets up all event listeners that are required by this widget.
-     * @private
      */
-    bindButtonEvents() {
+    private bindButtonEvents(): void {
         var $this = this;
 
         //button visuals
-        this.trigger.on('mouseover.menubutton', function() {
-            if (!$this.trigger.hasClass('ui-state-focus')) {
-                $this.trigger.addClass('ui-state-hover');
+        this.trigger.on('mouseover.menubutton', () => {
+            if (!this.trigger.hasClass('ui-state-focus')) {
+                this.trigger.addClass('ui-state-hover');
             }
-        }).on('mouseout.menubutton', function() {
-            $this.trigger.removeClass('ui-state-hover');
-            if (!$this.trigger.hasClass('ui-state-focus')) {
-                $this.trigger.removeClass('ui-state-active');
+        }).on('mouseout.menubutton', () => {
+            this.trigger.removeClass('ui-state-hover');
+            if (!this.trigger.hasClass('ui-state-focus')) {
+                this.trigger.removeClass('ui-state-active');
             }
         }).on('mousedown.menubutton', function() {
             if (!$this.cfg.disabled) {
@@ -122,7 +140,7 @@ PrimeFaces.widget.MenuButton = class MenuButton extends PrimeFaces.widget.Tiered
             var el = $(this);
             el.removeClass('ui-state-active');
 
-            if ($this.menu.is(':visible')) {
+            if ($this.menu?.is(':visible')) {
                 el.addClass('ui-state-hover');
                 $this.hide();
             }
@@ -139,44 +157,43 @@ PrimeFaces.widget.MenuButton = class MenuButton extends PrimeFaces.widget.Tiered
         //mark button and descandants of button as a trigger for a primefaces overlay
         this.trigger.data('primefaces-overlay-target', true).find('*').data('primefaces-overlay-target', true);
 
-        this.trigger.on('keydown.menubutton', function(e) {
-            if ($this.cfg.disabled) {
+        this.trigger.on('keydown.menubutton', (e) => {
+            if (this.cfg.disabled) {
                 return;
             }
-            switch (e.code) {
+            switch ("code" in e ? e.code : e.key) {
                 case 'Enter':
                 case 'NumpadEnter':
                 case 'Space':
                 case 'ArrowDown':
-                    $this.show();
+                    this.show();
                     e.preventDefault();
                     break;
 
                 case 'Escape':
                 case 'Tab':
-                    $this.hide();
+                    this.hide();
                     break;
             }
         });
 
-        PrimeFaces.bindButtonInlineAjaxStatus($this, $this.trigger, function(widget, settings) {
+        PrimeFaces.bindButtonInlineAjaxStatus(this, this.trigger, (widget, settings) => {
             // Checks whether one if its menu items equals the source ID from the provided settings.
             var sourceId = PrimeFaces.ajax.Utils.getSourceId(settings);
             if (!widget || sourceId === null) {
                 return false;
             }
-            return $this.links.filter('[id="' + sourceId + '"]').length;
+            return this.links.filter('[id="' + sourceId + '"]').length;
         });
 
         //aria
-        this.trigger.attr('role', 'button').attr('aria-disabled', this.cfg.disabled);
+        this.trigger.attr('role', 'button').attr('aria-disabled', String(this.cfg.disabled ?? false));
     }
 
     /**
      * Brings up the overlay menu with the menu items, as if the menu button were pressed.
-     * @override
      */
-    show() {
+    override show(): void {
         if (this.cfg.disabled) {
             return;
         }
@@ -185,14 +202,14 @@ PrimeFaces.widget.MenuButton = class MenuButton extends PrimeFaces.widget.Tiered
         if (this.transition) {
             this.transition.show({
                 onEnter: function() {
-                    PrimeFaces.nextZindex($this.menu);
+                    PrimeFaces.nextZindex($this.menu ?? $());
                     $this.align();
                 },
                 onEntered: function() {
                     $this.bindPanelEvents();
                     $this.resetFocus(true);
                     $this.trigger.attr('aria-expanded', 'true');
-                    $this.menu.find('a.ui-menuitem-link:focusable:first').trigger('focus');
+                    $this.menu?.find('a.ui-menuitem-link:focusable:first').trigger('focus');
                 }
             });
         }
@@ -200,9 +217,8 @@ PrimeFaces.widget.MenuButton = class MenuButton extends PrimeFaces.widget.Tiered
 
     /**
      * Hides the overlay menu with the menu items, as if the user clicked outside the menu.
-     * @override
      */
-    hide() {
+    override hide(): void {
         if (this.transition) {
             var $this = this;
 
@@ -222,24 +238,23 @@ PrimeFaces.widget.MenuButton = class MenuButton extends PrimeFaces.widget.Tiered
 
     /**
      * Align the overlay panel with the menu items so that it is positioned next to the menu button.
-     * @override
      */
-    align() {
-        this.menu.css({ left: '', top: '', 'transform-origin': 'center top' });
+    override align(): void {
+        this.menu?.css({ left: '', top: '', 'transform-origin': 'center top' });
 
-        if (this.menu.parent().is(this.jq)) {
+        if (this.menu?.parent().is(this.jq)) {
             this.menu.css({
                 left: '0px',
                 top: this.jq.innerHeight() + 'px'
             });
         }
         else {
-            this.menu.position({
+            this.menu?.position({
                 my: 'left top',
                 at: 'left bottom',
                 of: this.trigger,
                 collision: this.cfg.collision || 'flip',
-                using: function(pos, directions) {
+                using: function(pos: { top: number; left: number }, directions: {horizontal: number; vertical: number;}) {
                     $(this).css('transform-origin', 'center ' + directions.vertical).css(pos);
                 }
             });
@@ -249,7 +264,7 @@ PrimeFaces.widget.MenuButton = class MenuButton extends PrimeFaces.widget.Tiered
     /**
      * Disables this button so that the user cannot press the button anymore.
      */
-    disable() {
+    disable(): void {
         this.cfg.disabled = true;
         this.hide();
         PrimeFaces.utils.disableButton(this.trigger);
@@ -258,7 +273,7 @@ PrimeFaces.widget.MenuButton = class MenuButton extends PrimeFaces.widget.Tiered
     /**
      * Enables this button so that the user can press the button.
      */
-    enable() {
+    enable(): void {
         this.cfg.disabled = false;
         PrimeFaces.utils.enableButton(this.trigger);
     }

@@ -1,37 +1,132 @@
 /**
- * __PrimeFaces Simple FileUpload Widget__
- *
- * @prop {[] | JQuery} button The DOM element for the button for selecting a file.
- * @prop {[] | JQuery} display The DOM element for the UI display.
- * @prop {JQuery} form The DOM element of the (closest) form that contains this file upload.
- * @prop {JQuery} input The DOM element for the file input element.
- * @prop {JQuery} dropZone Drop zone to use for drag and drop.
- *
- * @interface {PrimeFaces.widget.SimpleFileUploadCfg} cfg The configuration for the
- * {@link  SimpleFileUpload| SimpleFileUpload widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
+ * The configuration for the {@link SimpleFileUpload} widget.
+ * 
+ * You can access this configuration via
+ * {@link SimpleFileUpload.cfg | cfg}. Please note that this
  * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
- *
- * @prop {boolean} cfg.disabled Whether this file upload is disabled.
- * @prop {boolean} cfg.global Global AJAX requests are listened to by `ajaxStatus`. When `false`, `ajaxStatus` will not
- * get triggered.
- * @prop {string} cfg.messageTemplate Message template to use when displaying file validation errors.
- * @prop {boolean} cfg.skinSimple Whether to apply theming to the simple upload widget.
- * @forcedProp {number} [ajaxCount] Number of concurrent active Ajax requests.
- * @prop {boolean} cfg.displayFilename Wheter the filename should be displayed.
- * @prop {string} cfg.dropZone Custom drop zone to use for drag and drop.
  */
-PrimeFaces.widget.SimpleFileUpload = class SimpleFileUpload extends PrimeFaces.widget.BaseWidget {
+export interface SimpleFileUploadCfg extends PrimeType.widget.BaseWidgetCfg {
+    /**
+     * Whether auto upload mode is enabled. If enabled, files are uploaded
+     * immediately to the server, directly after the user chose a file. If
+     * disabled, files are uploaded only once the user click on the upload
+     * button. 
+     */
+    auto: boolean;
 
     /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
+     * Whether this file upload is disabled.
      */
-    init(cfg) {
+    disabled: boolean;
+
+    /**
+     * Whether the filename should be displayed.
+     */
+    displayFilename: boolean;
+
+    /**
+     * Custom drop zone to use for drag and drop.
+     */
+    dropZone: string;
+
+    /**
+     * Global AJAX requests are listened to by `ajaxStatus`. When `false`, `ajaxStatus` will not
+     * get triggered.
+     */
+    global: boolean;
+
+    /**
+     * When set true, components which use `p:autoUpdate` will not be updated for this request.
+     */
+    ignoreAutoUpdate: boolean;
+
+    /**
+     * Message template to use when displaying file validation errors.
+     */
+    messageTemplate: string;
+
+    /**
+     * Client-side callback to invoke when the AJAX request to upload files
+     * completes (either successfully or with an error).
+     */
+    oncomplete: PrimeType.ajax.CallbackOncomplete;
+
+    /**
+     * Client-side callback to invoke when the AJAX request to upload files
+     * fails.
+     */
+    onerror: PrimeType.ajax.CallbackOnerror;
+
+    /**
+     * Client-side callback to invoke when the AJAX request to upload files
+     * is about to begin.
+     */
+    onstart: PrimeType.widget.SimpleFileUpload.OnStartCallback;
+
+    /**
+     * Client-side callback to invoke when the AJAX request to upload files
+     * succeeds.
+     */
+    onsuccess: PrimeType.ajax.CallbackOnsuccess;
+
+    /**
+     * List of components to process (include in the request) when files
+     * are uploaded.
+     */
+    process: string;
+
+    /**
+     * Whether to apply theming to the simple upload widget.
+     */
+    skinSimple: boolean;
+
+    /**
+     * List of components to update (re-render) when files are uploaded.
+     */
+    update: string;
+}
+
+/**
+ * __PrimeFaces Simple FileUpload Widget__
+ *
+ * Allows uploading files to the server, either via simple mode (form submit)
+ * or via AJAX.
+ */
+export class SimpleFileUpload<Cfg extends SimpleFileUploadCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
+    /**
+     * Number of concurrent active Ajax requests.
+     */
+    ajaxCount: number = 0;
+
+    /**
+     * The DOM element for the button for selecting a file.
+     */
+    button: JQuery | undefined = undefined;
+
+    /**
+     * The DOM element for the UI display.
+     */
+    display: JQuery | undefined = undefined;
+
+    /**
+     * Drop zone to use for drag and drop.
+     */
+    dropZone: JQuery = $();
+
+    /**
+     * The DOM element of the (closest) form that contains this file upload.
+     */
+    form: JQuery= $();
+
+    /**
+     * The DOM element for the file input element.
+     */
+    input: JQuery = $();
+
+    override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);
-        if(this.cfg.disabled) {
+        
+        if (this.cfg.disabled) {
             return;
         }
 
@@ -40,8 +135,6 @@ PrimeFaces.widget.SimpleFileUpload = class SimpleFileUpload extends PrimeFaces.w
 
         this.form = this.jq.closest('form');
         this.input = $(this.jqId);
-
-        var $this = this;
 
         if (this.cfg.dropZone) {
             this.dropZone = PrimeFaces.expressions.SearchExpressionFacade.resolveComponentsAsSelector(this.jq, this.cfg.dropZone);
@@ -59,21 +152,16 @@ PrimeFaces.widget.SimpleFileUpload = class SimpleFileUpload extends PrimeFaces.w
             }
         }
         else if (this.cfg.auto) {
-            this.input.on('change.fileupload', function() {
-                $this.upload();
-            });
+            this.input.on('change.fileupload', () => this.upload());
             this.bindDropZone();
         }
     }
 
     /**
      * Sets up all events listeners for this file upload widget.
-     * @private
      */
-    bindEvents() {
-        var $this = this;
-
-        this.button.on('mouseover.fileupload', function(){
+    private bindEvents(): void {
+        this.button?.on('mouseover.fileupload', function(){
             var el = $(this);
             if (!el.prop('disabled')) {
                 el.addClass('ui-state-hover');
@@ -92,64 +180,66 @@ PrimeFaces.widget.SimpleFileUpload = class SimpleFileUpload extends PrimeFaces.w
             $(this).removeClass('ui-state-active').addClass('ui-state-hover');
         });
 
-        this.input.on('change.fileupload', function() {
-            var files = $this.input[0].files;
+        this.input.on('change.fileupload', () => {
+            const input = this.input[0];
+            const files = input instanceof HTMLInputElement ? input.files : undefined;
             if (files) {
                 // display filename
-                if (files.length > 0 && $this.cfg.displayFilename) {
-                    var toDisplay = $this.cfg.messageTemplate.replace('{name}', files[0].name)
-                        .replace('{size}', PrimeFaces.utils.formatBytes(files[0].size));
+                if (files.length > 0 && this.cfg.displayFilename) {
+                    let toDisplay = (this.cfg.messageTemplate ?? "")
+                        .replace('{name}', files[0]?.name ?? "")
+                        .replace('{size}', PrimeFaces.utils.formatBytes(files[0]?.size ?? 0));
 
                     if (files.length > 1) {
-                            toDisplay = toDisplay + " + " + (files.length - 1);
+                        toDisplay = toDisplay + " + " + (files.length - 1);
                     }
-                    $this.display.text(toDisplay);
+                    this.display?.text(toDisplay);
                 }
                 else {
-                    $this.display.text('');
+                    this.display?.text('');
                 }
 
-                if ($this.cfg.auto && files.length > 0) {
-                    $this.upload();
+                if (this.cfg.auto && files.length > 0) {
+                    this.upload();
                 }
             } else {
             	// no data was found so clear the input
-            	$this.input.val('');
+            	this.input.val('');
             }
         })
-        .on('focus.fileupload', function() {
-            $this.button.addClass('ui-state-focus');
+        .on('focus.fileupload', () => {
+            this.button?.addClass('ui-state-focus');
         })
-        .on('blur.fileupload', function() {
-            $this.button.removeClass('ui-state-focus');
+        .on('blur.fileupload', () => {
+            this.button?.removeClass('ui-state-focus');
         });
     }
 
     /**
      * Sets up the event handling for the dropZone.
-     * @private
      */
-    bindDropZone() {
+    private bindDropZone(): void {
         if (this.dropZone) {
-            var $this = this;
-
-            this.dropZone.on("dragenter dragover dragleave drop", function(event) {
+            this.dropZone.on("dragenter dragover dragleave drop", (event) => {
                 event.preventDefault();
                 event.stopPropagation();
             });
 
-            this.dropZone.on("dragenter dragover", function(event) {
-                $this.dropZone.addClass('ui-state-drag');
+            this.dropZone.on("dragenter dragover", () => {
+                this.dropZone.addClass('ui-state-drag');
             });
-            this.dropZone.on("dragleave drop", function(event) {
-                $this.dropZone.removeClass('ui-state-drag');
+            this.dropZone.on("dragleave drop", () => {
+                this.dropZone.removeClass('ui-state-drag');
             });
 
-            this.dropZone.on("drop", function(event) {
-                var dataTransfer = event.originalEvent.dataTransfer;
+            this.dropZone.on("drop", (event) => {
+                const dataTransfer = event.originalEvent?.dataTransfer;
                 if (dataTransfer && dataTransfer.files && dataTransfer.files.length > 0) {
-                    $this.input[0].files = dataTransfer.files;
-                    $this.input.trigger('change.fileupload');
+                    const input = this.input[0];
+                    if (input instanceof HTMLInputElement) {
+                        input.files = dataTransfer.files;
+                    }
+                    this.input.trigger('change.fileupload');
                 }
             });
         }
@@ -157,16 +247,15 @@ PrimeFaces.widget.SimpleFileUpload = class SimpleFileUpload extends PrimeFaces.w
 
     /**
      * Sets up the global event listeners on the button.
-     * @private
      */
-    bindTriggers() {
-        PrimeFaces.bindButtonInlineAjaxStatus(this, this.button);
+    private bindTriggers(): void {
+        PrimeFaces.bindButtonInlineAjaxStatus(this, this.button ?? $());
     }
 
     /**
      * Brings up the native file selection dialog.
      */
-    show() {
+    show(): void {
         if (this.cfg.skinSimple) {
             this.input.trigger("click");
         }
@@ -178,7 +267,7 @@ PrimeFaces.widget.SimpleFileUpload = class SimpleFileUpload extends PrimeFaces.w
     /**
      * Clears the currently selected file.
      */
-    clear() {
+    clear(): void {
         if (this.input) {
             this.input.val('');
         }
@@ -189,25 +278,24 @@ PrimeFaces.widget.SimpleFileUpload = class SimpleFileUpload extends PrimeFaces.w
 
     /**
      * Uploads all selected files via AJAX.
-     * @private
      */
-    upload() {
-        var $this = this;
-        var process = this.cfg.process
-            ? this.id + ' ' + PrimeFaces.expressions.SearchExpressionFacade.resolveComponents(this.jq, this.cfg.process).join(' ')
-            : this.id;
-        var update = this.cfg.update
+    private upload(): void {
+        const $this = this;
+        const process = this.cfg.process
+            ? this.getId() + ' ' + PrimeFaces.expressions.SearchExpressionFacade.resolveComponents(this.jq, this.cfg.process).join(' ')
+            : this.getId();
+            const update = this.cfg.update
             ? PrimeFaces.expressions.SearchExpressionFacade.resolveComponents(this.jq, this.cfg.update).join(' ')
             : null;
 
-        var validationResult = PrimeFaces.validation.validate($this.jq, process, update, true, true, true, false, true);
+            const validationResult = PrimeFaces.validation.validate($this.jq, process, update, true, true, true, false, true);
         if (!validationResult.valid) {
             return;
         }
-        var ignoreAutoUpdate = this.cfg.ignoreAutoUpdate;
-        var files = this.input[0].files;
-        var parameterPrefix = PrimeFaces.ajax.Request.extractParameterNamespace(this.form);
-        var formData = PrimeFaces.ajax.Request.createFacesAjaxFormData(this.form, parameterPrefix, this.id, process, update, ignoreAutoUpdate);
+        const ignoreAutoUpdate = this.cfg.ignoreAutoUpdate;
+        const files = this.input[0] instanceof HTMLInputElement ? this.input[0].files ?? [] : [];
+        const parameterPrefix = PrimeFaces.ajax.Request.extractParameterNamespace(this.form);
+        const formData = PrimeFaces.ajax.Request.createFacesAjaxFormData(this.form, parameterPrefix, this.getId(), process, update, ignoreAutoUpdate);
 
         if($this.cfg.onstart) {
             $this.cfg.onstart.call($this);
@@ -217,14 +305,17 @@ PrimeFaces.widget.SimpleFileUpload = class SimpleFileUpload extends PrimeFaces.w
         }
 
         // append files
-        for (var i = 0; i < files.length; i++) {
-            formData.append(this.input.attr('id'), files[i]);
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file) {
+                formData.append(this.input.attr('id') ?? "", file);
+            }
         }
 
-        var xhrOptions = {
+        const xhrOptions: PrimeType.ajax.PrimeFacesSettings = {
             url: PrimeFaces.ajax.Utils.getPostUrl(this.form),
-            portletForms: PrimeFaces.ajax.Utils.getPorletForms(this.form, parameterPrefix),
-            source: this.id,
+            portletForms: PrimeFaces.ajax.Utils.getPorletForms(this.form, parameterPrefix ?? ""),
+            source: this.getId(),
             type : "POST",
             cache : false,
             dataType : "xml",
@@ -242,12 +333,15 @@ PrimeFaces.widget.SimpleFileUpload = class SimpleFileUpload extends PrimeFaces.w
             }
         };
 
-        var jqXhr = $.ajax(xhrOptions)
-            .fail(function(xhr, status, errorThrown) {
+        const jqXhr = $.ajax(xhrOptions)
+            .fail(function(this: PrimeType.ajax.PrimeFacesSettings, xhr, status, errorThrown) {
                 var location = xhr.getResponseHeader("Location");
                 if (xhr.status === 401 && location) {
                     PrimeFaces.debug('Unauthorized status received. Redirecting to ' + location);
-                    window.location = location;
+                    // There are subtle differences between
+                    // window.location = "..." and window.location.href = "..."
+                    // https://github.com/microsoft/TypeScript/issues/48949
+                    (window as Window).location = location;
                     return;
                 }
                 if($this.cfg.onerror) {
@@ -258,7 +352,7 @@ PrimeFaces.widget.SimpleFileUpload = class SimpleFileUpload extends PrimeFaces.w
 
                 PrimeFaces.error('Request return with error:' + status + '.');
             })
-            .done(function(data, status, xhr) {
+            .done(function(this: PrimeType.ajax.PrimeFacesSettings, data, status, xhr: PrimeType.ajax.pfXHR) {
                 PrimeFaces.debug('Response received successfully.');
                 try {
                     var parsed;
@@ -286,21 +380,21 @@ PrimeFaces.widget.SimpleFileUpload = class SimpleFileUpload extends PrimeFaces.w
 
                 PrimeFaces.debug('DOM is updated.');
             })
-            .always(function(data, status, xhr) {
+            .always(function(this: PrimeType.ajax.PrimeFacesSettings, data, status, xhr: string | PrimeType.ajax.pfXHR) {
+                const pfArgs = typeof xhr === "string" ? undefined : xhr.pfArgs;
+
                 if($this.cfg.oncomplete) {
-                    $this.cfg.oncomplete.call(this, xhr, status, xhr.pfArgs, data);
+                    $this.cfg.oncomplete.call(this, xhr, status, pfArgs, data);
                 }
 
                 PrimeFaces.debug('Response completed.');
                 $this.clear();
 
                 if($this.cfg.global) {
-                    $(document).trigger('pfAjaxComplete', [xhr, this, xhr.pfArgs]);
+                    $(document).trigger('pfAjaxComplete', [xhr, this, pfArgs]);
                 }
             });
 
         PrimeFaces.ajax.Queue.addXHR(jqXhr);
-
     }
-
 }
