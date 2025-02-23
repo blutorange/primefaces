@@ -388,8 +388,3 @@ export class Menu<Cfg extends MenuCfg>  extends PrimeFaces.widget.BaseWidget<Cfg
         menulink.removeClass(cssClass).attr('tabindex', -1);
     }
 }
-
-
-
-
-

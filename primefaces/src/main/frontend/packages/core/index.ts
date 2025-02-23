@@ -15,6 +15,7 @@ import "./src/validation/validation.highlighters.js";
 import { registerValidationMessages } from "./src/validation/validation.common.js";
 import { registerCommonValidators } from "./src/validation/validation.validators.js";
 import { registerCommonHighlighters } from "./src/validation/validation.highlighters.js";
+import "./src/validation/validation.bv.js";
 
 // General types
 declare global {
