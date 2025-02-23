@@ -1061,7 +1061,7 @@
                             <artifactId>frontend-maven-plugin</artifactId>
                             <configuration>
                                 <environmentVariables>
-                                    <YARN_CACHE_FOLDER>${drive.letter}:\.yarn\berry\cache</YARN_CACHE_FOLDER>
+                                    <YARN_CACHE_FOLDER>${drive.letter.project.dir}:\.yarn\berry\cache</YARN_CACHE_FOLDER>
                                     <YARN_ENABLE_GLOBAL_CACHE>${yarn.enable.global.cache}</YARN_ENABLE_GLOBAL_CACHE>
                                 </environmentVariables>
                             </configuration>
