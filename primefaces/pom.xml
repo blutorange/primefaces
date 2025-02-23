@@ -1044,6 +1044,9 @@
                 <cyclonedx.skip>false</cyclonedx.skip>
             </properties>
         </profile>
+        <!-- Yarn's global cache folder must be on the same drive as the Maven project -->
+        <!-- Windows does not support relative paths between different drives. -->
+        <!-- See https://github.com/evanw/esbuild/issues/3131 and https://github.com/primefaces/primefaces/issues/13372 -->
         <profile>
             <activation>
                 <os>
@@ -1058,7 +1061,7 @@
                             <artifactId>frontend-maven-plugin</artifactId>
                             <configuration>
                                 <environmentVariables>
-                                    <YARN_CACHE_FOLDER>${yarn.global.folder}/.yarn/berry/cache</YARN_CACHE_FOLDER>
+                                    <YARN_CACHE_FOLDER>${drive.letter}\.yarn\berry\cache</YARN_CACHE_FOLDER>
                                     <YARN_ENABLE_GLOBAL_CACHE>false</YARN_ENABLE_GLOBAL_CACHE>
                                 </environmentVariables>
                             </configuration>
@@ -1067,24 +1070,22 @@
                 </pluginManagement>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.6.0</version>
                         <executions>
                             <execution>
-                                <id>set-yarn-global-folder</id>
-                                <phase>initialize</phase>
-                                <configuration>
-                                    <exportAntProperties>true</exportAntProperties>
-                                    <target>
-                                        <exec executable="echo" outputproperty="yarn.global.folder">
-                                            <arg value="%CD:~0,3%" />
-                                        </exec>
-                                    </target>
-                                </configuration>
+                                <id>parse-drive-letter</id>
+                                <phase>verify</phase>
                                 <goals>
-                                    <goal>run</goal>
+                                    <goal>regex-property</goal>
                                 </goals>
+                                <configuration>
+                                    <name>drive.letter</name>
+                                    <regex>^([A-Za-z]):.*$</regex>
+                                    <replacement>$1</replacement>
+                                    <value>${project.basedir}</value>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
