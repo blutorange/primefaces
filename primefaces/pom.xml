@@ -1111,9 +1111,10 @@
                                 <id>parse-yarn-cache-folder</id>
                                 <phase>initialize</phase>
                                 <configuration>
+                                    <exportAntProperties>true</exportAntProperties>
                                     <target>
                                         <condition property="yarn.enable.global.cache" value="true" else="false">
-                                            <equals arg1="${drive.letter}" arg2="${user.drive}" casesensitive="false" />
+                                            <equals arg1="${drive.letter.project.dir}" arg2="${drive.letter.user.home}" casesensitive="false" />
                                         </condition>
                                     </target>
                                 </configuration>
