@@ -1061,7 +1061,7 @@
                             <artifactId>frontend-maven-plugin</artifactId>
                             <configuration>
                                 <environmentVariables>
-                                    <YARN_CACHE_FOLDER>${drive.letter}\.yarn\berry\cache</YARN_CACHE_FOLDER>
+                                    <YARN_CACHE_FOLDER>${drive.letter}:\.yarn\berry\cache</YARN_CACHE_FOLDER>
                                     <YARN_ENABLE_GLOBAL_CACHE>false</YARN_ENABLE_GLOBAL_CACHE>
                                 </environmentVariables>
                             </configuration>
@@ -1076,7 +1076,7 @@
                         <executions>
                             <execution>
                                 <id>parse-drive-letter</id>
-                                <phase>verify</phase>
+                                <phase>validate</phase>
                                 <goals>
                                     <goal>regex-property</goal>
                                 </goals>
