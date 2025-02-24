@@ -5,11 +5,13 @@
 		"rootDir": ".",
 		"outDir": "dist",
 		"types": [
+			"../../types/dist",
 			"../../jquery/jquery/dist"
 		],
 	},
     "include": ["src", "index.ts"],
 	"references": [
+		{ "path": "../../types" },
 		{ "path": "../../jquery/jquery" }
 	]
 }

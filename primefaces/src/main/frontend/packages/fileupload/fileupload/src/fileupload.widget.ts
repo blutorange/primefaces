@@ -1,128 +1,301 @@
+// TODO: Bad global modifications of object shapes
+declare global {
+    // This widget sets properties on the builtin File object (that it normally
+    // does not have). For now, we just tell TypeScript that this is what we are
+    // doing. In the future, we could use e.g. a WeakMap to associate additional
+    // data with a File object, instead of mutating the shape of a built-in object. 
+    interface File {
+        ajaxRequest?: JQueryFileUpload.AddCallbackData | null;
+        row?: JQuery | null;
+    }
+    // In a similar manner, this widget also sets additional properties on the
+    // JQuery XHR settings object. For now, we just tell TypeScript that this
+    // is what we are doing. In the future, we need to look for a better way,
+    // such as passing the data directly to the methods.
+    namespace JQuery {
+        interface jqXHR {
+            pfArgs?: PrimeType.ajax.PrimeFacesArgs;
+        }
+    }
+    // In a similar manner, this widget also sets additional properties on the
+    // blue imp file upload options. For now, we just tell TypeScript that this
+    // is what we are doing. In the future, we need to look for a better way,
+    // such as passing the data directly to the methods, or simply reading it
+    // form out "this.cfg".  
+    namespace JQueryFileUpload {
+        interface FileUploadOptions {
+            maxRetries?: number;
+            portletForms?: string | null;
+            retryTimeout?: number;
+            source?: string;
+        }
+    }
+}
+
+/**
+ * The configuration for the {@link FileUpload} widget.
+ * 
+ * You can access this configuration via {@link FileUpload.cfg | cfg}. Please note that this
+ * configuration is usually meant to be read-only and should not be modified.
+ */
+export interface FileUploadCfg extends PrimeType.widget.BaseWidgetCfg {
+    /**
+     * Regular expression for accepted file types.
+     */
+    allowTypes: RegExp;
+
+    /**
+     * When set to true, selecting a file starts the upload process implicitly.
+     */
+    auto: boolean;
+
+    /**
+     * Whether this file upload is disabled.
+     */
+    disabled: boolean;
+
+    /**
+     * Whether drag and drop is enabled.
+     */
+    dnd: boolean;
+
+    /**
+     * Custom drop zone to use for drag and drop.
+     */
+    dropZone: string;
+
+    /**
+     * Global AJAX requests are listened to by `ajaxStatus`. When `false`, `ajaxStatus` will not
+     * get triggered.
+     */
+    global: boolean;
+
+    /**
+     * When set true, components which use `p:autoUpdate` will not be updated for this request.
+     */
+    ignoreAutoUpdate: boolean;
+
+    /**
+     * To upload large files in smaller chunks, set this option to a preferred maximum chunk
+     * size. If set to `0`, `null` or `undefined`, or the browser does not support the required Blob API, files will be
+     * uploaded as a whole.
+     */
+    maxChunkSize: number;
+
+    /**
+     * Only for chunked file upload: Amount of retries when upload gets interrupted due to
+     * e.g. an unstable network connection.
+     */
+    maxRetries: number;
+
+    /**
+     * Message template to use when displaying file validation errors.
+     */
+    messageTemplate: string;
+
+    /**
+     * Callback invoked when an uploaded file is added.
+     */
+    onAdd: PrimeType.widget.FileUpload.OnAddCallback;
+
+    /**
+     * Callback that is invoked when a file upload was
+     * canceled.
+     */
+    oncancel: PrimeType.widget.FileUpload.OnCancelCallback;
+
+    /**
+     * Callback that is invoked after a file was
+     * uploaded to the server successfully.
+     */
+    oncomplete: PrimeType.widget.FileUpload.OnCompleteCallback;
+
+    /**
+     * Callback that is invoked when a file could not be
+     * uploaded to the server.
+     */
+    onerror: PrimeType.widget.FileUpload.OnErrorCallback;
+
+    /**
+     * Callback that is invoked at the beginning of a file
+     * upload, when a file is sent to the server.
+     */
+    onstart: PrimeType.widget.FileUpload.OnStartCallback;
+
+    /**
+     * Callback to execute before the files are sent.
+     * If this callback returns false, the file upload request is not started.
+     */
+    onupload: PrimeType.widget.FileUpload.OnUploadCallback;
+
+    /**
+     * Callback to execute when the files failed to validate, such as when the
+     * file size exceed the configured limit. This callback is called once for
+     * each invalid file.
+     */
+    onvalidationfailure: PrimeType.widget.FileUpload.OnValidationFailureCallback;
+
+    /**
+     * Width for image previews in pixels.
+     */
+    previewWidth: number;
+
+    /**
+     * Component(s) to process in fileupload request.
+     */
+    process: string;
+
+    /**
+     * Server-side path which provides information to resume chunked file upload.
+     */
+    resumeContextPath: string;
+
+    /**
+     * Only for chunked file upload: (Base) timeout in milliseconds to wait until the next
+     * retry. It is multiplied with the retry count. (first retry: `retryTimeout * 1`, second retry: `retryTimeout * 2`,
+     * ...)
+     */
+    retryTimeout: number;
+
+    /**
+     * `true` to upload files one after each other, `false` to upload in parallel.
+     */
+    sequentialUploads: boolean;
+
+    /**
+     * Component(s) to update after fileupload completes.
+     */
+    update: string;
+}
+
 /**
  * __PrimeFaces FileUpload Widget__
  *
  * FileUpload goes beyond the browser input `type="file"` functionality and features an HTML5 powered rich solution with
  * graceful degradation for legacy browsers.
- *
- * @typedef PrimeFaces.widget.FileUpload.OnAddCallback Callback invoked when file was selected and is added to this
- * widget. See also {@link FileUploadCfg.onAdd}.
- * @this {PrimeFaces.widget.FileUpload} PrimeFaces.widget.FileUpload.OnAddCallback
- * @param {File} PrimeFaces.widget.FileUpload.OnAddCallback.file The file that was selected for the upload.
- * @param {(processedFile: File) => void} PrimeFaces.widget.FileUpload.OnAddCallback.callback Callback that needs to be
- * invoked with the file that should be added to the upload queue.
- *
- * @typedef PrimeFaces.widget.FileUpload.OnCancelCallback Callback that is invoked when a file upload was canceled. See
- * also {@link FileUploadCfg.oncancel}.
- * @this {PrimeFaces.widget.FileUpload} PrimeFaces.widget.FileUpload.OnCancelCallback
- *
- * @typedef PrimeFaces.widget.FileUpload.OnUploadCallback Callback to execute before the files are sent.
- * If this callback returns false, the file upload request is not started. See also {@link FileUploadCfg.onupload}.
- * @this {PrimeFaces.widget.FileUpload} PrimeFaces.widget.FileUpload.OnUploadCallback
- *
- * @typedef PrimeFaces.widget.FileUpload.OnCompleteCallback Callback that is invoked after a file was uploaded to the
- * server successfully. See also {@link FileUploadCfg.oncomplete}.
- * @this {PrimeFaces.widget.FileUpload} PrimeFaces.widget.FileUpload.OnCompleteCallback
- * @param {PrimeFaces.ajax.PrimeFacesArgs} PrimeFaces.widget.FileUpload.OnCompleteCallback.pfArgs The additional
- * arguments from the jQuery XHR requests.
- * @param {JQueryFileUpload.JQueryAjaxCallbackData} PrimeFaces.widget.FileUpload.OnCompleteCallback.data Details about
- * the uploaded file or files.
- *
- * @typedef PrimeFaces.widget.FileUpload.OnErrorCallback Callback that is invoked when a file could not be uploaded to
- * the server. See also {@link FileUploadCfg.onerror}.
- * @this {PrimeFaces.widget.FileUpload} PrimeFaces.widget.FileUpload.OnErrorCallback
- * @param {JQuery.jqXHR} PrimeFaces.widget.FileUpload.OnErrorCallback.jqXHR The XHR object from the HTTP request.
- * @param {string} PrimeFaces.widget.FileUpload.OnErrorCallback.textStatus The HTTP status text of the failed request.
- * @param {PrimeFaces.ajax.PrimeFacesArgs} PrimeFaces.widget.FileUpload.OnErrorCallback.pfArgs The additional arguments
- * from the jQuery XHR request.
- *
- * @typedef PrimeFaces.widget.FileUpload.OnStartCallback Callback that is invoked at the beginning of a file upload,
- * when a file is sent to the server. See also {@link FileUploadCfg.onstart}.
- * @this {PrimeFaces.widget.FileUpload} PrimeFaces.widget.FileUpload.OnStartCallback
- *
- * @interface {PrimeFaces.widget.FileUpload.UploadFile} UploadFile Represents an uploaded file added to the upload
- * widget.
- * @prop {JQuery} UploadFile.row Row of an uploaded file.
- *
- * @prop {JQuery} buttonBar The DOM element for the bar with the buttons of this widget.
- * @prop {number} dragoverCount Amount of dragover on drop zone and its children.
- * @prop {JQuery} dropZone Drop zone to use for drag and drop.
- * @prop {JQuery} cancelButton The DOM element for the button for canceling a file upload.
- * @prop {JQuery} chooseButton The DOM element for the button for selecting a file.
- * @prop {JQuery} clearMessageLink The DOM element for the button to clear the file upload messages (which inform the
- * user about whether a file was uploaded).
- * @prop {JQuery} content The DOM element for the content of this widget.
- * @prop {number} fileAddIndex Current index where to add files.
- * @prop {string} fileId ID of the current file.
- * @prop {File[]} files List of currently selected files.
- * @prop {JQuery} emptyFacet The facet to be shown, when the current amount of files is empty.
- * @prop {JQuery} filesFacet The DOM element for the table tbody with the files.
- * @prop {JQuery} form The DOM element for the form containing this upload widget.
- * @prop {JQuery} messageContainer The DOM element of the container with the file upload messages which inform the user
- * about whether a file was uploaded.
- * @prop {JQuery} messageList The DOM element of the UL list element with the file upload messages which inform the user
- * about whether a file was uploaded.
- * @prop {string} rowCancelActionSelector Selector for the button for canceling a file upload.
- * @prop {JQueryFileUpload.FileUploadOptions} ucfg Options for the BlueImp jQuery file upload plugin.
- * @prop {JQuery} uploadButton The DOM element for the button for starting the file upload.
- * @prop {number} uploadedFileCount Number of currently uploaded files.
- *
- * @interface {PrimeFaces.widget.FileUploadCfg} cfg The configuration for the {@link  FileUpload| FileUpload widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
- *
- * @prop {RegExp} cfg.allowTypes Regular expression for accepted file types.
- * @prop {boolean} cfg.auto When set to true, selecting a file starts the upload process implicitly.
- * @prop {boolean} cfg.dnd Whether drag and drop is enabled.
- * @prop {string} cfg.dropZone Custom drop zone to use for drag and drop.
- * @prop {boolean} cfg.disabled Whether this file upload is disabled.
- * @prop {boolean} cfg.global Global AJAX requests are listened to by `ajaxStatus`. When `false`, `ajaxStatus` will not
- * get triggered.
- * @prop {PrimeFaces.widget.FileUpload.OnAddCallback} cfg.onAdd Callback invoked when an uploaded file is added.
- * @prop {PrimeFaces.widget.FileUpload.OnUploadCallback} cfg.onupload Callback to execute before the files are sent.
- * If this callback returns false, the file upload request is not started.
- * @prop {PrimeFaces.widget.FileUpload.OnCancelCallback} cfg.oncancel Callback that is invoked when a file upload was
- * canceled.
- * @prop {PrimeFaces.widget.FileUpload.OnCompleteCallback} cfg.oncomplete Callback that is invoked after a file was
- * uploaded to the server successfully.
- * @prop {PrimeFaces.widget.FileUpload.OnErrorCallback} cfg.onerror Callback that is invoked when a file could not be
- * uploaded to the server.
- * @prop {PrimeFaces.widget.FileUpload.OnStartCallback} cfg.onstart Callback that is invoked at the beginning of a file
- * upload, when a file is sent to the server.
- * @prop {number} cfg.previewWidth Width for image previews in pixels.
- * @prop {string} cfg.process Component(s) to process in fileupload request.
- * @prop {boolean} cfg.sequentialUploads `true` to upload files one after each other, `false` to upload in parallel.
- * @prop {string} cfg.update Component(s) to update after fileupload completes.
- * @prop {number} cfg.maxChunkSize To upload large files in smaller chunks, set this option to a preferred maximum chunk
- * size. If set to `0`, `null` or `undefined`, or the browser does not support the required Blob API, files will be
- * uploaded as a whole.
- * @prop {number} cfg.maxRetries Only for chunked file upload: Amount of retries when upload gets interrupted due to
- * e.g. an unstable network connection.
- * @prop {number} cfg.retryTimeout Only for chunked file upload: (Base) timeout in milliseconds to wait until the next
- * retry. It is multiplied with the retry count. (first retry: `retryTimeout * 1`, second retry: `retryTimeout * 2`,
- * ...)
- * @prop {string} cfg.resumeContextPath Server-side path which provides information to resume chunked file upload.
  */
-PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWidget {
+export class FileUpload<Cfg extends FileUploadCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
+    /**
+     * The DOM element for the bar with the buttons of this widget.
+     */
+    buttonBar: JQuery = $();
+
+    /**
+     * The DOM element for the button for canceling a file upload.
+     */
+    cancelButton: JQuery = $();
+
+    /**
+     * The DOM element for the button for selecting a file.
+     */
+    chooseButton: JQuery = $();
+
+    /**
+     * The DOM element for the button to clear the file upload messages (which inform the
+     * user about whether a file was uploaded).
+     */
+    clearMessageLink: JQuery = $();
+
+    /**
+     * The DOM element for the content of this widget.
+     */
+    content: JQuery = $();
+
+    /**
+     * Custom drop zone to use for drag and drop.
+     */
+    customDropZone: string = "";
+
+    /**
+     * Amount of dragover on drop zone and its children.
+     */
+    dragoverCount: number = 0;
+
+    /**
+     * Drop zone to use for drag and drop.
+     */
+    dropZone: JQuery | null = null;
+
+    /**
+     * The DOM element for the `f:facet` when no file is selected.
+     */
+    emptyFacet: JQuery = $();
+
+    /**
+     * Current index where to add files.
+     */
+    fileAddIndex: number = 0;
+
+    /**
+     * ID of the current file.
+     */
+    fileId: number = 0;
+
+    /**
+     * List of currently selected files.
+     */
+    files: File[] = [];
+
+    /**
+     * The DOM element for the `f:facet` when files are selected.
+     */
+    filesFacet: JQuery = $();
+
+    /**
+     * The DOM element for the table tbody with the files.
+     */
+    filesTbody: JQuery = $();
+
+    /**
+     * The DOM element for the form containing this upload widget.
+     */
+    form: JQuery = $();
+
+    /**
+     * The DOM element of the container with the file upload messages which inform the user
+     * about whether a file was uploaded.
+     */
+    messageContainer: JQuery = $();
+
+    /**
+     * The DOM element of the UL list element with the file upload messages which inform the user
+     * about whether a file was uploaded.
+     */
+    messageList: JQuery = $();
+
+    /**
+     * Selector for the button for canceling a file upload.
+     */
+    rowCancelActionSelector: string = "";
+
+    /**
+     * Options for the BlueImp jQuery file upload plugin.
+     */
+    ucfg: Partial<JQueryFileUpload.FileUploadOptions> = {};
+
+    /**
+     * The DOM element for the button for starting the file upload.
+     */
+    uploadButton: JQuery = $();
+
+    /**
+     * Number of currently uploaded files.
+     */
+    uploadedFileCount: number = 0;
 
     /**
      * Regular expression that matches image files for which a preview can be shown.
      * @type {RegExp}
      */
-    static IMAGE_TYPES= /([./])(gif|jpe?g|png)$/i;
+    static IMAGE_TYPES: RegExp = /([./])(gif|jpe?g|png)$/i;
 
-    /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
-     */
-    init(cfg) {
+    override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);
-        if(this.cfg.disabled) {
+        
+        if (this.cfg.disabled) {
             return;
         }
 
-        this.ucfg = {};
         this.form = this.jq.closest('form');
         this.buttonBar = this.jq.children('.ui-fileupload-buttonbar');
         this.dragoverCount = 0;
@@ -151,32 +324,32 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
 
         this.bindEvents();
 
-        var $this = this;
+        const $this = this;
 
-        var parameterPrefix = PrimeFaces.ajax.Request.extractParameterNamespace(this.form);
+        const parameterPrefix = PrimeFaces.ajax.Request.extractParameterNamespace(this.form);
 
         this.ucfg = {
             url: PrimeFaces.ajax.Utils.getPostUrl(this.form),
-            portletForms: PrimeFaces.ajax.Utils.getPorletForms(this.form, parameterPrefix),
-            paramName: Array.from({length: 999}, (_, i) => this.id), // required so drag´n´drop has for each file the id (Github #11879)
+            portletForms: PrimeFaces.ajax.Utils.getPorletForms(this.form, parameterPrefix ?? ""),
+            paramName: Array.from({length: 999}, () => this.getId()), // required so drag´n´drop has for each file the id (Github #11879)
             dataType: 'xml',
             dropZone: this.dropZone,
             sequentialUploads: this.cfg.sequentialUploads,
             maxChunkSize: this.cfg.maxChunkSize,
             maxRetries: this.cfg.maxRetries,
             retryTimeout: this.cfg.retryTimeout,
-            source: $this.id,
-            formData: function() {
-                return $this.createPostData();
-            },
-            beforeSend: function(xhr, settings) {
+            source: this.getId(),
+            formData: () => this.createPostData(),
+            beforeSend: function(xhr: PrimeType.ajax.pfXHR, settings) {
                 xhr.setRequestHeader('Faces-Request', 'partial/ajax');
-                xhr.pfSettings = settings;
+                xhr.pfSettings = settings as PrimeType.ajax.PrimeFacesSettings;
                 xhr.pfArgs = {}; // default should be an empty object
 
-                var file = settings.files ? settings.files[0] : null;
+                const file = settings.files ? settings.files[0] : null;
                 if (file && file.webkitRelativePath) {
-                    settings.data.append('X-File-Webkit-Relative-Path', file.webkitRelativePath);
+                    if (settings.data instanceof FormData) {
+                        settings.data.append('X-File-Webkit-Relative-Path', file.webkitRelativePath);
+                    }
                 }
 
                 if($this.cfg.global) {
@@ -188,43 +361,45 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
                     $this.cfg.onstart.call($this);
                 }
             },
-            add: function(e, data) {
-                $this.chooseButton.removeClass('ui-state-hover ui-state-focus');
+            add: (_, data) => {
+                this.chooseButton.removeClass('ui-state-hover ui-state-focus');
 
-                if($this.fileAddIndex === 0) {
-                    $this.clearMessages();
+                if(this.fileAddIndex === 0) {
+                    this.clearMessages();
                 }
 
-                var update = PrimeFaces.expressions.SearchExpressionFacade.resolveComponentsAsSelector($this.jq, $this.cfg.update);
+                const update = PrimeFaces.expressions.SearchExpressionFacade.resolveComponentsAsSelector(this.jq, this.cfg.update);
 
                 // we need to fake the filelimit as the jquery-fileupload input always only contains 1 file
-                var dataFileInput = data.fileInput;
+                let dataFileInput = data.fileInput;
                 if (dataFileInput == null) { // drag´n´drop - Github #11879
                     dataFileInput = $(PrimeFaces.escapeClientId(data.paramName + '_input'));
                     const dataTransfer = new DataTransfer();
                     data.files.forEach((item) => {
                         dataTransfer.items.add(item);
                     });
-                    dataFileInput[0].files = dataTransfer.files;
+                    if (dataFileInput[0] instanceof HTMLInputElement) {
+                        dataFileInput[0].files = dataTransfer.files;
+                    }
                 }
                 // CSV metadata
-                dataFileInput.data(PrimeFaces.CLIENT_ID_DATA, $this.id);
+                dataFileInput.data(PrimeFaces.CLIENT_ID_DATA, this.id);
 
                 var fileLimit = dataFileInput ? dataFileInput.data('p-filelimit') : null;
-                if (fileLimit && ($this.uploadedFileCount + $this.files.length + 1) > fileLimit) {
-                    $this.clearMessages();
+                if (fileLimit && (this.uploadedFileCount + this.files.length + 1) > fileLimit) {
+                    this.clearMessages();
 
                     // try to render the msg first with our CSV framework
                     var vc = PrimeFaces.validation.ValidationContext;
                     vc.clear();
-                    vc.addMessage($this.id, PrimeFaces.validation.Utils.getMessage('primefaces.FileValidator.FILE_LIMIT', [ fileLimit ]));
+                    vc.addMessage(this.getId(), PrimeFaces.validation.Utils.getMessage('primefaces.FileValidator.FILE_LIMIT', [ fileLimit ]));
                     PrimeFaces.validation.Utils.renderMessages(vc.messages, update);
 
                     // if the messages hasn't been rendered, use our internal messages display
                     for (let clientId in vc.messages) {
-                        for (let msg of vc.messages[clientId]) {
+                        for (let msg of vc.messages[clientId] ?? []) {
                             if (!msg.rendered) {
-                                $this.showMessage(msg);
+                                this.showMessage(msg);
                             }
                         }
                     }
@@ -236,27 +411,27 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
 
                 var file = data.files ? data.files[0] : null;
                 if (file) {
-                    $this.clearMessages();
+                    this.clearMessages();
 
-                    // we need to pass the real invisible input, which contains the filelist
-                    var validationResult = PrimeFaces.validation.validate($this.jq, dataFileInput, update, true, true, true, true, false);
+                    // we need to pass the real invisible input, which contains the file list
+                    var validationResult = PrimeFaces.validation.validate(this.jq, dataFileInput, update, true, true, true, true, false);
                     if (!validationResult.valid) {
 
                         // if the messages hasn't been rendered, use our internal messages display
                         for (let clientId in validationResult.messages) {
-                            for (let msg of validationResult.messages[clientId]) {
+                            for (let msg of validationResult.messages[clientId] ?? []) {
                                 if (!msg.rendered) {
-                                    $this.showMessage(msg);
+                                    this.showMessage(msg);
                                 }
                             }
                         }
 
-                        $this.postSelectFile(data);
+                        this.postSelectFile(data);
 
-                        if ($this.cfg.onvalidationfailure) {
+                        if (this.cfg.onvalidationfailure) {
                             for (let clientId in validationResult.messages) {
-                                for (let msg of validationResult.messages[clientId]) {
-                                    $this.cfg.onvalidationfailure({
+                                for (let msg of validationResult.messages[clientId] ?? []) {
+                                    this.cfg.onvalidationfailure({
                                         summary: msg.summary,
                                         filename: file.name,
                                         filesize: file.size
@@ -265,20 +440,20 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
                             }
                         }
                     }
-                    else if ($this.cfg.onAdd) {
-                        $this.cfg.onAdd.call($this, file, function(processedFile) {
+                    else if (this.cfg.onAdd) {
+                        this.cfg.onAdd.call(this, file, (processedFile) => {
                             file = processedFile;
                             data.files[0] = processedFile;
-                            $this.addFileToRow(file, data);
+                            this.addFileToRow(file, data);
                         });
                     }
                     else {
-                        $this.addFileToRow(file, data);
+                        this.addFileToRow(file, data);
                     }
 
-                    if ($this.cfg.resumeContextPath && $this.cfg.maxChunkSize > 0) {
-                        $.getJSON($this.cfg.resumeContextPath, {'X-File-Id': $this.createXFileId(file)}, function (result) {
-                            var uploadedBytes = result.uploadedBytes;
+                    if (this.cfg.resumeContextPath && (this.cfg.maxChunkSize ?? 0) > 0) {
+                        $.getJSON(this.cfg.resumeContextPath, {'X-File-Id': this.createXFileId(file)}, function (result) {
+                            const uploadedBytes = result.uploadedBytes;
                             data.uploadedBytes = uploadedBytes;
                         });
                     }
@@ -300,12 +475,14 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
             },
             fail: function(e, data) {
                 if (data.errorThrown === 'abort') {
-                    if ($this.cfg.resumeContextPath && $this.cfg.maxChunkSize > 0) {
-                        $.ajax({
-                            url: $this.cfg.resumeContextPath + '?' + $.param({'X-File-Id' : $this.createXFileId(data.files[0])}),
-                            dataType: 'json',
-                            type: 'DELETE'
-                        });
+                    if ($this.cfg.resumeContextPath && ($this.cfg.maxChunkSize ?? 0) > 0) {
+                        if (data.files[0]) {
+                            $.ajax({
+                                url: $this.cfg.resumeContextPath + '?' + $.param({'X-File-Id' : $this.createXFileId(data.files[0])}),
+                                dataType: 'json',
+                                type: 'DELETE'
+                            });
+                        }
                     }
 
                     if ($this.cfg.oncancel) {
@@ -313,31 +490,33 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
                     }
                     return;
                 }
-                if ($this.cfg.resumeContextPath && $this.cfg.maxChunkSize > 0) {
+                if ($this.cfg.resumeContextPath && ($this.cfg.maxChunkSize ?? 0) > 0) {
                     if (data.context === undefined) {
                         data.context = $(this);
                     }
 
                     // jQuery Widget Factory uses "namespace-widgetname" since version 1.10.0:
-                    var fu = $(this).data('blueimp-fileupload') || $(this).data('fileupload');
-                    var retries = data.context.data('retries') || 0;
+                    const fu = $(this).data('blueimp-fileupload') || $(this).data('fileupload');
+                    let retries = data.context.data('retries') || 0;
 
-                    var retry = function () {
-                        $.getJSON($this.cfg.resumeContextPath, {'X-File-Id': $this.createXFileId(data.files[0])})
-                            .done(function (result) {
-                                var uploadedBytes = result.uploadedBytes;
-                                data.uploadedBytes = uploadedBytes;
-                                // clear the previous data:
-                                data.data = null;
-                                data.submit();
-                            })
-                            .fail(function () {
-                                fu._trigger('fail', e, data);
-                            });
+                    const retry = function () {
+                        if (data.files[0]) {
+                            $.getJSON($this.cfg.resumeContextPath ?? "", {'X-File-Id': $this.createXFileId(data.files[0])})
+                                .done(function (result) {
+                                    const uploadedBytes = result.uploadedBytes;
+                                    data.uploadedBytes = uploadedBytes;
+                                    // clear the previous data:
+                                    data.data = undefined;
+                                    data.submit();
+                                })
+                                .fail(function () {
+                                    fu._trigger('fail', e, data);
+                                });
+                        }
                     };
 
                     if (data.errorThrown !== 'abort' &&
-                        data.uploadedBytes < data.files[0].size &&
+                        data.uploadedBytes < (data.files[0]?.size ?? 0) &&
                         retries < fu.options.maxRetries) {
                         retries += 1;
                         data.context.data('retries', retries);
@@ -348,12 +527,12 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
                 }
 
                 if ($this.cfg.onerror) {
-                    $this.cfg.onerror.call($this, data.jqXHR, data.textStatus, data.jqXHR.pfArgs);
+                    $this.cfg.onerror.call($this, data.jqXHR, data.textStatus, data.jqXHR.pfArgs ?? {});
                 }
             },
             progress: function(e, data) {
                 if(window.FormData) {
-                    var progress = parseInt(data.loaded / data.total * 100, 10);
+                    var progress = PrimeFaces.utils.roundTowardsZero(data.loaded / data.total * 100);
 
                     for (const file of data.files) {
                         if (file.row) {
@@ -367,7 +546,7 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
                     }
                 }
             },
-            done: function(e, data) {
+            done: function(_, data) {
                 $this.uploadedFileCount += data.files.length;
                 $this.removeFiles(data.files);
 
@@ -376,16 +555,18 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
                 if (dataFileInput.length > 0) {
                     let dataTransferCleaned = new DataTransfer();
 
-                    for (const file of dataFileInput[0].files) {
-                        if (!data.files.includes(file)) {
-                            dataTransferCleaned.items.add(file);
+                    if (dataFileInput[0] instanceof HTMLInputElement) {
+                        for (const file of dataFileInput[0].files ?? []) {
+                            if (!data.files.includes(file)) {
+                                dataTransferCleaned.items.add(file);
+                            }
                         }
+    
+                        dataFileInput[0].files = dataTransferCleaned.files;
                     }
-
-                    dataFileInput[0].files = dataTransferCleaned.files;
                 }
 
-                PrimeFaces.ajax.Response.handle(data.result, data.textStatus, data.jqXHR, null);
+                PrimeFaces.ajax.Response.handle(data.result as XMLDocument, data.textStatus, data.jqXHR, null);
                 
                 if($this.cfg.global) {
                     $(document).trigger('pfAjaxSuccess', [data.jqXHR, this]);
@@ -396,14 +577,16 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
                     $(document).trigger('pfAjaxComplete', [data.jqXHR, this, data.jqXHR.pfArgs]);
                 }
                 if($this.cfg.oncomplete) {
-                    $this.cfg.oncomplete.call($this, data.jqXHR.pfArgs, data);
+                    $this.cfg.oncomplete.call($this, data.jqXHR.pfArgs ?? {}, data);
                 }
             },
 
-            chunkbeforesend: function (e, data) {
-                var params = $this.createPostData();
-                var file = data.files[0];
-                params.push({name : 'X-File-Id', value: $this.createXFileId(file)});
+            chunkbeforesend: (_, data) => {
+                const params = this.createPostData();
+                const file = data.files[0];
+                if (file) {
+                    params.push({name : 'X-File-Id', value: this.createXFileId(file)});
+                }
                 data.formData = params;
             }
         };
@@ -411,11 +594,7 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
         this.jq.fileupload(this.ucfg);
     }
     
-    /**
-     * @override
-     * @inheritdoc
-     */
-    destroy() {
+    override destroy(): void {
         try {
             this.jq.fileupload("destroy");
         } catch (err) {
@@ -427,18 +606,16 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
 
     /**
      * Adds a file selected by the user to this upload widget.
-     * @private
-     * @param {File} file A file to add.
-     * @param {JQueryFileUpload.AddCallbackData} data The data from the selected file.
+     * @param file A file to add.
+     * @param data The data from the selected file.
      */
-    addFileToRow(file, data) {
+    private addFileToRow(file: File, data: JQueryFileUpload.AddCallbackData): void {
         if (this.emptyFacet.length > 0) {
             this.emptyFacet.hide();
             this.filesFacet.parent().show();
         }
 
-        var $this = this,
-            row = $('<div class="ui-fileupload-row"></div>')
+        const row = $('<div class="ui-fileupload-row"></div>')
                 .append('<div class="ui-fileupload-preview"></td>')
                 .append('<div class="ui-fileupload-filename">' + PrimeFaces.escapeHTML(file.name) + '</div>')
                 .append('<div>' + PrimeFaces.utils.formatBytes(file.size) + '</div>')
@@ -452,28 +629,29 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
 
         //preview
         if(window.File && window.FileReader && FileUpload.IMAGE_TYPES.test(file.name)) {
-            var imageCanvas = $('<canvas></canvas>')
-                                    .appendTo(row.children('div.ui-fileupload-preview')),
-            context = imageCanvas.get(0).getContext('2d'),
-            winURL = window.URL||window.webkitURL,
-            url = winURL.createObjectURL(file),
-            img = new Image();
+            const imageCanvas = $(document.createElement("canvas"))
+                                    .appendTo(row.children('div.ui-fileupload-preview'));
+            const context = imageCanvas.get(0)?.getContext('2d');
+            const winURL = window.URL||window.webkitURL;
+            const url = winURL.createObjectURL(file);
+            const img = new Image();
 
-            img.onload = function() {
-                var imgWidth = null, imgHeight = null, scale = 1;
+            img.onload = () => {
+                let imgWidth: number;
+                let scale = 1;
 
-                if($this.cfg.previewWidth > this.width) {
-                    imgWidth = this.width;
+                if((this.cfg.previewWidth ?? 0) > img.width) {
+                    imgWidth = img.width;
                 }
                 else {
-                    imgWidth = $this.cfg.previewWidth;
-                    scale = $this.cfg.previewWidth / this.width;
+                    imgWidth = this.cfg.previewWidth ?? 0;
+                    scale = imgWidth / img.width;
                 }
 
-                imgHeight = parseInt(this.height * scale);
+                const imgHeight = PrimeFaces.utils.roundTowardsZero(img.height * scale);
 
                 imageCanvas.attr({width:imgWidth, height: imgHeight});
-                context.drawImage(img, 0, 0, imgWidth, imgHeight);
+                context?.drawImage(img, 0, 0, imgWidth, imgHeight);
             };
 
             img.src = url;
@@ -498,10 +676,9 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
 
     /**
      * Called after a file was added to this upload widget. Takes care of the UI buttons.
-     * @private
-     * @param {JQueryFileUpload.AddCallbackData} data Data of the selected file.
+     * @param data Data of the selected file.
      */
-    postSelectFile(data) {
+    private postSelectFile(data: JQueryFileUpload.AddCallbackData): void {
         if(this.files.length > 0) {
             this.enableButton(this.uploadButton);
             this.enableButton(this.cancelButton);
@@ -515,9 +692,8 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
 
     /**
      * Sets up all events listeners for this file upload widget.
-     * @private
      */
-    bindEvents() {
+    private bindEvents(): void {
         var $this = this;
 
         PrimeFaces.skinButton(this.buttonBar.children('button'));
@@ -550,8 +726,8 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
                 el.addClass('ui-state-active').removeClass('ui-state-hover');
             }
         })
-        .on('click.fileupload', function(e) {
-            $this.show();
+        .on('click.fileupload', (e) => {
+            this.show();
         })
         .on('keydown.fileupload', function(e) {
             if (PrimeFaces.utils.isActionKey(e)) {
@@ -572,33 +748,35 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
             }
         });
 
-        this.uploadButton.off('click.fileupload').on('click.fileupload', function(e) {
+        this.uploadButton.off('click.fileupload').on('click.fileupload', (e) => {
             e.preventDefault();
 
             // GitHub #6396 allow cancel of upload with callback
-            if ($this.cfg.onupload) {
-                if ($this.cfg.onupload.call($this) === false) {
+            if (this.cfg.onupload) {
+                if (this.cfg.onupload.call(this) === false) {
                     return false;
                 }
             }
 
-            $this.disableButton($this.uploadButton);
-            $this.disableButton($this.cancelButton);
+            this.disableButton(this.uploadButton);
+            this.disableButton(this.cancelButton);
 
-            $this.upload();
+            this.upload();
+
+            return undefined;
         });
 
-        this.cancelButton.off('click.fileupload').on('click.fileupload', function(e) {
-            $this.clear();
-            $this.disableButton($this.uploadButton);
-            $this.disableButton($this.cancelButton);
+        this.cancelButton.off('click.fileupload').on('click.fileupload', (e) => {
+            this.clear();
+            this.disableButton(this.uploadButton);
+            this.disableButton(this.cancelButton);
 
             e.preventDefault();
         });
 
-        this.clearMessageLink.off('click.fileupload').on('click.fileupload', function(e) {
-            $this.messageContainer.fadeOut(function() {
-                $this.messageList.children().remove();
+        this.clearMessageLink.off('click.fileupload').on('click.fileupload', (e) => {
+            this.messageContainer.fadeOut(() => {
+                this.messageList.children().remove();
             });
 
             e.preventDefault();
@@ -606,7 +784,7 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
 
         this.rowCancelActionSelector = this.jqId + " .ui-fileupload-files .ui-fileupload-cancel";
 
-        var namespace = '.fileupload' + this.id;
+        const namespace = '.fileupload' + this.id;
         $(document).off(namespace, this.rowCancelActionSelector)
                 .on('mouseover'+namespace, this.rowCancelActionSelector, null, function(e) {
                     $(this).addClass('ui-state-hover');
@@ -627,9 +805,9 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
                     $(this).removeClass('ui-state-focus');
                 })
                 .on('click'+namespace, this.rowCancelActionSelector, null, function(e) {
-                    var row = $(this).closest('.ui-fileupload-row');
-                    var removedFile = $.grep($this.files, function (value) {
-                         return (value.row.data('fileId') === row.data('fileId'));
+                    const row = $(this).closest('.ui-fileupload-row');
+                    const removedFile = $.grep($this.files, function (value) {
+                         return (value.row?.data('fileId') === row.data('fileId'));
                     });
 
                     if (removedFile[0]) {
@@ -665,60 +843,58 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
                     .on('dragenter.fucdropzone', function(e){
                         e.preventDefault();
                         $this.dragoverCount++;
-                        $this.dropZone.addClass('ui-state-drag');
+                        $this.dropZone?.addClass('ui-state-drag');
                     })
                     .on('dragleave.fucdropzone', function(e){
                         $this.dragoverCount--;
                         if ($this.dragoverCount === 0) {
-                            $this.dropZone.removeClass('ui-state-drag');
+                            $this.dropZone?.removeClass('ui-state-drag');
                         }
                     })
                     .on('drop.fucdropzone dragdrop.fucdropzone', function(e){
                         $this.dragoverCount = 0;
-                        $this.dropZone.removeClass('ui-state-drag');
+                        $this.dropZone?.removeClass('ui-state-drag');
                     });
         }
     }
 
     /**
      * Uploads the selected files to the server.
-     * @private
      */
-    upload() {
+    private upload(): void {
         if(this.cfg.global) {
             $(document).trigger('pfAjaxStart');
         }
 
         for (const file of this.files) {
-            file.ajaxRequest = file.row.data('filedata');
-            file.ajaxRequest.submit();
+            file.ajaxRequest = file.row?.data('filedata');
+            file.ajaxRequest?.submit();
         }
     }
 
     /**
      * Creates the HTML post data for uploading the selected files.
-     * @private
-     * @return {PrimeFaces.ajax.RequestParameter} Parameters to post when upload the files.
+     * @return Parameters to post when upload the files.
      */
-    createPostData() {
-        var process = this.cfg.process
+    private createPostData(): JQuery.NameValuePair[] {
+        const process = this.cfg.process
             ? this.id + ' ' + PrimeFaces.expressions.SearchExpressionFacade.resolveComponents(this.jq, this.cfg.process).join(' ')
             : this.id;
-        var params = this.form.serializeArray();
+        const params = this.form.serializeArray();
 
-        var parameterPrefix = PrimeFaces.ajax.Request.extractParameterNamespace(this.form);
+        const parameterPrefix = PrimeFaces.ajax.Request.extractParameterNamespace(this.form);
 
-        PrimeFaces.ajax.Request.addParam(params, PrimeFaces.PARTIAL_REQUEST_PARAM, true, parameterPrefix);
+        PrimeFaces.ajax.Request.addParam(params, PrimeFaces.PARTIAL_REQUEST_PARAM, "true", parameterPrefix);
         PrimeFaces.ajax.Request.addParam(params, PrimeFaces.PARTIAL_PROCESS_PARAM, process, parameterPrefix);
         PrimeFaces.ajax.Request.addParam(params, PrimeFaces.PARTIAL_SOURCE_PARAM, this.id, parameterPrefix);
-        PrimeFaces.ajax.Request.addParam(params, this.id + "_totalFilesCount", this.files.length, parameterPrefix);
+        PrimeFaces.ajax.Request.addParam(params, this.id + "_totalFilesCount", String(this.files.length), parameterPrefix);
 
         if (this.cfg.update) {
             var update = PrimeFaces.expressions.SearchExpressionFacade.resolveComponents(this.jq, this.cfg.update).join(' ');
             PrimeFaces.ajax.Request.addParam(params, PrimeFaces.PARTIAL_UPDATE_PARAM, update, parameterPrefix);
         }
         if (this.cfg.ignoreAutoUpdate) {
-            PrimeFaces.ajax.Request.addParam(params, PrimeFaces.IGNORE_AUTO_UPDATE_PARAM, true, parameterPrefix);
+            PrimeFaces.ajax.Request.addParam(params, PrimeFaces.IGNORE_AUTO_UPDATE_PARAM, "true", parameterPrefix);
         }
 
         return params;
@@ -728,20 +904,18 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
     /**
      * Creates a unique identifier (file key) for a given file. That identifier consists e.g. of the name of the
      * uploaded file, its last modified-attribute etc. This is used by the server to identify uploaded files.
-     * @private
-     * @param {File} file A file for which to create an identifier.
-     * @return {string} An identifier for the given file.
+     * @param file A file for which to create an identifier.
+     * @return An identifier for the given file.
      */
-    createXFileId(file) {
+    private createXFileId(file: File): string {
         return [file.name, file.lastModified, file.type, file.size].join();
     }
 
     /**
      * Removes the given uploaded file from this upload widget.
-     * @private
-     * @param {PrimeFaces.widget.FileUpload.UploadFile[]} files Files to remove from this widget.
+     * @param files Files to remove from this widget.
      */
-    removeFiles(files) {
+    private removeFiles(files: File[]) {
         for (const file of files) {
             this.removeFile(file);
         }
@@ -749,26 +923,24 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
 
     /**
      * Removes the given uploaded file from this upload widget.
-     * @private
-     * @param {PrimeFaces.widget.FileUpload.UploadFile} file File to remove from this widget.
+     * @param file File to remove from this widget.
      */
-    removeFile(file) {
-        var $this = this;
-
-        this.files = $.grep(this.files, function(value) {
-            return (value.row.data('fileId') === file.row.data('fileId'));
+    private removeFile(file: File): void {
+        this.files = $.grep(this.files, (value) => {
+            return value.row?.data('fileId') === file.row?.data('fileId');
         }, true);
 
-        $this.removeFileRow(file.row);
-        file.row = null;
+        if (file.row) {
+            this.removeFileRow(file.row);
+            file.row = null;
+        }
     }
 
     /**
      * Removes a row with an uploaded file form this upload widget.
-     * @private
-     * @param {JQuery} row Row of an uploaded file to remove.
+     * @param row Row of an uploaded file to remove.
      */
-    removeFileRow(row) {
+    private removeFileRow(row: JQuery): void {
         if(row) {
             this.disableButton(row.find('> div:last-child').children('.ui-fileupload-cancel'));
 
@@ -781,10 +953,12 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
     /**
      * Clears this file upload field, i.e. removes all uploaded files.
      */
-    clear() {
+    clear(): void {
         for (const file of this.files) {
-            this.removeFileRow(file.row);
-            file.row = null;
+            if (file.row) {
+                this.removeFileRow(file.row);
+                file.row = null;
+            }
         }
 
         this.clearMessages();
@@ -794,9 +968,8 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
 
     /**
      * Displays the current error messages on this widget.
-     * @private
      */
-    renderMessages() {
+    private renderMessages(): void {
         var markup = '<div class="ui-messages ui-widget ui-helper-hidden ui-fileupload-messages"><div class="ui-messages-error">' +
                 '<a class="ui-messages-close" href="#"><span class="ui-icon ui-icon-close"></span></a>' +
                 '<span class="ui-messages-error-icon"></span>' +
@@ -811,17 +984,16 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
     /**
      * Removes all error messages that are shown for this widget.
      */
-    clearMessages() {
+    clearMessages(): void {
         this.messageContainer.hide();
         this.messageList.children().remove();
     }
 
     /**
      * Shows the given error message
-     * @param {PrimeFaces.FacesMessage} msg Error message to show.
-     * @private
+     * @param msg Error message to show.
      */
-    showMessage(msg) {
+    private showMessage(msg: PrimeType.FacesMessage) {
         this.messageList.append('<li><span class="ui-messages-error-summary">'
             + PrimeFaces.escapeHTML(msg.summary)
             + '</span><span class="ui-messages-error-detail">'
@@ -833,26 +1005,24 @@ PrimeFaces.widget.FileUpload = class FileUpload extends PrimeFaces.widget.BaseWi
 
     /**
      * Disabled the given file upload button.
-     * @param {JQuery} btn Button to disabled.
-     * @private
+     * @param btn Button to disabled.
      */
-    disableButton(btn) {
-        btn.prop('disabled', true).attr('aria-disabled', true).addClass('ui-state-disabled').removeClass('ui-state-hover ui-state-active ui-state-focus');
+    disableButton(btn: JQuery): void {
+        btn.prop('disabled', true).attr('aria-disabled', "true").addClass('ui-state-disabled').removeClass('ui-state-hover ui-state-active ui-state-focus');
     }
 
     /**
      * Enables the given file upload button.
      * @param {JQuery} btn Button to enable.
-     * @private
      */
-    enableButton(btn) {
-        btn.prop('disabled', false).attr('aria-disabled', false).removeClass('ui-state-disabled');
+    enableButton(btn: JQuery): void {
+        btn.prop('disabled', false).attr('aria-disabled', "false").removeClass('ui-state-disabled');
     }
 
     /**
      * Brings up the native file selection dialog.
      */
-    show() {
+    show(): void {
         this.chooseButton.children('input').trigger('click');
     }
 }
