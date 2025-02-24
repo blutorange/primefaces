@@ -1011,6 +1011,12 @@ export class Core {
      * the AJAX call, if the `disableOnAjax` property of its configuration is
      * set to `true`.
      *
+     * @typeParam Cfg Type of the widget configuration. Must be a toggleable
+     * widget configuration with a
+     * {@link PrimeType.widget.ToggleableWidgetCfg.disableOnAjax disableOnAjax} property.
+     * @typeParam Widget Type of the widget. Must be a toggleable widget with a
+     * {@link PrimeType.widget.AjaxOptionallyToggleableWidget.disable | disable} and
+     * {@link PrimeType.widget.AjaxOptionallyToggleableWidget.enable | enable} method.
      * @param widget The widget.
      * @param button The button DOM element.
      * @param isXhrSource Callback that checks if the widget is the source of the current AJAX request.
@@ -1071,10 +1077,19 @@ export class Core {
 
     /**
      * Ends the AJAX disabled state.
+     * @typeParam Cfg Type of the widget configuration. Must be a toggleable
+     * widget configuration with a
+     * {@link PrimeType.widget.ToggleableWidgetCfg.disableOnAjax disableOnAjax} property.
+     * @typeParam Widget Type of the widget. Must be a toggleable widget with a
+     * {@link PrimeType.widget.AjaxOptionallyToggleableWidget.disable | disable} and
+     * {@link PrimeType.widget.AjaxOptionallyToggleableWidget.enable | enable} method.
      * @param widget the widget.
      * @param button The button DOM element.
      */
-    buttonEndAjaxDisabled(widget: BaseWidget, button: JQuery): void {
+    buttonEndAjaxDisabled<
+        Cfg extends PrimeType.widget.ToggleableWidgetCfg,
+        Widget extends PrimeType.widget.AjaxOptionallyToggleableWidget<Cfg>
+    >(widget: Widget, button: JQuery): void {
         button.removeClass('ui-state-loading');
 
         if (typeof widget.enable === 'function'

@@ -1085,6 +1085,11 @@ declare global {
              * anyway.)
              */
             disableOnAjax: boolean;
+
+            /**
+             * False to re-enable after disabled by an AJAX event.
+             */
+            disabledAttr: boolean;
         }
 
         export interface OptionallyToggleableWidget<Cfg extends ToggleableWidgetCfg> extends BaseWidget<Cfg> {
