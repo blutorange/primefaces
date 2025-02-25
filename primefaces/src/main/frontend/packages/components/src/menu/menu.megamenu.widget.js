@@ -3,26 +3,7 @@
  *
  * MegaMenu is a horizontal navigation component that displays sub menus together.
  *
- * @prop {boolean} active Whether the current menu is active and displayed.
- * @prop {JQuery | null} [activeitem] The currently active (highlighted) menu item.
- * @prop {JQuery | null} [lastFocusedItem] The last root menu that had focus, if any.
- * @prop {JQuery} rootLinks The DOM elements for the root level menu links with the class `.ui-menuitem-link`.
- * @prop {JQuery} rootList The DOM elements for the root level menu items with the class `.ui-menu-list`.
- * @prop {JQuery} subLinks The DOM elements for all menu links not a the root level, with the class `.ui-menuitem-link`.
- * @prop {number} [timeoutId] Timeout ID, used for the animation when the menu is shown.
- * @prop {boolean} isRTL Whether the writing direction is set to right-to-left.
- *
- * @interface {PrimeFaces.widget.MegaMenuCfg} cfg The configuration for the {@link  MegaMenu| MegaMenu widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.MenuCfg} cfg
- *
- * @prop {number} cfg.activeIndex Index of the menu item initially active.
- * @prop {boolean} cfg.autoDisplay Defines whether sub menus will be displayed on mouseover or not. When set to false,
- * click event is required to display.
- * @prop {number} cfg.delay Delay in milliseconds before displaying the sub menu. Default is 0 meaning immediate.
- * @prop {boolean} cfg.vertical `true` if the mega menu is displayed with a vertical layout, `false` if displayed with a
- * horizontal layout.
+ * @typeParam Cfg Type of the configuration object.
  */
 PrimeFaces.widget.MegaMenu = class MegaMenu extends PrimeFaces.widget.Menu {
 

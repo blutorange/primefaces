@@ -1,29 +1,29 @@
+import { TieredMenu, type TieredMenuCfg } from "./menu.tieredmenu.widget.js";
+
+/**
+ * The configuration for the {@link  Menubar} Menubar.
+ * 
+ * You can access this configuration via {@link Menubar.cfg cfg}. Please note that this
+ * configuration is usually meant to be read-only and should not be modified.
+ */
+export interface MenubarCfg extends TieredMenuCfg {
+    /**
+     * Delay in milliseconds before displaying the sub menu. Default is 0 meaning immediate.
+     */
+    delay: number;
+}
+
 /**
  * __PrimeFaces Menubar Widget__
  *
  * Menubar is a horizontal navigation component.
- *
- * @interface {PrimeFaces.widget.MenubarCfg} cfg The configuration for the {@link  Menubar| Menubar widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.TieredMenuCfg} cfg
- *
- * @prop {JQuery | null} [activeitem] The currently active (highlighted) menu item.
- * @prop {number} [timeoutId] Timeout ID, used for the animation when the menu is shown.
  * 
- * @prop {number} cfg.delay Delay in milliseconds before displaying the sub menu. Default is 0 meaning immediate.
+ * @typeParam Cfg Type of the configuration object.
  */
-PrimeFaces.widget.Menubar = class Menubar extends PrimeFaces.widget.TieredMenu {
+export class Menubar<Cfg extends MenubarCfg> extends TieredMenu<Cfg> {
 
-    /**
-     * @override
-     * @inheritdoc
-     * @param {JQuery} menuitem
-     * @param {JQuery} submenu
-     * @param {boolean} [focus=true] - If false, does not focus the submenu.
-     */
-    showSubmenu(menuitem, submenu, focus) {
-        var pos = null;
+    override showSubmenu(menuitem: JQuery, submenu: JQuery, focus?: boolean): void {
+        let pos: JQueryUI.JQueryPositionOptions | null = null;
 
         if (menuitem.parent().hasClass('ui-menu-child')) {
             pos = {

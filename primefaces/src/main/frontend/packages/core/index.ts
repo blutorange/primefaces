@@ -79,9 +79,10 @@ declare global {
          */
         export type OverlayResolveIgnoredElementCallback = 
             /**
-             * The event that occurred, with the element that was clicked.
+             * @param event The event that occurred, with the element that was clicked.
+             * @returns An optional set of elements to ignore.
              */
-            (event: JQuery.TriggeredEvent) => JQuery;
+            (event: JQuery.TriggeredEvent) => JQuery | null | undefined;
 
         /**
          * Callback invoked when an element or the window was resized.

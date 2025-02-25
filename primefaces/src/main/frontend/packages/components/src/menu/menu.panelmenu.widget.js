@@ -3,25 +3,7 @@
  * 
  * PanelMenu is a hybrid component of accordionPanel and tree components.
  * 
- * @prop {string[]} expandedNodes A list of IDs of the menu items that are currently expanded.
- * @prop {JQuery | null} focusedItem The DOM elements for the menu item that is currently focused.
- * @prop {JQuery} headers The DOM elements for the accordion panel headers that can be expanded and collapsed.
- * @prop {JQuery} menuitemLinks The DOM elements for the menu items inside each accordion panel that can be clicked.
- * @prop {JQuery} menuContent The DOM elements for the content container of each accordion panel.
- * @prop {JQuery} menuText The DOM elements for the text of each menu entry in the accordion panels.
- * @prop {string} stateKey Key used to store the UI state (expanded items) in an HTML5 Local Store. 
- * @prop {JQuery} treeLinks  The DOM elements for the clickable links with a sub menu that is shown upon clicking the
- * link. 
- * 
- * @interface {PrimeFaces.widget.PanelMenuCfg} cfg The configuration for the {@link  PanelMenu| PanelMenu widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
- * 
- * @prop {boolean} cfg.multiple Whether multiple accordion menu items are allowed to be expanded at the same time.
- * @prop {boolean} cfg.stateful Whether the UI state (expanded menu items) should be persisted in an HTML5 Local Store.
- * @prop {boolean} cfg.statefulGlobal When enabled, menu state is saved globally across pages. If disabled then state 
- * is stored per view/page.
+ * @typeParam Cfg Type of the configuration object.
  */
 PrimeFaces.widget.PanelMenu = class PanelMenu extends PrimeFaces.widget.BaseWidget {
 

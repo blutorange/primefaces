@@ -30,11 +30,7 @@ export interface MenuButtonCfg extends TieredMenuCfg {
  *
  * MenuButton displays different commands in a popup menu.
  *
- * @prop {JQuery} trigger The DOM element for the menu button.
- * @prop {JQuery} menu The DOM element for the menu overlay panel.
- * @prop {PrimeFaces.CssTransitionHandler | null} [transition] Handler for CSS transitions used by this widget.
- * @prop {number} [timeoutId] Timeout ID used for the animation when the menu is shown.
- * @forcedProp {number} [ajaxCount] Number of concurrent active Ajax requests.
+ * @typeParam Cfg Type of the configuration object.
  */
 export class MenuButton<Cfg extends MenuButtonCfg> extends TieredMenu<Cfg> {
     /**

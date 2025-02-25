@@ -8,6 +8,7 @@
 			"../types/dist",
 			"../jquery/jquery/dist",
 			"../jquery/jquery-plugins/dist",
+			"../touch/touchswipe/dist",
 			"../core/dist"
 		],
 	},
@@ -16,6 +17,7 @@
 		{ "path": "../types" },
 		{ "path": "../jquery/jquery" },
 		{ "path": "../jquery/jquery-plugins" },
+		{ "path": "../touch/touchswipe" },
 		{ "path": "../core" }
 	]
 }

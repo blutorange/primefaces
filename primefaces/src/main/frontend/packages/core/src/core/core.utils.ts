@@ -330,7 +330,7 @@ export class Utils {
 
             // do nothing when the element should be ignored
             if (resolveIgnoredElementsCallback) {
-                var elementsToIgnore: JQuery<any> = resolveIgnoredElementsCallback(e);
+                const elementsToIgnore: JQuery<any> | null | undefined = resolveIgnoredElementsCallback(e);
                 if (elementsToIgnore) {
                     if (elementsToIgnore.is($eventTarget) || 
                         // @ts-expect-error @types/jquery is wrong, "has" accepts a JQuery instance

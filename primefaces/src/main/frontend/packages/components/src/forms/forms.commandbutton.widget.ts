@@ -18,6 +18,8 @@ export interface CommandButtonCfg extends PrimeType.widget.BaseWidgetCfg {
  * __PrimeFaces CommandButton Widget__
  * 
  * CommandButton is an extended version of standard commandButton with AJAX and theming.
+ * 
+ * @typeParam Cfg Type of the configuration object.
  */
 export class CommandButton<Cfg extends CommandButtonCfg> extends PrimeFaces.widget.BaseWidget {
     /**

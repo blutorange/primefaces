@@ -30,6 +30,8 @@ export interface TieredMenuCfg extends MenuCfg {
  * __PrimeFaces TieredMenu Widget__
  * 
  * TieredMenu is used to display nested submenus with overlays.
+ * 
+ * @typeParam Cfg Type of the configuration object.
  */
 export class TieredMenu<Cfg extends TieredMenuCfg> extends Menu<Cfg> {
     /**
@@ -424,7 +426,7 @@ export class TieredMenu<Cfg extends TieredMenuCfg> extends Menu<Cfg> {
      * Activates a menu item so that it can be clicked and interacted with.
      * 
      * @param menuitem - The menu item to activate.
-     * @param focus=true] - If false, does not focus the menu item.
+     * @param focus - If false, does not focus the menu item.
      * @param showSubMenu - If false, does not show the submenu.
      */
     activate(menuitem: JQuery, focus: boolean = true, showSubMenu: boolean = true): void {

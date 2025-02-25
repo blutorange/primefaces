@@ -47,6 +47,8 @@ export interface SplitButtonCfg extends PrimeType.widget.BaseWidgetCfg {
  * __PrimeFaces SplitButton Widget__
  *
  * SplitButton displays a command by default and additional ones in an overlay.
+ * 
+ * @typeParam Cfg Type of the configuration object.
  */
 export class SplitButton<Cfg extends SplitButtonCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
     /**

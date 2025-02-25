@@ -1,31 +1,48 @@
+import { Menu, type MenuCfg } from "./menu.base.widget.js";
+
+/**
+ * The configuration for the {@link  PlainMenu} widget.
+ * 
+ * You can access this configuration via {@link PlainMenu.cfg | cfg}. Please note that this
+ * configuration is usually meant to be read-only and should not be modified.
+ */
+export interface PlainMenuCfg extends MenuCfg {
+    /**
+     * When enabled, menu state is saved globally across pages. If disabled then state
+     * is stored per view/page.
+     */
+    statefulGlobal: boolean;
+    /**
+     * `true` if grouped items can be toggled (expanded / collapsed), or `false` otherwise.
+     */
+    toggleable: boolean;
+}
 
 /**
  * __PrimeFaces PlainMenu Widget__
  * 
  * Menu is a navigation component with sub menus and menu items.
  * 
- * @prop {JQuery} menuitemLinks DOM elements with the links of each menu item.
- * @prop {string} stateKey Name of the HTML5 Local Store that is used to store the state of this plain menu (expanded / collapsed
- * menu items).
- * @prop {string[]} collapsedIds A list with the ID of each menu item (with children) that is collapsed.
- * 
- * @interface {PrimeFaces.widget.PlainMenuCfg} cfg The configuration for the {@link  PlainMenu| PlainMenu widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.MenuCfg} cfg
- * 
- * @prop {boolean} cfg.toggleable `true` if grouped items can be toggled (expanded / collapsed), or `false` otherwise.
- * @prop {boolean} cfg.statefulGlobal When enabled, menu state is saved globally across pages. If disabled then state 
- * is stored per view/page.
+ * @typeParam Cfg Type of the configuration object.
  */
-PrimeFaces.widget.PlainMenu = class PlainMenu extends PrimeFaces.widget.Menu {
+export class PlainMenu<Cfg extends PlainMenuCfg> extends Menu<Cfg> {
+    /**
+     * A list with the ID of each menu item (with children) that is collapsed.
+     */
+    collapsedIds: string[] = [];
 
     /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
+     * DOM elements with the links of each menu item.
      */
-    init(cfg) {
+    menuitemLinks: JQuery = $();
+
+    /**
+     * Name of the HTML5 Local Store that is used to store the state of this plain menu (expanded / collapsed
+     * menu items).
+     */
+    stateKey: string = "";
+
+    override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);
 
         this.menuitemLinks = this.jq.find('.ui-menuitem-link:not(.ui-state-disabled)');
@@ -38,9 +55,8 @@ PrimeFaces.widget.PlainMenu = class PlainMenu extends PrimeFaces.widget.Menu {
     /**
      * Binds the necessary events for the menu if it is toggleable. This includes setting up the state management
      * by initializing the storage key and restoring the state from storage.
-     * @private
      */
-    bindToggleable() {
+    private bindToggleable(): void {
         if (!this.cfg.toggleable) return;
 
         this.cfg.statefulGlobal = Boolean(this.cfg.statefulGlobal);
@@ -73,30 +89,27 @@ PrimeFaces.widget.PlainMenu = class PlainMenu extends PrimeFaces.widget.Menu {
     /**
      * Binds overlay-specific event handlers if the overlay configuration is enabled.
      * This includes hiding the menu on certain key presses or clicks, and managing focus.
-     * @private
      */
-    bindOverlay() {
-        var $this = this;
-
+    private bindOverlay(): void {
         if (this.cfg.overlay) {
             // Hide menu when any menu item link is clicked
-            this.menuitemLinks.on("click", function() {
-                $this.hide();
+            this.menuitemLinks.on("click", () => {
+                this.hide();
             });
 
             // Handle keyboard navigation for overlay
-            this.trigger.on('keydown.ui-menu', function(e) {
+            this.trigger.on('keydown.ui-menu', (e) => {
                 switch (e.key) {
                     case 'ArrowDown':
-                        if (!$this.jq.is(':visible')) {
-                            $this.show();
+                        if (!this.jq.is(':visible')) {
+                            this.show();
                         }
                         e.preventDefault();
                         break;
 
                     case 'Tab':
-                        if ($this.jq.is(':visible')) {
-                            $this.hide();
+                        if (this.jq.is(':visible')) {
+                            this.hide();
                         }
                         break;
                 }
@@ -104,14 +117,14 @@ PrimeFaces.widget.PlainMenu = class PlainMenu extends PrimeFaces.widget.Menu {
         } else {
             // Handle focus events for the menu
             this.jq.off('focusout.menu focusin.menu').on({
-                "focusout.menu": function(e) {
-                    if (!e.relatedTarget || !$this.jq.has(e.relatedTarget).length) {
-                        $this.resetFocusState();
+                "focusout.menu": (e: JQuery.FocusEventBase) => {
+                    if (!(e.relatedTarget instanceof Element) || !this.jq.has(e.relatedTarget).length) {
+                        this.resetFocusState();
                     }
                 },
-                "focusin.menu": function(e) {
-                    if (e.relatedTarget && !$this.jq.has(e.relatedTarget).length) {
-                        $this.focus($this.menuitemLinks.filter(':not([disabled])').first(), e);
+                "focusin.menu": (e: JQuery.FocusEventBase) => {
+                    if (e.relatedTarget instanceof Element && !this.jq.has(e.relatedTarget).length) {
+                        this.focus(this.menuitemLinks.filter(':not([disabled])').first(), e);
                     }
                 }
             });
@@ -122,9 +135,8 @@ PrimeFaces.widget.PlainMenu = class PlainMenu extends PrimeFaces.widget.Menu {
      * Binds event handlers to menu item links for interaction via mouse and keyboard.
      * This includes setting the initial focus, handling mouse enter and leave, click events,
      * and keyboard navigation using arrow keys, space, and enter.
-     * @private
      */
-    bindEvents() {
+    private bindEvents(): void {
         var $this = this;
 
         // Set the first focusable menu item
@@ -140,7 +152,7 @@ PrimeFaces.widget.PlainMenu = class PlainMenu extends PrimeFaces.widget.Menu {
         // Bind keyboard navigation events
         this.menuitemLinks.on('keydown.menu', function(e) {
             var currentLink = $this.menuitemLinks.filter('.ui-state-active:first');
-            switch (e.code) {
+            switch ("code" in e ? e.code : e.key) {
                 case 'Home':
                 case 'PageUp':
                     $this.navigateMenu(e, currentLink, 'prev', 'last');
@@ -178,9 +190,8 @@ PrimeFaces.widget.PlainMenu = class PlainMenu extends PrimeFaces.widget.Menu {
     /**
      * Resets the focus state of the menu.
      * This method sets the first focusable menu item and removes hover and active states for non-overlay menus.
-     * @private
      */
-    resetFocusState() {
+    private resetFocusState(): void {
         // Set the first focusable menu item
         this.resetFocus(true);
 
@@ -192,14 +203,13 @@ PrimeFaces.widget.PlainMenu = class PlainMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Navigates the menu items in the specified direction ('prev' or 'next').
-     * @param {JQuery.TriggeredEvent} event - The event that triggered the focus.
-     * @param {JQuery} currentLink The currently focused menu item link.
-     * @param {string} direction The direction to navigate ('prev' or 'next').
-     * @param {string} firstOrLast The first or last item to navigate to ('first' or 'last').
-     * @private
+     * @param event - The event that triggered the focus.
+     * @param currentLink The currently focused menu item link.
+     * @param direction The direction to navigate ('prev' or 'next').
+     * @param firstOrLast The first or last item to navigate to ('first' or 'last').
      */
-    navigateMenu(event, currentLink, direction, firstOrLast) {
-        var targetItem = currentLink.parent()[direction + 'All']('.ui-menuitem:not(:has(.ui-state-disabled)):' + firstOrLast);
+    private navigateMenu(event: JQuery.TriggeredEvent, currentLink: JQuery, direction: PrimeType.widget.PlainMenu.NavigationDirection, firstOrLast: string): void {
+        const targetItem = currentLink.parent()[`${direction}All`]('.ui-menuitem:not(:has(.ui-state-disabled)):' + firstOrLast);
         if (targetItem.length) {
             this.unfocus(currentLink, event);
             this.focus(targetItem.children('.ui-menuitem-link'), event);
@@ -210,40 +220,40 @@ PrimeFaces.widget.PlainMenu = class PlainMenu extends PrimeFaces.widget.Menu {
      * Create the key where the state for this component is stored.  By default it is stored per view. Override this 
      * method to change the behavior to be global.
      */
-    createStorageKey() {
-        this.stateKey = PrimeFaces.createStorageKey(this.id, 'PlainMenu', this.cfg.statefulGlobal);
+    createStorageKey(): void {
+        this.stateKey = PrimeFaces.createStorageKey(this.getId(), 'PlainMenu', this.cfg.statefulGlobal ?? false);
     }
 
     /**
      * Collapses the given sub menu so that the children of that sub menu are not visible anymore.
-     * @param {JQuery} header Menu item with children to collapse.
-     * @param {boolean} [stateful] `true` if the new state of this menu (which items are collapsed and expanded) should
+     * @param header Menu item with children to collapse.
+     * @param stateful `true` if the new state of this menu (which items are collapsed and expanded) should
      * be saved (in an HTML5 Local Store), `false` otherwise. 
      */
-    collapseSubmenu(header, stateful) {
-        var items = header.nextUntil('li.ui-widget-header');
+    collapseSubmenu(header: JQuery, stateful?: boolean): void {
+        const items = header.nextUntil('li.ui-widget-header');
 
-        header.attr('aria-expanded', false)
+        header.attr('aria-expanded', "false")
             .find('> h3 > .ui-icon').removeClass('ui-icon-triangle-1-s').addClass('ui-icon-triangle-1-e');
 
         items.filter('.ui-submenu-child').hide();
 
         if (stateful) {
-            this.collapsedIds.push(header.attr('id'));
+            this.collapsedIds.push(header.attr('id') ?? "");
             this.saveState();
         }
     }
 
     /**
      * Expands the given sub menu so that the children of that sub menu become visible.
-     * @param {JQuery} header Menu item with children to expand.
-     * @param {boolean} [stateful] `true` if the new state of this menu (which items are collapsed and expanded) should
+     * @param header Menu item with children to expand.
+     * @param stateful `true` if the new state of this menu (which items are collapsed and expanded) should
      * be saved (in an HTML5 Local Store), `false` otherwise. 
      */
-    expandSubmenu(header, stateful) {
+    expandSubmenu(header: JQuery, stateful?: boolean): void {
         var items = header.nextUntil('li.ui-widget-header');
 
-        header.attr('aria-expanded', true)
+        header.attr('aria-expanded', "true")
             .find('> h3 > .ui-icon').removeClass('ui-icon-triangle-1-e').addClass('ui-icon-triangle-1-s');
 
         items.filter('.ui-submenu-child').show();
@@ -260,17 +270,15 @@ PrimeFaces.widget.PlainMenu = class PlainMenu extends PrimeFaces.widget.Menu {
     /**
      * Saves the current state (expanded / collapsed menu items) of this plain menu. Used to preserve the state during
      * AJAX updates as well as between page reloads. The state is stored in an HTML5 Local Store.
-     * @private
      */
-    saveState() {
+    private saveState(): void {
         localStorage.setItem(this.stateKey, this.collapsedIds.join(','));
     }
 
     /**
      * Restores that state as stored by `saveState`. Usually called after an AJAX update and on page load.
-     * @private
      */
-    restoreState() {
+    private restoreState(): void {
         var collapsedIdsAsString = localStorage.getItem(this.stateKey);
 
         if (collapsedIdsAsString) {
@@ -286,10 +294,8 @@ PrimeFaces.widget.PlainMenu = class PlainMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Clear the saved state (collapsed / expanded menu items) of this plain menu.
-     * @private
      */
-    clearState() {
+    private clearState(): void {
         localStorage.removeItem(this.stateKey);
     }
-
 }

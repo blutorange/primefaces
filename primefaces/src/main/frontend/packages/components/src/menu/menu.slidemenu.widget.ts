@@ -1,31 +1,68 @@
+import { Menu, type MenuCfg } from "./menu.base.widget.js";
+
+/**
+ * The configuration for the {@link  SlideMenu} widget.
+ * 
+ * You can access this configuration via {@link SlideMenu.cfg | cfg}. Please note that this
+ * configuration is usually meant to be read-only and should not be modified.
+ */
+export interface SlideMenuCfg extends MenuCfg {
+}
+
 /**
  * __PrimeFaces SlideMenu Widget__
  * 
  * SlideMenu is used to display nested submenus with sliding animation.
  * 
- * @prop {JQuery} backward The DOM element for the link to navigate back to the previous menu page.
- * @prop {JQuery} submenus The DOM elements for the sub menu items other that the root menu items.
- * @prop {JQuery} content The DOM element for the slide menu content.
- * @prop {number} jqWidth Width of the menu container in pixels.
- * @prop {JQuery} links The DOM elements for the the links to sub menus.
- * @prop {boolean} rendered Whether this menu was already rendered.
- * @prop {JQuery} rootList The DOM elements for the root menu entries.
- * @prop {JQuery[]} stack A stack with the menu items that were selected. Used to slide back to the previous menu page.
- * @prop {JQuery} wrapper The DOM element for the wrapper of the slide menu.
- * 
- * @interface {PrimeFaces.widget.SlideMenuCfg} cfg The configuration for the {@link  SlideMenu| SlideMenu widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.MenuCfg} cfg
+ * @typeParam Cfg Type of the configuration object.
  */
-PrimeFaces.widget.SlideMenu = class SlideMenu extends PrimeFaces.widget.Menu {
+export class SlideMenu<Cfg extends SlideMenuCfg> extends Menu<Cfg> {
+    /**
+     * The DOM element for the link to navigate back to the previous menu page.
+     */
+    backward: JQuery = $();
 
     /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
+     * The DOM element for the slide menu content.
      */
-    init(cfg) {
+    content: JQuery = $();
+
+    /**
+     * Width of the menu container in pixels.
+     */
+    jqWidth: number = 0;
+
+    /**
+     * The DOM elements for the the links to sub menus.
+     */
+    links: JQuery = $();
+
+    /**
+     * Whether this menu was already rendered.
+     */
+    rendered: boolean = false;
+
+    /**
+     * The DOM elements for the root menu entries.
+     */
+    rootList: JQuery = $();
+
+    /**
+     * A stack with the menu items that were selected. Used to slide back to the previous menu page.
+     */
+    stack: JQuery[] = [];
+
+    /**
+     * The DOM elements for the sub menu items other that the root menu items.
+     */
+    submenus: JQuery = $();
+
+    /**
+     * The DOM element for the wrapper of the slide menu.
+     */
+    wrapper: JQuery = $();
+
+    override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);
 
         //elements
@@ -39,7 +76,7 @@ PrimeFaces.widget.SlideMenu = class SlideMenu extends PrimeFaces.widget.Menu {
 
         //config
         this.stack = [];
-        this.jqWidth = this.jq.width();
+        this.jqWidth = this.jq.width() ?? 0;
 
         if(!this.jq.hasClass('ui-menu-dynamic')) {
 
@@ -48,7 +85,7 @@ PrimeFaces.widget.SlideMenu = class SlideMenu extends PrimeFaces.widget.Menu {
                 $this = this;
 
                 if(hiddenParent.length) {
-                    PrimeFaces.addDeferredRender(this.id, hiddenParent.attr('id'), function() {
+                    PrimeFaces.addDeferredRender(this.id, hiddenParent.attr('id') ?? "", () => {
                         return $this.render();
                     });
                 }
@@ -63,10 +100,9 @@ PrimeFaces.widget.SlideMenu = class SlideMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Sets up all event listeners that are required by this widget.
-     * @private
      */
-    bindEvents() {
-        var $this = this;
+    private bindEvents(): void {
+        const $this = this;
 
         this.links.on("mouseenter", function() {
            $(this).addClass('ui-state-hover');
@@ -75,8 +111,8 @@ PrimeFaces.widget.SlideMenu = class SlideMenu extends PrimeFaces.widget.Menu {
            $(this).removeClass('ui-state-hover');
         })
         .on("click", function(e) {
-            var link = $(this),
-            submenu = link.next();
+            const link = $(this);
+            const submenu = link.next();
 
             if(submenu.length) {
                $this.forward(submenu);
@@ -84,21 +120,21 @@ PrimeFaces.widget.SlideMenu = class SlideMenu extends PrimeFaces.widget.Menu {
             }
         });
 
-        this.backward.on("click", function() {
-            $this.back();
+        this.backward.on("click", () => {
+            this.back();
         });
     }
 
     /**
      * Slides to the given sub menu.
-     * @param {JQuery} submenu A sub menu to show, with the class `ui-menuitem-link`.
+     * @param submenu A sub menu to show, with the class `ui-menuitem-link`.
      */
-    forward(submenu) {
-        var _self = this;
+    forward(submenu: JQuery): void {
+        const _self = this;
 
         this.push(submenu);
 
-        var rootLeft = -1 * (this.depth() * this.jqWidth);
+        const rootLeft = -1 * (this.depth() * this.jqWidth);
 
         submenu.show().css({
             left: this.jqWidth + 'px'
@@ -116,7 +152,7 @@ PrimeFaces.widget.SlideMenu = class SlideMenu extends PrimeFaces.widget.Menu {
     /**
      * Slides back to the previous menu page.
      */
-    back() {
+    back(): void {
         if(!this.rootList.is(':animated')) {
             var _self = this,
             last = this.pop(),
@@ -140,69 +176,58 @@ PrimeFaces.widget.SlideMenu = class SlideMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Adds the menu page to the top of the stack.
-     * @param {JQuery} submenu A menu page to push to the stack. 
-     * @private
+     * @param submenu A menu page to push to the stack. 
      */
-    push(submenu) {
+    private push(submenu: JQuery): void {
         this.stack.push(submenu);
     }
 
     /**
      * Pops the most recently a menu page from the stack and return it.
-     * @return {JQuery | null} The item on top of the stack, or `null` if the stack is empty.
-     * @private
+     * @return The item on top of the stack, or `null` if the stack is empty.
      */
-    pop() {
-        return this.stack.length !== 0 ? this.stack.pop() : null;
+    private pop(): JQuery | null {
+        return this.stack.pop() ?? null;
     }
 
     /**
      * Peeks the stack and returns the topmost item.
-     * @return {JQuery | undefined} The last item on the stack, or `undefined` if the stack is empty
-     * @private
+     * @return The last item on the stack, or `undefined` if the stack is empty
      */
-    last() {
+    private last(): JQuery | undefined {
         return this.stack[this.stack.length - 1];
     }
 
     /**
      * Inspects the stack and returns its size.
-     * @return {number} The number of items on the stack.
-     * @private
+     * @return The number of items on the stack.
      */
-    depth() {
+    private depth(): number {
         return this.stack.length;
     }
 
     /**
      * Renders the client-side parts of this widget.
-     * @private
      */
-    render() {
-        this.submenus.width(this.jq.width());
-        this.wrapper.height(this.rootList.outerHeight(true) + this.backward.outerHeight(true));
-        this.content.height(this.rootList.outerHeight(true));
+    private render(): void {
+        this.submenus.width(this.jq.width() ?? 0);
+        this.wrapper.height((this.rootList.outerHeight(true) ?? 0) + (this.backward.outerHeight(true) ?? 0));
+        this.content.height(this.rootList.outerHeight(true) ?? 0);
         this.rendered = true;
     }
 
-    /**
-     * @override
-     * @inheritdoc
-     */
-    show() {
-        var $this = this;
-
+    override show(): void {
         if (this.transition) {
             this.transition.show({
-                onEnter: function() {
-                    if (!$this.rendered) {
-                        $this.render();
+                onEnter: () => {
+                    if (!this.rendered) {
+                        this.render();
                     }
-                    PrimeFaces.nextZindex($this.jq);
-                    $this.align();
+                    PrimeFaces.nextZindex(this.jq);
+                    this.align();
                 },
-                onEntered: function() {
-                    $this.bindPanelEvents();
+                onEntered: () => {
+                    this.bindPanelEvents();
                 }
             });
         }

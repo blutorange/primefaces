@@ -47,6 +47,8 @@ export interface MenuCfg extends PrimeType.widget.BaseWidgetCfg {
  * __PrimeFaces Menu Widget__
  * 
  * Base class for the different menu widgets, such as the `PlainMenu` or the `TieredMenu`.
+ * 
+ * @typeParam Cfg Type of the configuration object.
  */
 export class Menu<Cfg extends MenuCfg>  extends PrimeFaces.widget.BaseWidget<Cfg> {
     /**
