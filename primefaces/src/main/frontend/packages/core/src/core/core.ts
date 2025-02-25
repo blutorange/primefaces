@@ -1013,17 +1013,17 @@ export class Core {
      *
      * @typeParam Cfg Type of the widget configuration. Must be a toggleable
      * widget configuration with a
-     * {@link PrimeType.widget.ToggleableWidgetCfg.disableOnAjax disableOnAjax} property.
+     * {@link PrimeType.widget.ToggleFeatureWidgetCfg.disableOnAjax disableOnAjax} property.
      * @typeParam Widget Type of the widget. Must be a toggleable widget with a
-     * {@link PrimeType.widget.AjaxOptionallyToggleableWidget.disable | disable} and
-     * {@link PrimeType.widget.AjaxOptionallyToggleableWidget.enable | enable} method.
+     * {@link PrimeType.widget.AjaxOptionalToggleFeatureWidget.disable | disable} and
+     * {@link PrimeType.widget.AjaxOptionalToggleFeatureWidget.enable | enable} method.
      * @param widget The widget.
      * @param button The button DOM element.
      * @param isXhrSource Callback that checks if the widget is the source of the current AJAX request.
      */
     bindButtonInlineAjaxStatus<
-        Cfg extends PrimeType.widget.ToggleableWidgetCfg,
-        Widget extends PrimeType.widget.AjaxOptionallyToggleableWidget<Cfg>
+        Cfg extends PrimeType.widget.ToggleFeatureWidgetCfg,
+        Widget extends PrimeType.widget.AjaxOptionalToggleFeatureWidget<Cfg>
     >(
         widget: Widget,
         button: JQuery,
@@ -1079,16 +1079,16 @@ export class Core {
      * Ends the AJAX disabled state.
      * @typeParam Cfg Type of the widget configuration. Must be a toggleable
      * widget configuration with a
-     * {@link PrimeType.widget.ToggleableWidgetCfg.disableOnAjax disableOnAjax} property.
+     * {@link PrimeType.widget.ToggleFeatureWidgetCfg.disableOnAjax disableOnAjax} property.
      * @typeParam Widget Type of the widget. Must be a toggleable widget with a
-     * {@link PrimeType.widget.AjaxOptionallyToggleableWidget.disable | disable} and
-     * {@link PrimeType.widget.AjaxOptionallyToggleableWidget.enable | enable} method.
+     * {@link PrimeType.widget.AjaxOptionalToggleFeatureWidget.disable | disable} and
+     * {@link PrimeType.widget.AjaxOptionalToggleFeatureWidget.enable | enable} method.
      * @param widget the widget.
      * @param button The button DOM element.
      */
     buttonEndAjaxDisabled<
-        Cfg extends PrimeType.widget.ToggleableWidgetCfg,
-        Widget extends PrimeType.widget.AjaxOptionallyToggleableWidget<Cfg>
+        Cfg extends PrimeType.widget.ToggleFeatureWidgetCfg,
+        Widget extends PrimeType.widget.AjaxOptionalToggleFeatureWidget<Cfg>
     >(widget: Widget, button: JQuery): void {
         button.removeClass('ui-state-loading');
 

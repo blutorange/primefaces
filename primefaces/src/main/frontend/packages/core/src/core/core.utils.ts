@@ -53,10 +53,15 @@ export class Utils {
     /**
      * Finds the container element to which an overlay widget should be appended. This is either the element
      * specified by the widget configurations's `appendTo` attribute, or the document BODY element otherwise.
+     * @typeParam Cfg Type of the widget configuration.
+     * @typeParam Widget Type of the widget.
      * @param widget A widget to be displayed as an overlay.
      * @return The container DOM element to which the overlay is to be appended.
      */
-    resolveDynamicOverlayContainer(widget: DynamicOverlayWidget): JQuery {
+    resolveDynamicOverlayContainer<
+        Cfg extends PrimeType.widget.DynamicOverlayFeatureWidgetCfg,
+        Widget extends PrimeType.widget.DynamicOverlayFeatureWidget<Cfg>
+    >(widget: Widget): JQuery {
         return widget.cfg.appendTo
             ? expressions.SearchExpressionFacade.resolveComponentsAsSelector(widget.jq, widget.cfg.appendTo)
             : $(document.body);
@@ -82,12 +87,17 @@ export class Utils {
      * 1. The old, detached overlay, as a child of the element specified by `appendTo` attribute
      *
      * We now need to remove the detached overlay. This is done by this function.
+     * @typeParam Cfg Type of the widget configuration.
+     * @typeParam Widget Type of the widget.
      * @param widget The (old) overlay widget instance.
      * @param overlay The DOM element for the overlay.
      * @param overlayId ID of the overlay, usually the widget ID.
      * @param appendTo The container to which the overlay is appended.
      */
-    cleanupDynamicOverlay(widget: DynamicOverlayWidget, overlay: JQuery, overlayId: string, appendTo: JQuery): void {
+    cleanupDynamicOverlay<
+        Cfg extends PrimeType.widget.DynamicOverlayFeatureWidgetCfg,
+        Widget extends PrimeType.widget.DynamicOverlayFeatureWidget<Cfg>
+    >(widget: Widget, overlay: JQuery, overlayId: string, appendTo: JQuery): void {
         if (widget.cfg.appendTo) {
             var overlays = $("[id='" + overlayId + "']");
             if (overlays.length > 1) {
@@ -98,25 +108,35 @@ export class Utils {
 
     /**
      * Removes the overlay from the overlay container as specified by the `appendTo` attribute.
+     * @typeParam Cfg Type of the widget configuration.
+     * @typeParam Widget Type of the widget.
      * @param widget The overlay widget instance.
      * @param overlay The (new) DOM element of the overlay. These will not be
      * removed. Pass null to remove all overlays with the matching ID.
      * @param overlayId ID of the the overlay, usually the widget ID.
      * @param appendTo The container to which the overlay is appended.
      */
-    removeDynamicOverlay(widget: DynamicOverlayWidget, overlay: JQuery | null, overlayId: string, appendTo: JQuery): void {
+    removeDynamicOverlay<
+        Cfg extends PrimeType.widget.DynamicOverlayFeatureWidgetCfg,
+        Widget extends PrimeType.widget.DynamicOverlayFeatureWidget<Cfg>
+    >(widget: Widget, overlay: JQuery | null, overlayId: string, appendTo: JQuery): void {
         appendTo.children("[id='" +  overlayId + "']").not(overlay ?? (() => false)).remove();
     }
 
     /**
      * An overlay widget is moved in the DOM to the position as specified by the `appendTo` attribute. This function
      * moves the widget to its position in the DOM and removes old elements from previous AJAX updates.
+     * @typeParam Cfg Type of the widget configuration.
+     * @typeParam Widget Type of the widget.
      * @param widget The overlay widget instance.
      * @param overlay The DOM element for the overlay.
      * @param overlayId ID of the overlay, usually the widget ID.
      * @param appendTo The container to which the overlay is appended.
      */
-    appendDynamicOverlay(widget: DynamicOverlayWidget, overlay: JQuery, overlayId: string, appendTo: JQuery): void {
+    appendDynamicOverlay<
+        Cfg extends PrimeType.widget.DynamicOverlayFeatureWidgetCfg,
+        Widget extends PrimeType.widget.DynamicOverlayFeatureWidget<Cfg>
+    >(widget: Widget, overlay: JQuery, overlayId: string, appendTo: JQuery): void {
         var elementParent = overlay.parent();
 
         // skip when the parent currently is already the same
@@ -480,12 +500,17 @@ export class Utils {
     /**
      * Sets up an overlay widget. Appends the overlay widget to the element as specified by the `appendTo`
      * attribute. Also makes sure the overlay widget is handled properly during AJAX updates.
+     * @typeParam Cfg Type of the widget configuration.
+     * @typeParam Widget Type of the widget.
      * @param widget An overlay widget instance.
      * @param overlay The DOM element for the overlay.
      * @param overlayId The ID of the overlay, usually the widget ID.
      * @return The overlay that was passed to this function.
      */
-    registerDynamicOverlay(widget: DynamicOverlayWidget, overlay: JQuery, overlayId: string): JQuery {
+    registerDynamicOverlay<
+        Cfg extends PrimeType.widget.DynamicOverlayFeatureWidgetCfg,
+        Widget extends PrimeType.widget.DynamicOverlayFeatureWidget<Cfg>
+    >(widget: Widget, overlay: JQuery, overlayId: string): JQuery {
 
         if (widget.cfg.appendTo) {
             var appendTo = this.resolveDynamicOverlayContainer(widget);

@@ -1077,7 +1077,7 @@ declare global {
          */
         export type WidgetCfg<Widget extends PrimeType.Newable<[], BaseWidget<any>>> = Widget extends PrimeType.Newable<[], BaseWidget<infer Cfg>> ? Cfg : never;
 
-        export interface ToggleableWidgetCfg extends BaseWidgetCfg {
+        export interface ToggleFeatureWidgetCfg extends BaseWidgetCfg {
             /**
              * Whether the widget should be disabled during AJAX postback requests.
              * E.g. a button could get disabled so that it cannot be pressed
@@ -1093,7 +1093,11 @@ declare global {
             disabledAttr: boolean;
         }
 
-        export interface OptionallyToggleableWidget<Cfg extends ToggleableWidgetCfg> extends BaseWidget<Cfg> {
+        /**
+         * A {@link BaseWidget} that may have the option to be enabled and disabled.
+         * @typeParam Cfg Type of the widget configuration.
+         */
+        export interface OptionalToggleFeatureWidget<Cfg extends ToggleFeatureWidgetCfg> extends BaseWidget<Cfg> {
             /**
              * Disables this widget, so that the user cannot interact with it anymore.
              */
@@ -1104,15 +1108,58 @@ declare global {
             enable?(): void;
         }
 
-        export interface ToggleableWidget<Cfg extends ToggleableWidgetCfg> extends OptionallyToggleableWidget<Cfg> {
+        /**
+         * A {@link BaseWidget} that can be enabled and disabled.
+         * @typeParam Cfg Type of the widget configuration.
+         */
+        export interface ToggleFeatureWidget<Cfg extends ToggleFeatureWidgetCfg> extends OptionalToggleFeatureWidget<Cfg> {
             disable(): void;
             enable(): void;
         }
 
-        export interface AjaxOptionallyToggleableWidget<Cfg extends ToggleableWidgetCfg> extends OptionallyToggleableWidget<Cfg> {
+        /**
+         * A {@link BaseWidget} that keeps track of AJAX requests initiated by itself.
+         * @typeParam Cfg Type of the widget configuration.
+         */
+        export interface AjaxTrackingFeatureWidget<Cfg extends BaseWidgetCfg> extends BaseWidget<Cfg> {
+            /**
+             * Keeps track of the number of AJAX requests.
+             */
             ajaxCount: number;
+            /**
+             * Keeps track of when the AJAX request started.
+             */
             ajaxStart?: number;
         }
+
+        /**
+         * A {@link BaseWidget} that offers both the {@link AjaxTrackingFeatureWidget AJAX tracking feature}
+         * and the {@link OptionalToggleFeatureWidget optional toggle feature}.
+         * @typeParam Cfg Type of the widget configuration.
+         */
+        export interface AjaxOptionalToggleFeatureWidget<
+            Cfg extends ToggleFeatureWidgetCfg
+        > extends OptionalToggleFeatureWidget<Cfg>, AjaxTrackingFeatureWidget<Cfg> {
+        }
+
+        /**
+         * Configuration for a {@link BaseWidget widget} with the dynamic overlay feature. The
+         * {@link DynamicOverlayFeatureWidgetCfg.appendTo | appendTo} attribute specifies a target
+         * where the overlay should be appended to.
+         */
+        export interface DynamicOverlayFeatureWidgetCfg extends BaseWidgetCfg {
+            /**
+             * The search expression for the element to which the overlay panel should be appended.
+             */
+            appendTo: string | null;
+        }
+
+        /**
+         * A {@link BaseWidget widget} with the dynamic overlay feature. The {@link DynamicOverlayFeatureWidgetCfg.appendTo | appendTo}
+         * attribute specifies a target where the overlay should be appended to.
+         * @typeParam Cfg Type of the widget configuration.
+         */
+        export interface DynamicOverlayFeatureWidget<Cfg extends DynamicOverlayFeatureWidgetCfg> extends BaseWidget<Cfg> {}
 
         /*
          * __Note__: Do not parametrize the this context via a type parameter. This would require changing the return type
