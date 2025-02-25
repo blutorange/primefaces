@@ -1,3 +1,4 @@
+import { core } from "../core/core.js";
 import { BaseWidget, type BaseWidgetCfg } from "../core/core.widget.js";
 
 /**
@@ -91,7 +92,7 @@ export class AjaxStatus<Cfg extends AjaxStatusCfg = AjaxStatusCfg> extends BaseW
         // Handle start of AJAX request
         $(document).on('pfAjaxStart' + namespace, (...args) => {
             // Queue task to trigger start event after configured delay
-            this.timeout = PrimeFaces.queueTask(() => {
+            this.timeout = core.queueTask(() => {
                 this.trigger('start', args);
             }, this.cfg.delay);
         })
@@ -121,7 +122,7 @@ export class AjaxStatus<Cfg extends AjaxStatusCfg = AjaxStatusCfg> extends BaseW
             faces.ajax.addOnEvent((...args) => {
                 const data = args[0];
                 if(data.status === 'begin') {
-                    this.timeout = PrimeFaces.queueTask(() => {
+                    this.timeout = core.queueTask(() => {
                         this.trigger('start', args);
                     }, this.cfg.delay);
                 }

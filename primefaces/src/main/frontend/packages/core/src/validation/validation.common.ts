@@ -804,8 +804,8 @@ export class ValidationUtils {
                 key = msg.substring(1, msg.length - 1);
             }
 
-            const locale = PrimeFaces.getLocaleSettings();
-            const bundle = (locale.messages && locale.messages[key ?? ""]) ? locale : PrimeFaces.locales['en_US'];
+            const locale = core.getLocaleSettings();
+            const bundle = (locale.messages && locale.messages[key ?? ""]) ? locale : core.locales['en_US'];
 
             let summary = bundle?.messages?.[key ?? ""];
             let detail = bundle?.messages?.[key + '_detail'];
@@ -817,14 +817,14 @@ export class ValidationUtils {
                 };
             }
 
-            summary = PrimeFaces.validation.Utils.format(summary, params);
-            detail = (detail) ? PrimeFaces.validation.Utils.format(detail, params) : summary;
+            summary = validation.Utils.format(summary, params);
+            detail = (detail) ? validation.Utils.format(detail, params) : summary;
 
             // see #7069
             // simulate the message handling of the server side BeanValidator
-            const wrapperBundle = (locale.messages && locale.messages['jakarta.faces.validator.BeanValidator.MESSAGE']) ? locale : PrimeFaces.locales['en_US'];
+            const wrapperBundle = (locale.messages && locale.messages['jakarta.faces.validator.BeanValidator.MESSAGE']) ? locale : core.locales['en_US'];
             const wrapper = wrapperBundle?.messages?.['jakarta.faces.validator.BeanValidator.MESSAGE'];
-            const label = PrimeFaces.validation.Utils.getLabel(element);
+            const label = validation.Utils.getLabel(element);
             summary = wrapper?.replace("{0}", summary).replace("{1}", label) ?? summary;
             detail = wrapper?.replace("{0}", detail).replace("{1}", label) ?? detail;
 

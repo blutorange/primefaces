@@ -1065,7 +1065,7 @@ export class Core {
 
                 $this.queueTask(
                     () => $this.buttonEndAjaxDisabled(widget, button),
-                    Math.max(PrimeFaces.ajax.minLoadAnimation + (widget.ajaxStart ?? 0) - Date.now(), 0)
+                    Math.max(ajax.minLoadAnimation + (widget.ajaxStart ?? 0) - Date.now(), 0)
                 );
                 delete widget.ajaxStart;
             }

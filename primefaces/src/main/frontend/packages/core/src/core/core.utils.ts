@@ -1209,7 +1209,7 @@ export class Utils {
             }
             if (core.widget.IdleMonitor && widget instanceof core.widget.IdleMonitor) {
                 core.warn("Stopping IdleMonitor");
-                widget.pause();
+                widget?.pause();
             }
         }
     }

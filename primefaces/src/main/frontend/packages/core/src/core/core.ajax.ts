@@ -1346,7 +1346,7 @@ export class AjaxResponse {
             if (pfArgs) {
                 pfArgs.redirect = true;
             }
-            PrimeFaces.ajax.ResponseProcessor.doRedirect(currentNode);
+            ajax.ResponseProcessor.doRedirect(currentNode);
             break;
         }
     }
