@@ -25,11 +25,11 @@ import "./src/forms/forms.multiselectlistbox.widget.js";
 
 import { BreadCrumb } from "./src/menu/menu.breadcrumb.widget.js";
 import { ContextMenu } from "./src/menu/menu.contextmenu.widget.js";
-import "./src/menu/menu.megamenu.widget.js";
+import { MegaMenu } from "./src/menu/menu.megamenu.widget.js";
 import { Menu } from "./src/menu/menu.base.widget.js";
 import { Menubar } from "./src/menu/menu.menubar.widget.js";
 import { MenuButton } from "./src/menu/menu.menubutton.widget.js";
-import "./src/menu/menu.panelmenu.widget.js";
+import { PanelMenu } from "./src/menu/menu.panelmenu.widget.js";
 import { PlainMenu } from "./src/menu/menu.plainmenu.widget.js";
 import { SlideMenu } from "./src/menu/menu.slidemenu.widget.js";
 import { Steps } from "./src/menu/menu.steps.widget.js";
@@ -104,9 +104,11 @@ PrimeFaces.widget.SplitButton = SplitButton;
 
 // src/menu
 PrimeFaces.widget.BreadCrumb = BreadCrumb;
+PrimeFaces.widget.MegaMenu = MegaMenu;
 PrimeFaces.widget.Menu = Menu;
 PrimeFaces.widget.MenuButton = MenuButton;
 PrimeFaces.widget.Menubar = Menubar;
+PrimeFaces.widget.PanelMenu = PanelMenu;
 PrimeFaces.widget.PlainMenu = PlainMenu;
 PrimeFaces.widget.SlideMenu = SlideMenu;
 PrimeFaces.widget.Steps = Steps;
@@ -165,9 +167,11 @@ declare global {
     namespace PrimeType {
         export interface WidgetRegistry {
             BreadCrumb: typeof BreadCrumb;
+            MegaMenu: typeof MegaMenu;
             Menu: typeof Menu;
             Menubar: typeof Menubar;
             MenuButton: typeof MenuButton;
+            PanelMenu: typeof PanelMenu;
             PlainMenu: typeof PlainMenu;
             SlideMenu: typeof SlideMenu;
             Steps: typeof Steps;
@@ -179,9 +183,11 @@ declare global {
     namespace PrimeType.widget {
         export type BreadCrumbCfg = import("./src/menu/menu.breadcrumb.widget.js").BreadCrumbCfg;
         export type ContextMenuCfg = import("./src/menu/menu.contextmenu.widget.js").ContextMenuCfg;
+        export type MegaMenuCfg = import("./src/menu/menu.megamenu.widget.js").MegaMenuCfg;
         export type MenuCfg = import("./src/menu/menu.base.widget.js").MenuCfg;
         export type MenubarCfg = import("./src/menu/menu.menubar.widget.js").MenubarCfg;
         export type MenuButtonCfg = import("./src/menu/menu.menubutton.widget.js").MenuButtonCfg;
+        export type PanelMenuCfg = import("./src/menu/menu.panelmenu.widget.js").PanelMenuCfg;
         export type PlainMenuCfg = import("./src/menu/menu.plainmenu.widget.js").PlainMenuCfg;
         export type SlideMenuCfg = import("./src/menu/menu.slidemenu.widget.js").SlideMenuCfg;
         export type StepsCfg = import("./src/menu/menu.steps.widget.js").StepsCfg;

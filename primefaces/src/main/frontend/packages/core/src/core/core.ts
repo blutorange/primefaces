@@ -848,7 +848,7 @@ export class Core {
      * @param global if global then do not include the view id
      * @return the generated key comprising of context + view + id + key
      */
-    createStorageKey(id: string, key: string, global: boolean): string {
+    createStorageKey(id: string, key: string, global: boolean | undefined): string {
         var sk = this.settings.contextPath.replace(/\//g, '-')
                 + (global ? '' : this.settings.viewId.replace(/\//g, '-'))
                 + id + '-'

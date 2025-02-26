@@ -86,11 +86,11 @@ export class ContextMenu<Cfg extends ContextMenuCfg> extends TieredMenu<Cfg> {
 
         //append to body
         this.cfg.appendTo = '@(body)';
-        PrimeFaces.utils.registerDynamicOverlay(this, this.jq, this.id);
+        PrimeFaces.utils.registerDynamicOverlay(this, this.jq, this.getId());
 
         //attach contextmenu
         if (documentTarget) {
-            var event = 'contextmenu.' + this.id + '_contextmenu';
+            const event = 'contextmenu.' + this.id + '_contextmenu';
             
             $(document).off(event).on(event, (e) => {
                 this.show(e);
@@ -108,7 +108,7 @@ export class ContextMenu<Cfg extends ContextMenuCfg> extends TieredMenu<Cfg> {
             let bound = false;
 
             if (this.cfg.targetWidgetVar) {
-                var targetWidget = PrimeFaces.widgets[this.cfg.targetWidgetVar];
+                const targetWidget = PrimeFaces.widgets[this.cfg.targetWidgetVar];
 
                 if (targetWidget) {
                     if (typeof targetWidget.bindContextMenu === 'function') {
@@ -126,7 +126,7 @@ export class ContextMenu<Cfg extends ContextMenuCfg> extends TieredMenu<Cfg> {
             }
 
             if (bound === false) {
-                var customEvent = this.cfg.event + '.' + this.id + '_contextmenu';
+                const customEvent = this.cfg.event + '.' + this.id + '_contextmenu';
 
                 // TODO Requires cast "as string" to encode the implicit logic
                 // that when this.cfg.target is not undefined, we set this.jqTargetId to a string. 

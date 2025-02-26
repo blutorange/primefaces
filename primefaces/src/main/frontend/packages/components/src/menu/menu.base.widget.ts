@@ -124,7 +124,7 @@ export class Menu<Cfg extends MenuCfg>  extends PrimeFaces.widget.BaseWidget<Cfg
         if (!this.cfg.appendTo) {
             this.cfg.appendTo = '@(body)';
         }
-        PrimeFaces.utils.registerDynamicOverlay(this, $menu, this.id);
+        PrimeFaces.utils.registerDynamicOverlay(this, $menu, this.getId());
         this.transition = PrimeFaces.utils.registerCSSTransition($menu, 'ui-connected-overlay');
 
         // register for AJAX updates on trigger

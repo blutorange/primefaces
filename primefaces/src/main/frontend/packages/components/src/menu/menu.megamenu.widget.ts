@@ -1,3 +1,32 @@
+import { Menu } from "./menu.base.widget.js";
+
+/**
+ * The configuration for the {@link  MegaMenu} widget.
+ * 
+ * You can access this configuration via {@link PanelMenu.cfg | cfg}. Please note that this
+ * configuration is usually meant to be read-only and should not be modified.
+ */
+export interface MegaMenuCfg extends PrimeType.widget.MenuCfg {
+    /**
+     * Index of the menu item initially active.
+     */
+    activeIndex: number;
+    /**
+     * Defines whether sub menus will be displayed on mouseover or not. When set to false,
+     * click event is required to display.
+     */
+    autoDisplay: boolean;
+    /**
+     * Delay in milliseconds before displaying the sub menu. Default is 0 meaning immediate.
+     */
+    delay: number;
+    /**
+     * `true` if the mega menu is displayed with a vertical layout, `false` if displayed with a
+     * horizontal layout.
+     */
+    vertical: boolean;
+}
+
 /**
  * __PrimeFaces MegaMenu Widget__
  *
@@ -5,14 +34,48 @@
  *
  * @typeParam Cfg Type of the configuration object.
  */
-PrimeFaces.widget.MegaMenu = class MegaMenu extends PrimeFaces.widget.Menu {
+export class MegaMenu<Cfg extends MegaMenuCfg> extends Menu<Cfg> {
+    /**
+     * Whether the current menu is active and displayed.
+     */
+    active: boolean = false;
 
     /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
+     * The currently active (highlighted) menu item.
      */
-    init(cfg) {
+    activeitem?: JQuery | null;
+
+    /**
+     * Whether the writing direction is set to right-to-left.
+     */
+    isRTL: boolean = false;
+
+    /**
+     * The last root menu that had focus, if any.
+     */
+    lastFocusedItem?: JQuery | null = null;
+
+    /**
+     * The DOM elements for the root level menu links with the class `.ui-menuitem-link`.
+     */
+    rootLinks: JQuery = $();
+
+    /**
+     * The DOM elements for the root level menu items with the class `.ui-menu-list`.
+     */
+    rootList: JQuery = $();
+
+    /**
+     * The DOM elements for all menu links not a the root level, with the class `.ui-menuitem-link`.
+     */
+    subLinks: JQuery = $();
+
+    /**
+     * Timeout ID, used for the animation when the menu is shown.
+     */
+    timeoutId?: number = undefined;
+
+    override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);
 
         this.cfg.vertical = this.jq.hasClass('ui-megamenu-vertical');
@@ -32,9 +95,8 @@ PrimeFaces.widget.MegaMenu = class MegaMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Sets up all event listeners that are required by this widget.
-     * @private
      */
-    bindEvents() {
+    private bindEvents(): void {
         var $this = this;
 
         this.rootLinks.on("mouseenter", function() {
@@ -130,91 +192,91 @@ PrimeFaces.widget.MegaMenu = class MegaMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Sets up all keyboard-related event listeners.
-     * @private
      */
-    bindKeyEvents() {
-        var $this = this;
+    private bindKeyEvents(): void {
+        const $this = this;
 
         // make first focusable
-        var firstLink = this.rootLinks.filter(':not([disabled])').first();
+        const firstLink = this.rootLinks.filter(':not([disabled])').first();
         firstLink.attr("tabindex", "0");
         this.resetFocus(true);
         firstLink.removeClass('ui-state-hover ui-state-active');
 
-        this.jq.on("blur.menu focusout.menu", function(e) {
-            if (!$this.jq.has(e.relatedTarget).length) {
-                $this.reset();
+        this.jq.on("blur.menu focusout.menu", (e) => {
+            const fe = e as JQuery.FocusEventBase;
+            if (fe.relatedTarget instanceof Element && this.jq.has(fe.relatedTarget).length === 0) {
+                this.reset();
             }
         });
 
         this.rootLinks.on("mouseenter.menu click.menu", function() {
-            var $link = $(this),
-                $menuitem = $link.parent();
+            const $link = $(this);
+            const $menuitem = $link.parent();
             $this.deactivate($menuitem);
             $link.trigger('focus');
         }).on("focusin.menu", function() {
-            var $link = $(this);
+            const $link = $(this);
             $this.highlight($link.parent());
-        }).on('keydown.megamenu', function(e) {
-            var currentitem = $this.activeitem;
-            if (!currentitem) {
+        }).on('keydown.megamenu', (e) => {
+            const currentItem = this.activeitem;
+            if (!currentItem) {
                 return;
             }
 
-            var isRootLink = $this.isRootLink(currentitem);
-            var submenu = currentitem.children('.ui-menu-child');
-            var parentItem = currentitem.closest('ul.ui-menu-child').parent();
-            var prevItem = null;
-            var nextItem = null;
+            const isRootLink = this.isRootLink(currentItem);
+            const submenu = currentItem.children('.ui-menu-child');
+            const parentItem = currentItem.closest('ul.ui-menu-child').parent();
+            let prevItem = null;
+            let nextItem = null;
 
-            switch (e.code) {
+            switch ("code" in e ? e.code : e.key) {
                 case 'ArrowLeft':
-                    if (isRootLink && !$this.cfg.vertical) {
-                        prevItem = $this.findPrevItem(currentitem);
+                    if (isRootLink && !this.cfg.vertical) {
+                        prevItem = this.findPrevItem(currentItem);
                         if (prevItem.length) {
-                            $this.deactivate(currentitem);
-                            $this.highlight(prevItem);
+                            this.deactivate(currentItem);
+                            this.highlight(prevItem);
                         }
 
                         e.preventDefault();
                     }
-                    else if (currentitem.hasClass('ui-menu-parent') && currentitem.children('.ui-menu-child').is(':visible')) {
-                        $this.deactivate(currentitem);
-                        $this.highlight(currentitem);
+                    else if (currentItem.hasClass('ui-menu-parent') && currentItem.children('.ui-menu-child').is(':visible')) {
+                        this.deactivate(currentItem);
+                        this.highlight(currentItem);
                     }
                     else if (parentItem.length) {
-                        $this.deactivate(currentitem);
-                        $this.deactivate(parentItem);
-                        $this.highlight(parentItem);
+                        this.deactivate(currentItem);
+                        this.deactivate(parentItem);
+                        this.highlight(parentItem);
                     }
                     break;
 
                 case 'ArrowRight':
-                    if (isRootLink && !$this.cfg.vertical) {
-                        nextItem = currentitem.nextAll('.ui-menuitem:visible:first');
+                    if (isRootLink && !this.cfg.vertical) {
+                        nextItem = currentItem.nextAll('.ui-menuitem:visible:first');
                         if (nextItem.length) {
-                            $this.deactivate(currentitem);
-                            $this.highlight(nextItem);
+                            this.deactivate(currentItem);
+                            this.highlight(nextItem);
                         }
 
                         e.preventDefault();
                     }
-                    else if (currentitem.hasClass('ui-menu-parent')) {
+                    else if (currentItem.hasClass('ui-menu-parent')) {
                         if (submenu.is(':visible')) {
-                            $this.highlight(submenu.find('ul.ui-menu-list:visible > .ui-menuitem:visible:first'));
+                            this.highlight(submenu.find('ul.ui-menu-list:visible > .ui-menuitem:visible:first'));
                         }
                         else {
-                            $this.activate(currentitem);
+                            this.activate(currentItem);
                         }
                     }
                     break;
 
                 case 'ArrowUp':
-                    if (!isRootLink || $this.cfg.vertical) {
-                        prevItem = $this.findPrevItem(currentitem);
+                    if (!isRootLink || this.cfg.vertical) {
+                        prevItem = this.findPrevItem(currentItem);
                         if (prevItem.length) {
-                            $this.deactivate(currentitem);
-                            $this.highlight(prevItem);
+                            this.deactivate(currentItem);
+                            this.highlight(prevItem);
                         }
                     }
 
@@ -222,20 +284,20 @@ PrimeFaces.widget.MegaMenu = class MegaMenu extends PrimeFaces.widget.Menu {
                     break;
 
                 case 'ArrowDown':
-                    if (isRootLink && !$this.cfg.vertical) {
+                    if (isRootLink && !this.cfg.vertical) {
                         if (submenu.is(':visible')) {
-                            var firstMenulist = $this.getFirstMenuList(submenu);
-                            $this.highlight(firstMenulist.children('.ui-menuitem:visible:first'));
+                            var firstMenulist = this.getFirstMenuList(submenu);
+                            this.highlight(firstMenulist.children('.ui-menuitem:visible:first'));
                         }
                         else {
-                            $this.activate(currentitem);
+                            this.activate(currentItem);
                         }
                     }
                     else {
-                        nextItem = $this.findNextItem(currentitem);
+                        nextItem = this.findNextItem(currentItem);
                         if (nextItem.length) {
-                            $this.deactivate(currentitem);
-                            $this.highlight(nextItem);
+                            this.deactivate(currentItem);
+                            this.highlight(nextItem);
                         }
                     }
 
@@ -245,24 +307,24 @@ PrimeFaces.widget.MegaMenu = class MegaMenu extends PrimeFaces.widget.Menu {
                 case 'Enter':
                 case 'Space':
                 case 'NumpadEnter':
-                    var currentLink = currentitem.children('.ui-menuitem-link');
+                    var currentLink = currentItem.children('.ui-menuitem-link');
                     currentLink.trigger('click');
                     PrimeFaces.utils.openLink(e, currentLink);
-                    $this.deactivate(currentitem);
+                    this.deactivate(currentItem);
                     e.preventDefault();
                     break;
 
                 case 'Escape':
-                    if (currentitem.hasClass('ui-menu-parent')) {
-                        var submenuPopup = currentitem.children('ul.ui-menu-list:visible');
+                    if (currentItem.hasClass('ui-menu-parent')) {
+                        var submenuPopup = currentItem.children('ul.ui-menu-list:visible');
                         if (submenuPopup.length > 0) {
                             submenuPopup.hide();
                         }
                     }
                     else if (parentItem.length) {
-                        $this.deactivate(currentitem);
-                        $this.deactivate(parentItem);
-                        $this.highlight(parentItem);
+                        this.deactivate(currentItem);
+                        this.deactivate(parentItem);
+                        this.highlight(parentItem);
                     }
                     e.preventDefault();
                     break;
@@ -271,72 +333,72 @@ PrimeFaces.widget.MegaMenu = class MegaMenu extends PrimeFaces.widget.Menu {
     }
 
     /**
-     * Finds the menu items that preceeded the given item.
-     * @param {JQuery} menuitem One of the menu items of this mega menu, with the class `.ui-menuitem`.
-     * @return {JQuery} The menu item before the given item. Empty JQuery instance if the given item is the first.
+     * Finds the menu items that precedes the given item.
+     * @param menuitem One of the menu items of this mega menu, with the class `.ui-menuitem`.
+     * @return The menu item before the given item. Empty JQuery instance if the given item is the first.
      */
-    findPrevItem(menuitem) {
-        var previtem = menuitem.prev('.ui-menuitem');
+    findPrevItem(menuitem: JQuery): JQuery {
+        let prevItem = menuitem.prev('.ui-menuitem');
 
-        if(!previtem.length) {
-            var prevSubmenu = menuitem.closest('ul.ui-menu-list').prev('.ui-menu-list');
+        if(!prevItem.length) {
+            let prevSubmenu = menuitem.closest('ul.ui-menu-list').prev('.ui-menu-list');
 
             if(!prevSubmenu.length) {
                 prevSubmenu = menuitem.closest('td').prev('td').children('.ui-menu-list:visible:last');
             }
 
             if(prevSubmenu.length) {
-                previtem = prevSubmenu.find('li.ui-menuitem:visible:last');
+                prevItem = prevSubmenu.find('li.ui-menuitem:visible:last');
             }
         }
-        return previtem;
+        return prevItem;
     }
 
     /**
      * Finds the menu items that succeeds the given item.
-     * @param {JQuery} menuitem One of the menu items of this mega menu, with the class `.ui-menuitem`.
-     * @return {JQuery} The menu item after the given item. Empty JQuery instance if the given item is the last.
+     * @param menuItem One of the menu items of this mega menu, with the class `.ui-menuitem`.
+     * @return The menu item after the given item. Empty JQuery instance if the given item is the last.
      */
-    findNextItem(menuitem) {
-        var nextitem = menuitem.next('.ui-menuitem');
+    findNextItem(menuItem: JQuery): JQuery {
+        let nextItem = menuItem.next('.ui-menuitem');
 
-        if(!nextitem.length) {
-            var nextSubmenu = menuitem.closest('ul.ui-menu-list').next('.ui-menu-list');
+        if(!nextItem.length) {
+            let nextSubmenu = menuItem.closest('ul.ui-menu-list').next('.ui-menu-list');
             if(!nextSubmenu.length) {
-                nextSubmenu = menuitem.closest('td').next('td').children('.ui-menu-list:visible:first');
+                nextSubmenu = menuItem.closest('td').next('td').children('.ui-menu-list:visible:first');
             }
 
             if(nextSubmenu.length) {
-                nextitem = nextSubmenu.find('li.ui-menuitem:visible:first');
+                nextItem = nextSubmenu.find('li.ui-menuitem:visible:first');
             }
         }
-        return nextitem;
+        return nextItem;
     }
 
     /**
      * Finds the the menu group of the given submenu, i.e. the children of the given item.
-     * @param {JQuery} submenu A submenu with children.
-     * @return {JQuery} The first sub menu list, an item with the class `.ui-menu-list`.
+     * @param submenu A submenu with children.
+     * @return The first sub menu list, an item with the class `.ui-menu-list`.
      */
-    getFirstMenuList(submenu) {
+    getFirstMenuList(submenu: JQuery): JQuery {
         return submenu.find('.ui-menu-list:not(.ui-state-disabled):first');
     }
 
     /**
      * Checks whether the given menu item is the root menu item element.
-     * @param {JQuery} menuitem One of the menu items of this mega menu.
-     * @return {boolean} `true` if the given menu item is the root, or `false` otherwise.
+     * @param menuItem One of the menu items of this mega menu.
+     * @return `true` if the given menu item is the root, or `false` otherwise.
      */
-    isRootLink(menuitem) {
-        var submenu = menuitem.closest('ul');
+    isRootLink(menuItem: JQuery): boolean {
+        const submenu = menuItem.closest('ul');
         return submenu.parent().hasClass('ui-menu');
     }
 
     /**
      * Resets the entire mega menu, i.e. closes all opened sub menus.
      */
-    reset() {
-        var $this = this;
+    reset(): void {
+        const $this = this;
         this.active = false;
 
         this.jq.find('li.ui-menuitem-active').each(function() {
@@ -344,21 +406,21 @@ PrimeFaces.widget.MegaMenu = class MegaMenu extends PrimeFaces.widget.Menu {
         });
         this.resetFocus(!this.lastFocusedItem);
         if (this.lastFocusedItem) {
-            this.lastFocusedItem.children('a.ui-menuitem-link').attr('tabindex', $this.tabIndex);
+            this.lastFocusedItem.children('a.ui-menuitem-link').attr('tabindex', this.tabIndex);
         }
         this.rootLinks.removeClass('ui-state-hover');
     }
 
     /**
      * Deactivates the menu item, i.e. closes the sub menu.
-     * @param {JQuery} menuitem A menu item to close.
-     * @param {boolean} [animate] If `true`, closes the sub menu with an animation, or `false` otherwise.
+     * @param menuitem A menu item to close.
+     * @param animate If `true`, closes the sub menu with an animation, or `false` otherwise.
      */
-    deactivate(menuitem, animate) {
-        var $this = this;
+    deactivate(menuitem: JQuery, animate?: boolean): void {
+        const $this = this;
         this.activeitem = null;
         menuitem.removeClass('ui-menuitem-active ui-menuitem-highlight');
-        var $link = menuitem.children('a.ui-menuitem-link');
+        const $link = menuitem.children('a.ui-menuitem-link');
         this.unfocus($link);
 
         var activeSibling = menuitem.siblings('.ui-menuitem-active');
@@ -369,33 +431,35 @@ PrimeFaces.widget.MegaMenu = class MegaMenu extends PrimeFaces.widget.Menu {
             $this.deactivate(activeSibling);
         }
 
-        var submenu = menuitem.children('ul.ui-menu-child');
+        const submenu = menuitem.children('ul.ui-menu-child');
         if (submenu.length > 0) {
             $link.attr('aria-expanded', 'false');
-            if (animate)
+            if (animate) {
                 submenu.fadeOut('fast');
-            else
+            }
+            else {
                 submenu.hide();
+            }
         }
     }
 
     /**
      * Highlight the given menu entry, as if the user were to hover it.
-     * @param {JQuery} menuitem A menu entry to highlight.
+     * @param menuItem A menu entry to highlight.
      */
-    highlight(menuitem) {
-        this.activeitem = menuitem;
-        menuitem.addClass('ui-menuitem-active ui-menuitem-highlight');
-        menuitem.children('a.ui-menuitem-link').addClass('ui-state-hover');
+    highlight(menuItem: JQuery): void {
+        this.activeitem = menuItem;
+        menuItem.addClass('ui-menuitem-active ui-menuitem-highlight');
+        menuItem.children('a.ui-menuitem-link').addClass('ui-state-hover');
     }
 
     /**
      * Activates a menu item so that it can be clicked and interacted with.
      * 
-     * @param {JQuery} menuitem - The menu item to activate.
-     * @param {boolean} [showSubMenu=true] - If false, only focuses the menu item without showing the submenu.
+     * @param menuitem - The menu item to activate.
+     * @param showSubMenu - If false, only focuses the menu item without showing the submenu.
      */
-    activate(menuitem, showSubMenu = true) {
+    activate(menuitem: JQuery, showSubMenu: boolean = true): void {
         this.highlight(menuitem);
         
         // if this is a root menu item.
@@ -417,18 +481,17 @@ PrimeFaces.widget.MegaMenu = class MegaMenu extends PrimeFaces.widget.Menu {
 
     /**
      * Opens and shows the sub menu of the given menu item.
-     * @param {JQuery} menuitem A menu item with a submenu.
-     * @param {JQuery} submenu One of the submenus of the given menu item to show.
-     * @private
+     * @param menuItem A menu item with a submenu.
+     * @param submenu One of the submenus of the given menu item to show.
      */
-    showSubmenu(menuitem, submenu) {
-        var pos = null;
+    private showSubmenu(menuItem: JQuery, submenu: JQuery): void {
+        let pos: JQueryUI.JQueryPositionOptions | undefined;
 
-        if(this.cfg.vertical) {
+        if (this.cfg.vertical) {
             pos = {
                 my: this.isRTL ? 'right bottom' : 'left top',
                 at: this.isRTL ? 'left bottom' : 'right top',
-                of: menuitem,
+                of: menuItem,
                 collision: 'flipfit'
             };
         }
@@ -436,21 +499,20 @@ PrimeFaces.widget.MegaMenu = class MegaMenu extends PrimeFaces.widget.Menu {
             pos = {
                 my: this.isRTL ? 'right top' : 'left top',
                 at: this.isRTL ? 'right bottom' : 'left bottom',
-                of: menuitem,
+                of: menuItem,
                 collision: 'flipfit'
             };
         }
 
         //avoid queuing multiple runs
-        if(this.timeoutId) {
+        if (this.timeoutId) {
             clearTimeout(this.timeoutId);
         }
 
-        this.timeoutId = PrimeFaces.queueTask(function () {
+        this.timeoutId = PrimeFaces.queueTask(() => {
            submenu.css('z-index', PrimeFaces.nextZindex())
                   .show()
                   .position(pos)
         }, this.cfg.delay);
     }
-
 }
