@@ -1,6 +1,7 @@
 /**
  * The configuration for the {@link Menu} widget.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
+ * 
+ * You can access this configuration via {@link Menu.cfg | cfg}. Please note that this
  * configuration is usually meant to be read-only and should not be modified.
  */
 export interface MenuCfg extends PrimeType.widget.BaseWidgetCfg {

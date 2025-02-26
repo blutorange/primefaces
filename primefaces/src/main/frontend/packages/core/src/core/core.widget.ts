@@ -133,7 +133,7 @@ export interface DeferredWidgetCfg extends BaseWidgetCfg {
  *
  * @prop {string} key The key of the JSON object.
  */
-export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg>  {
+export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg> {
     /**
      * The configuration of this widget instance. Please note that
      * no property is guaranteed to be present, you should always check for `undefined` before accessing a property.
@@ -552,6 +552,25 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg>  {
         }
         return core.getAriaLabel(label);
     }
+
+    // TODO: Why are the targetWidget and jqTargetId parameters necessary?
+    // We are calling the target widget instance, which has this data already
+    // (and often won't even need it).
+    /**
+     * Optional feature that can be implemented by widgets to add additional support
+     * for context menus. When implemented, this is called by the context menu
+     * widget when it attaches itself to a widget.
+     * @param contextMenu The context menu widget that wishes to attach itself to this widget.
+     * @param targetWidget This widget instance.
+     * @param jqTargetId The ID selector of the main element of this widget.
+     * @param cfg The configuration of the context menu widget.
+     */
+    bindContextMenu?(
+        contextMenu: PrimeType.widget.ContextMenuLikeWidget,
+        targetWidget: this,
+        jqTargetId: string,
+        cfg: PrimeType.widget.PartialWidgetCfg<PrimeType.widget.ContextMenuLikeWidgetCfg>,
+    ): void;
 }
 
 /**

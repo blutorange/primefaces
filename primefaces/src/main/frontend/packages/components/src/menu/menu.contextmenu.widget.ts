@@ -6,7 +6,7 @@ import { TieredMenu, type TieredMenuCfg } from "./menu.tieredmenu.widget.js";
  * You can access this configuration via {@link ContextMenu.cfg |cfg}. Please note that this
  * configuration is usually meant to be read-only and should not be modified.
  */
-export interface ContextMenuCfg extends TieredMenuCfg {
+export interface ContextMenuCfg extends TieredMenuCfg, PrimeType.widget.ContextMenuLikeWidgetCfg {
     /**
      * Search expression for the element to which this context menu is appended. This is usually
      * invoke before the context menu is shown. When it returns `false`, this context menu is not shown.
@@ -57,7 +57,7 @@ export interface ContextMenuCfg extends TieredMenuCfg {
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class ContextMenu<Cfg extends ContextMenuCfg> extends TieredMenu<Cfg> {
+export class ContextMenu<Cfg extends ContextMenuCfg> extends TieredMenu<Cfg> implements PrimeType.widget.ContextMenuLikeWidget {
     /**
      * Target element of this context menu. A right click on the target brings up this context menu.
      */
@@ -112,7 +112,9 @@ export class ContextMenu<Cfg extends ContextMenuCfg> extends TieredMenu<Cfg> {
 
                 if (targetWidget) {
                     if (typeof targetWidget.bindContextMenu === 'function') {
-                        targetWidget.bindContextMenu(this, targetWidget, this.jqTargetId, this.cfg);
+                        // TODO Requires cast "as string" to encode the implicit logic
+                        // that when this.cfg.target is not undefined, we set this.jqTargetId to a string. 
+                        targetWidget.bindContextMenu(this, targetWidget, this.jqTargetId as string, this.cfg);
                         // GitHub #6776 IOS needs long touch on table/tree but Android does not
                         if(PrimeFaces.env.ios) {
                             this.bindTouchEvents();

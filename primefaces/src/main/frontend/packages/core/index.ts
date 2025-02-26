@@ -6,7 +6,7 @@ import { globalUtilsSetup } from "./src/core/core.utils.js";
 
 import { AjaxExceptionHandler } from "./src/ajaxexceptionhandler/ajaxexceptionhandler.js";
 import { AjaxStatus } from "./src/ajaxstatus/ajaxstatus.js";
-import { BaseWidget, DeferredWidget, DynamicOverlayWidget, type BaseWidgetCfg } from "./src/core/core.widget.js";
+import { BaseWidget, DeferredWidget, DynamicOverlayWidget } from "./src/core/core.widget.js";
 import { Poll } from "./src/poll/poll.js";
 
 import { registerCommonConverters } from "./src/validation/validation.converters.js";
@@ -1077,6 +1077,55 @@ declare global {
          */
         export type WidgetCfg<Widget extends PrimeType.Newable<[], BaseWidget<any>>> = Widget extends PrimeType.Newable<[], BaseWidget<infer Cfg>> ? Cfg : never;
 
+        /**
+         * Interface of the context menu widget configuration available to other
+         * widgets that wish to provide custom context menu integration.
+         * 
+         * Other widgets can implement the
+         * {@link BaseWidget.bindContextMenu bindContextMenu} method to do so.
+         * If they do, they get passed the widget instance and its configuration.
+         */
+        export interface ContextMenuLikeWidgetCfg extends BaseWidgetCfg {
+            /**
+             * Event that triggers this context menu, usually a (right) mouse click.
+             */
+            event: string;
+
+            /**
+             * Type of the target nodes to attach to. Used e.g. by the tree table widget.
+             * 
+             * TreeTable has special integration with context menu, you can even
+             * match different context menus with different tree nodes using
+             * this `nodeType` option of context menu that matches the tree node
+             * type.
+             */
+            nodeType: string;
+
+            /**
+             * Type of the selection mode, used e.g. by the data table widget.
+             * 
+             * DataTable has special integration with the context menu.
+             */
+            selectionMode: "single" | "multiple";
+        }
+
+        /**
+         * Interface of the context menu widget available to other widgets that
+         * wish to provide custom context menu integration. 
+         * 
+         * Other widgets can implement the
+         * {@link BaseWidget.bindContextMenu bindContextMenu} method to do so.
+         * If they do, they get passed the widget instance and its configuration.
+         */
+        export interface ContextMenuLikeWidget extends BaseWidget<ContextMenuLikeWidgetCfg> {
+            show(e: JQuery.TriggeredEvent): void;
+            hide(): void;
+        }
+
+        /**
+         * Configuration for widgets with the feature that allows the widget
+         * to be enabled and disabled.
+         */
         export interface ToggleFeatureWidgetCfg extends BaseWidgetCfg {
             /**
              * Whether the widget should be disabled during AJAX postback requests.
