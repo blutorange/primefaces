@@ -22,7 +22,7 @@ export class Resources {
     RESOURCE_URL_EXTENSION: string = "";
 
     /**
-    * Builds a JSF resource URL for given resource.
+    * Builds a Faces resource URL for given resource.
     * 
     * ```javascript
     * getFacesResource("main.css", "pf", "4.2.0") // => "https://www.primefaces.org/showcase/jakarta.faces.resource/main.css.xhtml?ln=pf&v=4.2.0"
@@ -31,7 +31,7 @@ export class Resources {
     * @param name The name of the resource, such as `primefaces.js`.
     * @param library The library of the resource, such as `primefaces`.
     * @param version The version of the library, such as `5.1`.
-    * @return The JSF resource URL for loading the resource.
+    * @return The Faces resource URL for loading the resource.
     */
     getFacesResource(name: string, library: string, version: string): string {
         // just get sure - name shouldn't start with a slash
@@ -39,7 +39,7 @@ export class Resources {
             name = name.substring(1, name.length);
         }
         
-        // find any JS served JSF resource
+        // find any JS served Faces resource
         var scriptURI = this.getResourceScriptURI();
         var scriptName = this.getResourceScriptName(scriptURI);
         
@@ -122,7 +122,7 @@ export class Resources {
     }
     
     /**
-    * Gets the resource URI of the first Javascript JS file served as a JSF resource.
+    * Gets the resource URI of the first Javascript JS file served as a Faces resource.
     * 
     * @return The first JavasScript resource URI.
     */

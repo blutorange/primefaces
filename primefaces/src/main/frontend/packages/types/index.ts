@@ -92,7 +92,7 @@ declare global {
 
     interface Window extends PrimeType.WindowExtensions {}
 
-    // Type declarations for the JSF core, see for example
+    // Type declarations for the Faces core, see for example
     // https://docs.oracle.com/javaee/7/javaserver-faces-2-2/jsdocs/symbols/jsf.html
     // or
     // https://github.com/jakartaee/faces/blob/master/spec/src/main/asciidoc/JavaScriptAPI.adoc
@@ -163,7 +163,7 @@ declare global {
     }
 
     /**
-     * The namespace for Ajax functionality provided by JSF.
+     * The namespace for Ajax functionality provided by Faces.
      *
      * Please note that this functionality may only be available when you use certain tags such as `<f:ajax .../>` tags.
      */
@@ -510,7 +510,7 @@ declare global {
          *   send the request as an asynchronous POST using the posting URL that was determined in the previous step.
          *   Otherwise, send the request using a multi-part capable transport layer, such as a hidden inline frame. Note
          *   that using a hidden inline frame does not use `XMLHttpRequest`, but the request must be sent with all the
-         *   parameters that a JSF `XMLHttpRequest` would have been sent with. In this way, the server side processing of
+         *   parameters that a Faces `XMLHttpRequest` would have been sent with. In this way, the server side processing of
          *   the request will be identical whether or the request is multipart or not.
          *
          *   The begin, complete, and success events must be emulated when using the multipart transport. This allows any
@@ -588,7 +588,7 @@ declare global {
          *   `<VIEW_ROOT_CONTAINER_CLIENT_ID>` is the return from `UIViewRoot.getContainerClientId()` on the view from
          *   whence this state originated. `<UNIQUE_PER_VIEW_NUMBER>` is a number that must be unique within this view, but
          *   must not be included in the view state. This requirement is simply to satisfy XML correctness in parity with
-         *   what is done in the corresponding non-partial JSF view. Locate and update the `javax.faces.ViewState` value for
+         *   what is done in the corresponding non-partial Faces view. Locate and update the `javax.faces.ViewState` value for
          *   all forms specified in the render target list.
          *
          * - If an update element is found in the response with an identifier containing `javax.faces.ClientWindow`:
@@ -604,7 +604,7 @@ declare global {
          *   `<VIEW_ROOT_CONTAINER_CLIENT_ID>` is the return from `UIViewRoot.getContainerClientId()` on the view from
          *   whence this state originated. `<UNIQUE_PER_VIEW_NUMBER>` is a number that must be unique within this view, but
          *   must not be included in the view state. This requirement is simply to satisfy XML correctness in parity with
-         *   what is done in the corresponding non-partial JSF view. Locate and update the `javax.faces.ClientWindow` value
+         *   what is done in the corresponding non-partial Faces view. Locate and update the `javax.faces.ClientWindow` value
          *   for all forms specified in the render target list.
          *
          * - If an update element is found in the response with the identifier `javax.faces.ViewHead`:

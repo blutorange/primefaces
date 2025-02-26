@@ -124,7 +124,7 @@ export class Csp {
      */
     hasRegisteredAjaxifiedEvent(id: string, event: string): boolean | undefined {
         if (core.isProductionProjectStage()) {
-            console.error("PrimeFaces CSP registry may not be used in JSF Production mode.");
+            console.error("PrimeFaces CSP registry may not be used in Faces Production mode.");
             return false;
         }
         if (this.EVENT_REGISTRY.has(id)) {

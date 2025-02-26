@@ -43,28 +43,28 @@ export interface BaseWidgetCfg {
     /**
      * An optional callback that is invoked
      * before the widget is created, at the start of the {@link BaseWidget.init | init} method. This is
-     * usually specified via the `widgetPreConstruct` attribute on the JSF component. Note that this is also called
+     * usually specified via the `widgetPreConstruct` attribute on the Faces component. Note that this is also called
      * during a `refresh` (AJAX update).
      */
     preConstruct: PrimeType.widget.PreConstructCallback;
     /**
      * An optional callback that is invoked
      * after this widget was created successfully, at the end of the {@link BaseWidget.init | init} method. This is
-     * usually specified via the `widgetPostConstruct` attribute on the JSF component. Note that this is also called
+     * usually specified via the `widgetPostConstruct` attribute on the Faces component. Note that this is also called
      * during a `refresh` (AJAX update).
      */
     postConstruct: PrimeType.widget.PostConstructCallback;
     /**
      * An optional callback that is invoked after
      * this widget was refreshed after an AJAX update, at the end of the {@link BaseWidget.refresh | refresh} method.
-     * This is usually specified via the `widgetPostRefresh` attribute on the JSF component.
+     * This is usually specified via the `widgetPostRefresh` attribute on the Faces component.
      */
     postRefresh: PrimeType.widget.PostRefreshCallback;
     /**
      * An optional callback that is invoked before
      * this widget is about to be destroyed, e.g., when the component was removed at the end of an AJAX update. This is
      * called at the beginning of the {@link BaseWidget.destroy | destroy} method. This is usually specified via the
-     * `widgetPreDestroy` attribute on the JSF component.
+     * `widgetPreDestroy` attribute on the Faces component.
      */
     preDestroy: PrimeType.widget.PreDestroyCallback;
     /**
@@ -330,7 +330,7 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg> {
 
     /**
      * Each widget has got a container element, this method returns that container. This container element is
-     * usually also the element whose ID is the client-side ID of the JSF component.
+     * usually also the element whose ID is the client-side ID of the Faces component.
      * @return The jQuery instance representing the main HTML container element of this widget.
      */
     getJQ(): JQuery {

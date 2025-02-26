@@ -348,7 +348,7 @@ declare global {
         export interface PrimeFacesSettings extends JQuery.AjaxSettings<PrimeFacesSettings> {
             /**
              * Selector to resolve all forms which needs to be updated with a new ViewState. This is required in
-             * portlets, as the DOM contains forms of multiple JSF views / applications.
+             * portlets, as the DOM contains forms of multiple Faces views / applications.
              */
             portletForms?: string | null | undefined;
             /**
@@ -421,7 +421,7 @@ declare global {
         export type CallbackOnsuccess =
             /**
              * @this The current AJAX settings as they were passed to JQuery when the request was made.
-             * @param data The XML document representing the partial response returned the JSF application in response
+             * @param data The XML document representing the partial response returned the Faces application in response
              * to the faces request. It usually looks like this: `<changes>...</changes>`
              * @param status The type of success, usually `success`.
              * @param xhr The XHR request that succeeded.
@@ -1273,7 +1273,7 @@ declare global {
         /**
          * A callback for a PrimeFaces widget. An optional callback that is invoked before a widget is created, at the
          * beginning of the {@link BaseWidget.init | init} method. This is usually specified via the `widgetPreConstruct`
-         * attribute on the JSF component.
+         * attribute on the Faces component.
          * @param The widget configuration.
          */
         export type PreConstructCallback =
@@ -1286,7 +1286,7 @@ declare global {
          * An optional callback that is invoked before a widget is about to be
          * destroyed, e.g., when the component was removed at the end of an AJAX update. This is called at the beginning
          * of the {@link BaseWidget.destroy | destroy} method. This is usually specified via the `widgetPreDestroy`
-         * attribute on the JSF component.
+         * attribute on the Faces component.
          */
         export type PreDestroyCallback =
             /**
@@ -1297,7 +1297,7 @@ declare global {
         /**
          * An optional callback that is invoked after a widget was refreshed
          * after an AJAX update, at the end of the {@link BaseWidget.refresh | refresh} method. This is usually specified
-         * via the `widgetPostRefresh` attribute on the JSF component.
+         * via the `widgetPostRefresh` attribute on the Faces component.
          */
         export type PostRefreshCallback =
             /**
@@ -1308,7 +1308,7 @@ declare global {
         /**
          * A callback for a PrimeFaces widget. An optional callback that is
          * invoked after a widget was created successfully, at the end of the {@link BaseWidget.init | init} method. This is
-         * usually specified via the `widgetPostConstruct` attribute on the JSF component. Note that this is also called
+         * usually specified via the `widgetPostConstruct` attribute on the Faces component. Note that this is also called
          * during a `refresh` (AJAX update).
          */
         export type PostConstructCallback =

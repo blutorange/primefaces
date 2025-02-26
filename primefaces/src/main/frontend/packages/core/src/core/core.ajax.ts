@@ -67,7 +67,7 @@ export class AjaxUtils {
 
     /**
      * Gets a selector to resolve all forms which needs to be updated with a new ViewState.
-     * This is required in portlets as the DOM contains forms of multiple JSF views / applications.
+     * This is required in portlets as the DOM contains forms of multiple Faces views / applications.
      *
      * @param form The closest form of the request source.
      * @param parameterPrefix The portlet parameter prefix.
@@ -1162,7 +1162,7 @@ export class AjaxRequest {
 
     /**
      * Finds the namespace (prefix) for the parameters of the given form.
-     * This is required for Porlets as a Portlet contains multiple JSF views and we must only process and update the forms/inputs of the current view / application.
+     * This is required for Porlets as a Portlet contains multiple Faces views and we must only process and update the forms/inputs of the current view / application.
      * Later the namespace is used for all post params.
      * @param form An HTML FORM element.
      * @return The namespace for the parameters of the given form, or `null` when the form does
@@ -1262,7 +1262,7 @@ export class AjaxResponse {
      * Handles the response of an AJAX request. The response consists of one or more actions such as executing a
      * script or updating a DOM element. See also {@link faces.ajax.response}.
      *
-     * Also updates the specified components if any and synchronizes the client side JSF state. DOM updates are
+     * Also updates the specified components if any and synchronizes the client side Faces state. DOM updates are
      * implemented using jQuery which uses a very algorithm.
      *
      * @typeParam Widget Type of the widget which triggered the AJAX request.
