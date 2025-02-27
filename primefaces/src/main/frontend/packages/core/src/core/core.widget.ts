@@ -618,7 +618,7 @@ export class DynamicOverlayWidget<Cfg extends DynamicOverlayWidgetCfg = DynamicO
             target = this.jq;
         }
 
-        var ignoreAppendTo = this instanceof core.widget.Dialog;
+        const ignoreAppendTo = this instanceof core.widget.Dialog;
         if (!ignoreAppendTo) {
             this.cfg.appendTo = utils.resolveAppendTo(this, target, overlay);
         }
