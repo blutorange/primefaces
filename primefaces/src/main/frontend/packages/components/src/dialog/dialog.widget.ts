@@ -1,100 +1,247 @@
 /**
+ * The configuration for the {@link  Dialog} widget.
+ * 
+ * You can access this configuration via {@link Dialog.cfg | cfg}. Please note that this
+ * configuration is usually meant to be read-only and should not be modified.
+ */
+export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg {
+    /**
+     * Whether the dialog is positioned absolutely.
+     */
+    absolutePositioned: boolean;
+    /**
+     * A search expression for the element to which the dialog is appended. Defaults to the
+     * body.
+     */
+    appendTo: string;
+    /**
+     * Whether to prevent the document from scrolling when the dialog is visible.
+     */
+    blockScroll: boolean;
+    /**
+     * Only relevant for dynamic="true": Defines if activating the dialog should load the contents from server again. For cache="true" (default) the dialog content is only loaded once.
+     */
+    cache: boolean;
+    /**
+     * Whether the dialog can be closed by the user.
+     */
+    closable: boolean;
+    /**
+     * Whether the dialog is closed when the user presses the escape button.
+     */
+    closeOnEscape: boolean;
+    /**
+     * Whether the dialog is draggable.
+     */
+    draggable: boolean;
+    /**
+     * Whether lazy loading of the content via AJAX is enabled.
+     */
+    dynamic: boolean;
+    /**
+     * Dialog size might exceed the viewport if the content is taller than viewport in terms
+     * of height. When this is set to `true`, automatically adjust the height to fit the dialog within the viewport.
+     */
+    fitViewport: boolean;
+    /**
+     * The height of the dialog in pixels.
+     */
+    height: number;
+    /**
+     * Effect to use when hiding the dialog.
+     */
+    hideEffect: string;
+    /**
+     * One or more CSS classes for the iframe within the dialog.
+     */
+    iframeStyleClass: string;
+    /**
+     * The title of the iframe with the dialog.
+     */
+    iframeTitle: string;
+    /**
+     * Whether the dialog is maximizable.
+     */
+    maximizable: boolean;
+    /**
+     * The minimum height of the dialog in pixels.
+     */
+    minHeight: number;
+    /**
+     * The minimum width of the dialog in pixels.
+     */
+    minWidth: number;
+    /**
+     * Whether the dialog is minimizable.
+     */
+    minimizable: boolean;
+    /**
+     * Whether the dialog is modal and blocks the main content and other dialogs.
+     */
+    modal: boolean;
+    /**
+     * Position of the dialog relative to the target.
+     */
+    my: string;
+    /**
+     * Client-side callback to invoke when the dialog is
+     * closed.
+     */
+    onHide: PrimeType.widget.Dialog.OnHideCallback;
+    /**
+     * Client-side callback to invoke when the dialog is opened.
+     */
+    onShow: PrimeType.widget.Dialog.OnShowCallback;
+    /**
+     * Defines where the dialog should be displayed
+     */
+    position: string;
+    /**
+     * Whether the dialog can be resized by the user.
+     */
+    resizable: boolean;
+    /**
+     * Use ResizeObserver to automatically adjust dialog-height after e.g. AJAX-updates. Resizable must be set to false
+     * to use this option. (Known limitation: Dialog does not automatically resize yet when resizing the browser
+     * window.)
+     */
+    resizeObserver: boolean;
+    /**
+     * Can be used together with resizeObserver = true. Centers the dialog again after it was resized to ensure the
+     * whole dialog is visible onscreen.
+     */
+    resizeObserverCenter: boolean;
+    /**
+     * Whether the dialog is responsive. In responsive mode, the dialog adjusts itself based
+     * on the screen width.
+     */
+    responsive: boolean;
+    /**
+     * Effect to use when showing the dialog
+     */
+    showEffect: string;
+    /**
+     * One or more CSS classes for the dialog.
+     */
+    styleClass: string;
+    /**
+     * The width of the dialog in pixels.
+     */
+    width: number;
+}
+
+/**
  * __PrimeFaces Dialog Widget__
  * 
  * Dialog is a panel component that is displayed as an overlay on top of other elements on the current page. Optionally,
  * the dialog may be modal and block the user from interacting with elements below the dialog.
  *
- * @typedef PrimeFaces.widget.Dialog.OnHideCallback Client-side callback to invoke when the dialog is closed, see
- * {@link DialogCfg.onHide}.
- * @this {PrimeFaces.widget.Dialog} PrimeFaces.widget.Dialog.OnHideCallback
- * 
- * @typedef PrimeFaces.widget.Dialog.OnShowCallback Client-side callback to invoke when the dialog is opened, see
- * {@link DialogCfg.onShow}
- * @this {PrimeFaces.widget.Dialog} PrimeFaces.widget.Dialog.OnShowCallback
- * 
- * @interface {PrimeFaces.widget.Dialog.ClientState} ClientState The client-side state of the dialog such as its width
- * and height. The client-side state can be preserved during AJAX updates by sending it to the server.
- * @prop {number} ClientState.contentHeight The total height in pixels of the content area of the dialog.
- * @prop {number} ClientState.contentWidth The total width in pixels of the content area of the dialog..
- * @prop {number} ClientState.height The total height of the dialog in pixels, including the header and its content.
- * @prop {JQuery.Coordinates} [ClientState.offset] Vertical and horizontal offset of the top-left corner of the dialog.
- * @prop {number} ClientState.width The total width of the dialog in pixels, including the header and its content.
- * @prop {number} ClientState.windowScrollLeft Horizontal scroll position of the window.
- * @prop {number} ClientState.windowScrollTop Vertical scroll position of the window.
- * 
- * @prop {JQuery} closeIcon DOM element of the icon for closing this dialog, when this dialog is closable (an `x` by
- * default).
- * @prop {JQuery} content DOM element of the container for the content of this dialog.
- * @prop {JQuery} [iframeFix] The DOM element of the overlay that is put over iframes during a resize.
- * @prop {JQuery} footer DOM element of the container with the footer of this dialog.
- * @prop {JQuery} icons DOM elements of the title bar icons of this dialog.
- * @prop {HTMLElement} jqEl The native DOM element instance of the container element of this widget (same element as the
- * `jq` property).
- * @prop {number} [lastScrollTop] The last known vertical scrolling position.
- * @prop {boolean} [loaded] Whether the dialog content was already loaded (when dynamic loading via AJAX is
- * enabled.)
- * @prop {boolean} [maximized] Whether the dialog is currently maximized.
- * @prop {JQuery} maximizeIcon DOM element of the icon for maximizing this dialog, when this dialog can be maximized.
- * @prop {boolean} [minimized] Whether the dialog is currently minimized.
- * @prop {JQuery} minimizeIcon DOM element of the icon for minimizing this dialog, when this dialog can be minimized.
- * @prop {JQuery} minimizeClone DOM element clone of the JQ to be used for minimizing.
- * @prop {JQuery} parent The DOM element of the parent that contains this dialog, i.e the element to which the dialog
- * was appended.
- * @prop {boolean} positionInitialized Whether the position of the dialog was already set. If not, it must be set the
- * next time the dialog is shown.
- * @prop {JQuery} [resizers] The DOM element of the resize icons for resizing the dialog, if resizing is
- * enabled.
- * @prop {PrimeFaces.widget.Dialog.ClientState} [state] The client-side state of the dialog such as its width
- * and height. The client-side state can be preserved during AJAX updates by sending it to the server.
- * @prop {JQuery} titlebar DOM element of the title bar container of this dialog.
- * @prop {HTMLElement} focusedElementBeforeDialogOpened Element that was focused before the dialog was opened.
- * 
- * @interface {PrimeFaces.widget.DialogCfg} cfg The configuration for the {@link  Dialog| Dialog widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.DynamicOverlayWidgetCfg} cfg
- * @prop {string} cfg.appendTo A search expression for the element to which the dialog is appended. Defaults to the
- * body.
- * @prop {boolean} cfg.absolutePositioned Whether the dialog is positioned absolutely.
- * @prop {boolean} cfg.blockScroll Whether to prevent the document from scrolling when the dialog is visible.
- * @prop {boolean} cfg.cache Only relevant for dynamic="true": Defines if activating the dialog should load the contents from server again. For cache="true" (default) the dialog content is only loaded once.
- * @prop {boolean} cfg.closeOnEscape Whether the dialog is closed when the user presses the escape button.
- * @prop {boolean} cfg.closable Whether the dialog can be closed by the user.
- * @prop {boolean} cfg.draggable Whether the dialog is draggable.
- * @prop {boolean} cfg.dynamic Whether lazy loading of the content via AJAX is enabled.
- * @prop {boolean} cfg.fitViewport Dialog size might exceed the viewport if the content is taller than viewport in terms
- * of height. When this is set to `true`, automatically adjust the height to fit the dialog within the viewport.
- * @prop {number} cfg.height The height of the dialog in pixels.
- * @prop {string} cfg.hideEffect Effect to use when hiding the dialog.
- * @prop {string} cfg.iframeStyleClass One or more CSS classes for the iframe within the dialog.
- * @prop {string} cfg.iframeTitle The title of the iframe with the dialog.
- * @prop {boolean} cfg.maximizable Whether the dialog is maximizable.
- * @prop {number} cfg.minHeight The minimum height of the dialog in pixels.
- * @prop {boolean} cfg.minimizable Whether the dialog is minimizable.
- * @prop {number} cfg.minWidth The minimum width of the dialog in pixels.
- * @prop {boolean} cfg.modal Whether the dialog is modal and blocks the main content and other dialogs.
- * @prop {string} cfg.my Position of the dialog relative to the target.
- * @prop {PrimeFaces.widget.Dialog.OnHideCallback} cfg.onHide Client-side callback to invoke when the dialog is
- * closed.
- * @prop {PrimeFaces.widget.Dialog.OnShowCallback} cfg.onShow Client-side callback to invoke when the dialog is opened.
- * @prop {string} cfg.position Defines where the dialog should be displayed
- * @prop {boolean} cfg.resizable Whether the dialog can be resized by the user.
- * @prop {boolean} cfg.resizeObserver Use ResizeObserver to automatically adjust dialog-height after e.g. AJAX-updates. Resizeable must be set to false to use this option. (Known limitation: Dialog does not automatically resize yet when resizing the browser-window.)
- * @prop {boolean} cfg.resizeObserverCenter Can be used together with resizeObserver = true. Centers the dialog again after it was resized to ensure the whole dialog is visible onscreen.
- * @prop {boolean} cfg.responsive Whether the dialog is responsive. In responsive mode, the dialog adjusts itself based
- * on the screen width.
- * @prop {string} cfg.showEffect Effect to use when showing the dialog
- * @prop {string} cfg.styleClass One or more CSS classes for the dialog.
- * @prop {number} cfg.width The width of the dialog in pixels.
+ * @typeParam Cfg Type of the configuration object.
  */
-PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlayWidget {
+export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOverlayWidget<Cfg> {
+    /**
+     * DOM element of the icon for closing this dialog, when this dialog is closable (an `x` by
+     * default).
+     */
+    closeIcon: JQuery = $();
 
     /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
+     * DOM element of the container for the content of this dialog.
      */
-    init(cfg) {
+    content: JQuery = $();
+
+    /**
+     * Element that was focused before the dialog was opened.
+     */
+    focusedElementBeforeDialogOpened: HTMLElement;
+
+    /**
+     * DOM element of the container with the footer of this dialog.
+     */
+    footer: JQuery = $();
+
+    /**
+     * DOM elements of the title bar icons of this dialog.
+     */
+    icons: JQuery = $();
+
+    /**
+     * The DOM element of the overlay that is put over iframes during a resize.
+     */
+    iframeFix?: JQuery = $();
+
+    /**
+     * The native DOM element instance of the container element of this widget (same element as the
+     * `jq` property).
+     */
+    jqEl: HTMLElement;
+
+    /**
+     * The last known vertical scrolling position.
+     */
+    lastScrollTop?: number;
+
+    /**
+     * Whether the dialog content was already loaded (when dynamic loading via AJAX is
+     * enabled.)
+     */
+    loaded?: boolean;
+
+    /**
+     * DOM element of the icon for maximizing this dialog, when this dialog can be maximized.
+     */
+    maximizeIcon: JQuery = $();
+
+    /**
+     * Whether the dialog is currently maximized.
+     */
+    maximized?: boolean;
+
+    /**
+     * DOM element clone of the JQ to be used for minimizing.
+     */
+    minimizeClone: JQuery = $();
+
+    /**
+     * DOM element of the icon for minimizing this dialog, when this dialog can be minimized.
+     */
+    minimizeIcon: JQuery = $();
+
+    /**
+     * Whether the dialog is currently minimized.
+     */
+    minimized?: boolean;
+
+    /**
+     * The DOM element of the parent that contains this dialog, i.e the element to which the dialog
+     * was appended.
+     */
+    parent: JQuery = $();
+
+    /**
+     * Whether the position of the dialog was already set. If not, it must be set the
+     * next time the dialog is shown.
+     */
+    positionInitialized: boolean = false;
+
+    /**
+     * The DOM element of the resize icons for resizing the dialog, if resizing is
+     * enabled.
+     */
+    resizers?: JQuery = $();
+
+    /**
+     * The client-side state of the dialog such as its width
+     * and height. The client-side state can be preserved during AJAX updates by sending it to the server.
+     */
+    state?: PrimeType.widget.Dialog.ClientState;
+
+    /**
+     * DOM element of the title bar container of this dialog.
+     */
+    titlebar: JQuery = $();
+
+    override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);
 
         this.content = this.jq.children('.ui-dialog-content');
@@ -153,12 +300,7 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
         }
     }
 
-    /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
-     */
-    refresh(cfg) {
+    override refresh(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         this.positionInitialized = false;
         this.loaded = false;
 
@@ -180,9 +322,8 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
 
     /**
      * Computes and applies the correct size for this dialog, according to the current configuration.
-     * @protected
      */
-    initSize() {
+    protected initSize(): void {
         this.jq.css({
             'width': String(this.cfg.width),
             'height': 'auto'
@@ -197,9 +338,8 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
 
     /**
      * Makes this dialog fit the current browser window, if the `fitViewport` option is enabled.
-     * @protected
      */
-    fitViewport() {
+    protected fitViewport(): void {
         var windowHeight = $(window).height();
 
         var margin = this.jq.outerHeight(true) - this.jq.outerHeight();
@@ -218,12 +358,9 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
 
 
     /**
-     * @override
-     * @protected
-     * @inheritdoc
-     * @return {JQuery} The DOM elements which are allowed to be focused via tabbing.
+     * @returns The DOM elements which are allowed to be focused via tabbing.
      */
-    getModalTabbables() {
+    protected override getModalTabbables(): JQuery {
         var tabbablesInIframe = this.cfg.getModalTabbables ? this.cfg.getModalTabbables() : undefined;
         
         return this.jq.find(':tabbable').add(tabbablesInIframe).add(this.footer.find(':tabbable'));
@@ -234,11 +371,11 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
      * in an AJAX request to the sever to retrieve the content. Also triggers the show behaviors registered for this
      * dialog.
      * 
-     * @param {number | string} [duration] Durations are given in milliseconds; higher values indicate slower
+     * @param duration Durations are given in milliseconds; higher values indicate slower
      * animations, not faster ones. The strings `fast` and `slow` can be supplied to indicate durations of 200 and 600
      * milliseconds, respectively.
      */
-    show(duration) {
+    show(duration?: number | string): void {
         if(this.isVisible()) {
             return;
         }
@@ -271,13 +408,11 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
      * Performs the client-side actions needed to actually show this dialog. Compare to `show`, which loads the dialog
      * content from the server if required, then call this method.
      * 
-     * @protected
-     * 
-     * @param {number | string} [duration] Durations are given in milliseconds; higher values indicate slower
+     * @param duration Durations are given in milliseconds; higher values indicate slower
      * animations, not faster ones. The strings `fast` and `slow` can be supplied to indicate durations of 200 and 600
      * milliseconds, respectively.
      */
-    _show(duration) {
+    protected _show(duration?: number | string): void {
         this.moveToTop();
 
         //offset
@@ -309,9 +444,8 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
 
     /**
      * Called after this dialog became visible. Triggers the behaviors and registered event listeners.
-     * @protected
      */
-    postShow() {
+    protected postShow(): void {
         if (this.cfg.fitViewport) {
             this.fitViewport();
         }
@@ -336,11 +470,11 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
     /**
      * Hide the dialog with an optional animation lasting for the given duration.
      * 
-     * @param {number | string} [duration] Durations are given in milliseconds; higher values indicate slower
+     * @param duration Durations are given in milliseconds; higher values indicate slower
      * animations, not faster ones. The strings `fast` and `slow` can be supplied to indicate durations of 200 and 600
      * milliseconds, respectively.
      */
-    hide(duration) {
+    hide(duration: number | string): void {
         if(!this.isVisible()) {
             return;
         }
@@ -367,9 +501,8 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
 
     /**
      * Puts focus on the first element that can be focused.
-     * @protected
      */
-    applyFocus() {
+    protected applyFocus(): void {
         if (this.cfg.focus) {
             var $this = this;
             PrimeFaces.queueTask(function() {
@@ -382,9 +515,8 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
     
     /**
      * Puts focus on the element that opened this dialog.
-     * @protected
      */
-    returnFocus() {
+    protected returnFocus(): void {
         var el = this.focusedElementBeforeDialogOpened;
         if (el) {
             // #11860 do not return focus to caller if other dialogs are still open
@@ -399,9 +531,8 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
 
     /**
      * Sets up all event listeners required by this widget.
-     * @protected
      */
-    bindEvents() {
+    protected bindEvents(): void {
         var $this = this;
 
         //Move dialog to top if target is not a trigger for a PrimeFaces overlay
@@ -475,9 +606,8 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
 
     /**
      * Sets up all event listeners required to make this dialog draggable.
-     * @protected
      */
-    setupDraggable() {
+    protected setupDraggable(): void {
         var $this = this;
 
         this.jq.draggable({
@@ -500,9 +630,8 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
 
     /**
      * Sets up all event listeners required to make this dialog resizable.
-     * @protected
      */
-    setupResizable() {
+    protected setupResizable(): void {
         var $this = this;
 
         this.jq.resizable({
@@ -552,17 +681,15 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
     
     /**
      * Resets the dialog position as specified by the `position` property of this widget configuration.
-     * @protected
      */
-    resetPosition() {
+    protected resetPosition(): void {
        this.initPosition();
     }
 
     /**
      * Positions this dialog on the screen as specified by the widget configuration.
-     * @protected
      */
-    initPosition() {
+    protected initPosition(): void {
         var $this = this;
 
         //reset
@@ -611,11 +738,10 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
 
     /**
      * Called when this dialog was closed. Invokes the appropriate behaviors and event listeners.
-     * @protected
-     * @param {unknown} [event] Unused.
-     * @param {unknown} [ui] Unused. 
+     * @param event Unused.
+     * @param ui Unused. 
      */
-    onHide(event, ui) {
+    protected onHide(event: JQuery.TriggeredEvent, ui: unknown): void {
         this.callBehavior('close');
 
         this.jq.attr({
@@ -634,15 +760,15 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
     /**
      * Moves this dialog to the top so that it is positioned above other elements and overlays.
      */
-    moveToTop() {
+    moveToTop(): void {
         PrimeFaces.nextZindex(this.jq);
     }
 
     /**
-     * Toggle maxification, as if the user had clicked the maximize button. If this dialog is not yet maximized,
-     * maximizes it. If this dialog is already maximized, reverts it back to its orignal size.
+     * Toggle maximization, as if the user had clicked the maximize button. If this dialog is not yet
+     * maximized, maximizes it. If this dialog is already maximized, reverts it back to its original size.
      */
-    toggleMaximize() {
+    toggleMaximize(): void {
         if(this.minimized) {
             this.toggleMinimize();
         }
@@ -660,11 +786,11 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
             this.saveState();
 
             this.jq.addClass('ui-dialog-maximized').css({
-                'width': String($(window).width() - 6)
-                ,'height': String($(window).height())
+                'width': String($(window).width() - 6),
+                'height': String($(window).height()),
             }).offset({
-                top: $(window).scrollTop()
-                ,left: $(window).scrollLeft()
+                top: $(window).scrollTop(),
+                left: $(window).scrollLeft(),
             });
 
             //maximize content
@@ -685,7 +811,7 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
      * Toggles minification, as if the user had clicked the minimize button. If this dialog is not yet minimized,
      * minimizes it.  If this dialog is already minimized, restores its original position.
      */
-    toggleMinimize() {
+    toggleMinimize(): void {
         var animate = true,
         dockingZone = $(document.body).children('.ui-dialog-docking-zone');
 
@@ -732,9 +858,8 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
 
     /**
      * Called when this dialog is minimized. Restores the original position of this dialog.
-     * @protected
      */
-    removeMinimize() {
+    protected removeMinimize(): void {
         this.minimizeClone.remove();
         this.jq.show();
         this.restoreState();
@@ -744,10 +869,9 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
     /**
      * Docks this dialog to the given docking zone. The docking zone is usually at the bottom of the screen and displays
      * a list of minimized dialogs.
-     * @protected
-     * @param {JQuery} zone Zone to dock to.
+     * @param zone Zone to dock to.
      */
-    dock(zone) {
+    protected dock(zone: JQuery): void {
         zone.css('z-index', this.jq.css('z-index'));
         this.jq.hide();
         this.minimizeClone.appendTo(zone).css({'position':'static', 'height':'auto', 'width':'auto', 'float': 'left'});
@@ -761,26 +885,24 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
     /**
      * Saves the current state of this dialog, such as its width and height. Used for example to preserve that state
      * during AJAX updates.
-     * @protected
      */
-    saveState() {
+    protected saveState(): void {
         this.state = {
-            width: this.jq.width(),
-            height: this.jq.height(),
+            width: this.jq.width() ?? 0,
+            height: this.jq.height() ?? 0,
             contentWidth: parseInt(this.content[0].style.width) || this.content.width(),
-            contentHeight: this.content.height()
+            contentHeight: this.content.height() ?? 0,
         };
 
         this.state.offset = this.jq.offset();
-        this.state.windowScrollLeft = $(window).scrollLeft();
-        this.state.windowScrollTop = $(window).scrollTop();
+        this.state.windowScrollLeft = $(window).scrollLeft() ?? 0;
+        this.state.windowScrollTop = $(window).scrollTop() ?? 0;
     }
 
     /**
      * Restores the state as saved by `saveState`, usually called after an AJAX update.
-     * @protected
      */
-    restoreState() {
+    protected restoreState(): void {
         this.jq.width(this.state.width).height(this.state.height);
         this.content.width(this.state.contentWidth).height(this.state.contentHeight);
 
@@ -793,9 +915,8 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
     /**
      * Loads the content of the dialog via AJAx, if this dialog is `dynamic` and the the content has not yet been
      * loaded.
-     * @protected
      */
-    loadContents() {
+    protected loadContents(): void {
         var $this = this,
         options = {
             source: this.id,
@@ -831,15 +952,14 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
 
     /**
      * Applies all `ARIA` attributes to the contents of this dialog.
-     * @protected
      */
-    applyARIA() {
+    protected applyARIA(): void {
         var role = this instanceof PrimeFaces.widget.ConfirmDialog ? 'alertdialog' : 'dialog';
         this.jq.attr({
-            'role': role
-            ,'aria-describedby': this.id + '_content'
-            ,'aria-hidden': !this.cfg.visible
-            ,'aria-modal': this.cfg.modal
+            'role': role,
+            'aria-describedby': this.id + '_content',
+            'aria-hidden': !this.cfg.visible,
+            'aria-modal': this.cfg.modal,
         });
         
         // GitHub #4727
@@ -854,17 +974,16 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
     /**
      * Checks whether this dialog is opened and visible. This method returns `true` irrespective of whether this dialog 
      * is minimized, maximized, or shown normally. Returns `false` only when this dialog is closed. 
-     * @return {boolean} `true` if this dialog is currently being shown, `false` otherwise.
+     * @returns `true` if this dialog is currently being shown, `false` otherwise.
      */
-    isVisible() {
+    isVisible(): boolean {
         return this.jq.is(':visible') || this.minimized === true;
     }
 
     /**
      * Sets up the event listeners for handling resize events.
-     * @protected
      */
-    bindResizeListener() {
+    protected bindResizeListener(): void {
         var $this = this;
 
         // internal function to handle resize or scrolling
@@ -898,42 +1017,24 @@ PrimeFaces.widget.Dialog = class Dialog extends PrimeFaces.widget.DynamicOverlay
 }
 
 /**
+ * The configuration for the {@link  ConfirmDialog} widget. You can access this configuration via
+ * {@link ConfirmDialog.cfg | cfg}. Please note that this configuration is usually meant to be
+ * read-only and should not be modified.
+ */
+export interface ConfirmDialogCfg extends DialogCfg {
+}
+
+/**
  * __PrimeFaces ConfirmDialog Widget__
  * 
  * ConfirmDialog is a replacement to the legacy JavaScript confirmation box. Skinning, customization and avoiding popup
  * blockers are notable advantages over the classic JavaScript confirmation box.
- * 
- * @interface {PrimeFaces.widget.ConfirmDialog.ConfirmDialogMessage} ConfirmDialogMessage Interface for the message that
- * is shown in the confirm dialog.
- * @prop {string} ConfirmDialogMessage.header Header of the dialog message.
- * @prop {string} ConfirmDialogMessage.message Main content of the dialog message.
- * @prop {boolean} ConfirmDialogMessage.escape If `true`, the message is escaped for HTML. If `false`, the message is
- * interpreted as an HTML string.
- * @prop {string} [ConfirmDialogMessage.icon] Optional icon that is shown to the left of the confirm dialog. When not given, defaults to
- * `ui-icon-alert`. Must be a style class of some icon font.
- * @prop {string} [ConfirmDialogMessage.beforeShow] Optional code that is run before the message is shown. Must be valid JavaScript code.
- * It is evaluated via {@link PrimeFaces.csp.eval}.
- * 
- * @prop {JQuery} title DOM element of the title bar text.
- * @prop {JQuery} message DOM element of the confirmation message displayed in this confirm dialog.
- * @prop {JQuery} icon DOM element of the icon displayed next to the confirmation message.
- * @prop {JQuery} yesButton DOM element of the Yes button.
- * @prop {JQuery} noButton DOM element of the No button.
- * 
- * @interface {PrimeFaces.widget.ConfirmDialogCfg} cfg The configuration for the
- * {@link  ConfirmDialog| ConfirmDialog widget}. You can access this configuration via
- * {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this configuration is usually meant to be
- * read-only and should not be modified.
- * @extends {PrimeFaces.widget.DialogCfg} cfg
+ *
+ * @typeParam Cfg Type of the configuration object.
  */
-PrimeFaces.widget.ConfirmDialog = class ConfirmDialog extends PrimeFaces.widget.Dialog {
+export class ConfirmDialog<Cfg extends ConfirmDialogCfg> extends Dialog<Cfg> {
 
-    /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
-     */
-    init(cfg) {
+    override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         cfg.draggable = false;
         cfg.resizable = false;
         cfg.modal = true;
@@ -1011,23 +1112,11 @@ PrimeFaces.widget.ConfirmDialog = class ConfirmDialog extends PrimeFaces.widget.
         }
     }
 
-    /**
-     * @override
-     * @protected
-     * @inheritdoc
-     */
-    applyFocus() {
+    protected override applyFocus(): void {
         this.jq.find(':button,:submit').filter(':visible:enabled').eq(0).trigger('focus');
     }
     
-    /**
-     * @override
-     * @protected
-     * @inheritdoc
-     * @param {unknown} [event] Unused.
-     * @param {unknown} [ui] Unused. 
-     */
-    onHide(event, ui) {
+    protected override onHide(event: JQuery.TriggeredEvent, ui: unknown): void {
         super.onHide(event, ui);
 
         // Remove added classes and reset button labels to their original values
@@ -1052,9 +1141,9 @@ PrimeFaces.widget.ConfirmDialog = class ConfirmDialog extends PrimeFaces.widget.
 
     /**
      * Shows the given message in this confirmation dialog.
-     * @param {Partial<PrimeFaces.widget.ConfirmDialog.ConfirmDialogMessage>} msg Message to show.
+     * @param msg Message to show.
      */
-    showMessage(msg) {
+    showMessage(msg: Partial<PrimeType.widget.ConfirmDialog.ConfirmDialogMessage>): void {
         // Execute any code specified to run before showing the message
         if (msg.beforeShow) {
             PrimeFaces.csp.eval(msg.beforeShow);
@@ -1108,7 +1197,15 @@ PrimeFaces.widget.ConfirmDialog = class ConfirmDialog extends PrimeFaces.widget.
 
         this.show();
     }
+}
 
+/**
+ * The configuration for the {@link DynamicDialog} widget.
+ * 
+ * You can access this configuration via {@link DynamicDialog.cfg | cfg}. Please note that this
+ * configuration is usually meant to be read-only and should not be modified.
+ */
+export interface DynamicDialogCfg extends DialogCfg {
 }
 
 /**
@@ -1116,18 +1213,10 @@ PrimeFaces.widget.ConfirmDialog = class ConfirmDialog extends PrimeFaces.widget.
  * 
  * Used by the dialog framework for displaying other Faces views or external pages in a dialog on the current.
  * 
- * @interface {PrimeFaces.widget.DynamicDialogCfg} cfg The configuration for the {@link DynamicDialog| DynamicDialog widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.DialogCfg} cfg
+ * @typeParam Cfg Type of the configuration object.
  */
-PrimeFaces.widget.DynamicDialog = class DynamicDialog extends PrimeFaces.widget.Dialog {
-
-    /**
-     * @override
-     * @inheritdoc
-     */
-    show() {
+export class DynamicDialog<Cfg extends DynamicDialogCfg> extends Dialog<Cfg> {
+    override show(): void {
         if(this.jq.hasClass('ui-overlay-visible')) {
             return;
         }
@@ -1139,13 +1228,7 @@ PrimeFaces.widget.DynamicDialog = class DynamicDialog extends PrimeFaces.widget.
         this._show();
     }
 
-
-    /**
-     * @override
-     * @protected
-     * @inheritdoc
-     */
-    _show() {
+    protected override _show(): void {
         //replace visibility hidden with display none for effect support, toggle marker class
         this.jq.removeClass('ui-overlay-hidden').addClass('ui-overlay-visible').css({
             'display':'none'
@@ -1167,12 +1250,7 @@ PrimeFaces.widget.DynamicDialog = class DynamicDialog extends PrimeFaces.widget.
         }
     }
 
-    /**
-     * @override
-     * @protected
-     * @inheritdoc
-     */
-    initSize() {
+    protected override initSize(): void {
         this.jq.css({
             'width': String(this.cfg.width),
             'height': String(this.cfg.height)
@@ -1182,5 +1260,4 @@ PrimeFaces.widget.DynamicDialog = class DynamicDialog extends PrimeFaces.widget.
             this.fitViewport();
         }
     }
-
 }

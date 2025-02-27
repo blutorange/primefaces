@@ -1666,8 +1666,8 @@ export class Core {
     }
 
     /**
-     * Deprecated, use `PrimeFaces.dialog.DialogHandler.openDialog` instead.
-     * @deprecated
+     * Opens the dialog with the given configuration.
+     * @deprecated Deprecated, use `PrimeFaces.dialog.DialogHandler.openDialog` instead.
      * @param cfg Configuration of the dialog.
      */
     openDialog(cfg: PrimeFaces.dialog.DialogHandlerCfg): void {
@@ -1677,8 +1677,9 @@ export class Core {
     }
 
     /**
-     * Deprecated, use `PrimeFaces.dialog.DialogHandler.closeDialog` instead.
-     * @deprecated
+     * 
+     * Close the dialog with the given configuration.
+     * @deprecated Deprecated, use `PrimeFaces.dialog.DialogHandler.closeDialog` instead.
      * @param cfg Configuration of the dialog.
      */
     closeDialog(cfg: PrimeFaces.dialog.DialogHandlerCfg): void {
@@ -1688,8 +1689,8 @@ export class Core {
     }
 
     /**
-     * Deprecated, use `PrimeFaces.dialog.DialogHandler.showMessageInDialog` instead.
-     * @deprecated
+     * Shows the given message inside a dialog.
+     * @deprecated Deprecated, use `PrimeFaces.dialog.DialogHandler.showMessageInDialog` instead.
      * @param msg Message to show in a dialog.
      */
     showMessageInDialog(msg: PrimeFaces.widget.ConfirmDialog.ConfirmDialogMessage): void {

@@ -36,7 +36,9 @@ import { Steps } from "./src/menu/menu.steps.widget.js";
 import { TabMenu } from "./src/menu/menu.tabmenu.widget.js";
 import { TieredMenu } from "./src/menu/menu.tieredmenu.widget.js";
 
-import "./src/core.dialog.js";
+import { dialog, type Dialogs, type DialogHandler as _DialogHandler } from "./src/core.dialog.js";
+import { ConfirmDialog, Dialog, DynamicDialog } from "./src/dialog/dialog.widget.js";
+
 import "./src/accordion/accordion.widget.js";
 import "./src/autocomplete/autocomplete.widget.js";
 import "./src/blockui/blockui.widget.js";
@@ -50,7 +52,6 @@ import "./src/datascroller/datascroller.widget.js";
 
 import "./src/datatable/datatable.widget.js";
 import "./src/datatable/datatable.frozen.widget.js";
-import "./src/dialog/dialog.widget.js";
 import "./src/dragdrop/dragdrop.widget.js";
 import "./src/effect/effect.widget.js";
 import "./src/fieldset/fieldset.widget.js";
@@ -93,35 +94,209 @@ import "./src/sidebar/sidebar.widget.js";
 import "./src/dataview/dataview.widget.js";
 import "./src/toggleswitch/toggleswitch.widget.js";
 
-// Expose autosize to the global scope
-Object.assign(window, { autosize });
 
-// Expose widgets to the global scope
+// Add widgets and dialog to the PrimeFaces global object
+exposeToGlobalScope();
 
-// src/forms
-PrimeFaces.widget.CommandButton = CommandButton;
-PrimeFaces.widget.SplitButton = SplitButton;
+function exposeToGlobalScope() {
+    if (PrimeFaces.dialog) {
+        return;
+    }
 
-// src/menu
-PrimeFaces.widget.BreadCrumb = BreadCrumb;
-PrimeFaces.widget.MegaMenu = MegaMenu;
-PrimeFaces.widget.Menu = Menu;
-PrimeFaces.widget.MenuButton = MenuButton;
-PrimeFaces.widget.Menubar = Menubar;
-PrimeFaces.widget.PanelMenu = PanelMenu;
-PrimeFaces.widget.PlainMenu = PlainMenu;
-PrimeFaces.widget.SlideMenu = SlideMenu;
-PrimeFaces.widget.Steps = Steps;
-PrimeFaces.widget.TabMenu = TabMenu;
-PrimeFaces.widget.TieredMenu = TieredMenu;
+    // Expose autosize to the global scope
+    Object.assign(window, { autosize });
 
-// Other
+    // Expose widgets to the global scope
+
+    // src/dialog
+    PrimeFaces.dialog = dialog;
+    PrimeFaces.widget.ConfirmDialog = ConfirmDialog;
+    PrimeFaces.widget.Dialog = Dialog;
+    PrimeFaces.widget.DynamicDialog = DynamicDialog;
+
+    // src/forms
+    PrimeFaces.widget.CommandButton = CommandButton;
+    PrimeFaces.widget.SplitButton = SplitButton;
+
+    // src/menu
+    PrimeFaces.widget.BreadCrumb = BreadCrumb;
+    PrimeFaces.widget.MegaMenu = MegaMenu;
+    PrimeFaces.widget.Menu = Menu;
+    PrimeFaces.widget.MenuButton = MenuButton;
+    PrimeFaces.widget.Menubar = Menubar;
+    PrimeFaces.widget.PanelMenu = PanelMenu;
+    PrimeFaces.widget.PlainMenu = PlainMenu;
+    PrimeFaces.widget.SlideMenu = SlideMenu;
+    PrimeFaces.widget.Steps = Steps;
+    PrimeFaces.widget.TabMenu = TabMenu;
+    PrimeFaces.widget.TieredMenu = TieredMenu;
+}
 
 // Global extensions
 declare global {
     namespace PrimeType {
         interface WindowExtensions {
             autosize: typeof autosize;
+        }
+    }
+}
+
+// Types (src/dialog)
+declare global {
+    namespace PrimeType {
+        export interface PrimeFaces {
+            dialog: Dialogs;
+        }
+        export interface WidgetRegistry {
+            ConfirmDialog: typeof ConfirmDialog;
+            Dialog: typeof Dialog;
+            DynamicDialog: typeof DynamicDialog;
+        }
+        export type Dialog = Dialogs;
+    }
+    namespace PrimeType.dialog {
+        export type DialogHandler = _DialogHandler;
+
+        /**
+         * Interface of the dialog
+         * configuration object for a dialog of the dialog framework. Used by `PrimeFaces.dialog.DialogHandlerCfg`. This is
+         * mainly just the `PrimeFaces.widget.DialogCfg`, but adds a few more properties.
+         */
+        export interface DialogHandlerCfgOptions extends widget.DialogCfg {
+            /**
+             * Height of the IFRAME in pixels.
+             */
+            contentHeight: number;
+            /**
+             * Width of the IFRAME in pixels.
+             */
+            contentWidth: number;
+            /**
+             * ID of the header element of the dialog.
+             */
+            headerElement: string;
+        }
+
+        /**
+         * Interface of the configuration object for a dialog of the dialog framework.
+         * Used by `PrimeFaces.dialog.DialogHandler.openDialog`.
+         */
+        export interface DialogHandlerCfg {
+            /**
+             * The options for the dialog.
+             */
+            options: Partial<DialogHandlerCfgOptions>;
+            /**
+             * PrimeFaces dialog client ID.
+             */
+            pfdlgcid: string;
+            /**
+             * ID of the dialog.
+             */
+            sourceComponentId: string;
+            /**
+             * Widget variable of the dialog.
+             */
+            sourceWidgetVar: string;
+            /**
+             * Source URL for the IFRAME element with the dialog.
+             */
+            url: string;
+        }
+
+        /**
+         * An extended confirmation message with an additional `source` attribute
+         * for specifying the source component or form.
+         */
+        export interface ExtendedConfirmDialogMessage extends widget.ConfirmDialog.ConfirmDialogMessage {
+            /**
+             * The source component (command button, AJAX callback etc) that triggered the confirmation.
+             * When a string, it is interpreted as the client ID of the component. Otherwise, it must be
+             * the main DOM element of the source component.
+             */
+            source: string | HTMLElement | JQuery;
+        }
+    }
+    namespace PrimeType.widget {
+        export type ConfirmDialogCfg = import("./src/dialog/dialog.widget.js").ConfirmDialogCfg;
+        export type DialogCfg = import("./src/dialog/dialog.widget.js").DialogCfg;
+        export type DynamicDialogCfg = import("./src/dialog/dialog.widget.js").DynamicDialogCfg;
+    }
+    namespace PrimeType.widget.ConfirmDialog {
+        /**
+         * Interface for the message that is shown in the confirm dialog.
+         */
+        export interface ConfirmDialogMessage {
+            /**
+             * Optional code that is run before the message is shown. Must be valid JavaScript code.
+             * It is evaluated via {@link PrimeFaces.csp.eval}.
+             */
+            beforeShow?: string;
+            /**
+             * If `true`, the message is escaped for HTML. If `false`, the message is
+             * interpreted as an HTML string.
+             */
+            escape: boolean;
+            /**
+             * Header of the dialog message.
+             */
+            header: string;
+            /**
+             * Optional icon that is shown to the left of the confirm dialog. When not given, defaults to
+             * `ui-icon-alert`. Must be a style class of some icon font.
+             */
+            icon?: string;
+            /**
+             * Main content of the dialog message.
+             */
+            message: string;
+        }
+    }
+    namespace PrimeType.widget.Dialog {
+        /**
+         * Client-side callback to invoke when the dialog is closed, see
+         * {@link DialogCfg.onHide}.
+         */
+        export type OnHideCallback = (this: Dialog) => void;
+
+        /**
+         * Client-side callback to invoke when the dialog is opened, see
+         * {@link DialogCfg.onShow}
+         */
+        export type OnShowCallback = (this: Dialog) => void;
+        /**
+         * The client-side state of the dialog such as its width
+         * and height. The client-side state can be preserved during AJAX updates by sending it to the server.
+         */
+        export interface ClientState {
+            /**
+             * The total height in pixels of the content area of the dialog.
+             */
+            contentHeight: number;
+            /**
+             * The total width in pixels of the content area of the dialog..
+             */
+            contentWidth: number;
+            /**
+             * The total height of the dialog in pixels, including the header and its content.
+             */
+            height: number;
+            /**
+             * Vertical and horizontal offset of the top-left corner of the dialog.
+             */
+            offset?: JQuery.Coordinates;
+            /**
+             * The total width of the dialog in pixels, including the header and its content.
+             */
+            width: number;
+            /**
+             * Horizontal scroll position of the window.
+             */
+            windowScrollLeft: number;
+            /**
+             * Vertical scroll position of the window.
+             */
+            windowScrollTop: number;
         }
     }
 }
