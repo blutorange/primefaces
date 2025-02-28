@@ -387,7 +387,7 @@ export class Utils {
     registerResizeHandler(
         widget: BaseWidget,
         resizeNamespace: string,
-        element: JQuery | undefined,
+        element: JQuery | undefined | null,
         resizeCallback: PrimeType.ResizeCallback,
         params?: string
     ): PrimeType.Unbindable {

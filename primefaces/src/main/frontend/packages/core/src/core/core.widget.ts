@@ -659,8 +659,8 @@ export class DynamicOverlayWidget<Cfg extends DynamicOverlayWidgetCfg = DynamicO
      * overlay is currently displayed.
      * @param overlay The target overlay, if not given defaults to {@link jq}.
      */
-    disableModality(overlay: JQuery | null): void{
-        var target = overlay||this.jq;
+    disableModality(overlay?: JQuery | null | undefined): void{
+        var target = overlay || this.jq;
         utils.removeModal(this, target);
         this.modalOverlay = null;
     }

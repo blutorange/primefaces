@@ -1289,7 +1289,8 @@ export class Core {
     cw<WidgetName extends keyof PrimeType.WidgetRegistry>(
         widgetName: WidgetName,
         widgetVar: string,
-        cfg: PrimeType.widget.WidgetCfg<PrimeType.WidgetRegistry[WidgetName]>): void {
+        cfg: PrimeType.widget.PartialWidgetCfg<PrimeType.widget.WidgetCfg<PrimeType.WidgetRegistry[WidgetName]>>
+    ): void {
         this.createWidget(widgetName, widgetVar, cfg);
     }
 
@@ -1317,7 +1318,7 @@ export class Core {
     createWidget<WidgetName extends keyof PrimeType.WidgetRegistry>(
         widgetName: WidgetName,
         widgetVar: string,
-        cfg: PrimeType.widget.WidgetCfg<PrimeType.WidgetRegistry[WidgetName]>
+        cfg: PrimeType.widget.PartialWidgetCfg<PrimeType.widget.WidgetCfg<PrimeType.WidgetRegistry[WidgetName]>>
     ): void {
         cfg.widgetVar = widgetVar;
 
@@ -1390,7 +1391,7 @@ export class Core {
      * @param id ID of an element to focus.
      * @param context The ID of a container with an element to focus
      */
-    focus(id?: string, context?: string): void {
+    focus(id?: string | null, context?: string): void {
         var selector = ':not(:submit):not(:button):input:visible:enabled[name]';
         
         // if looking in container like dialog also check for first link

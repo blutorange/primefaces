@@ -127,17 +127,14 @@ export class DialogHandler {
             return sourceFrames;
         }();
 
-        var dialogWidgetVar = cfg.options.widgetVar;
-        if (!dialogWidgetVar) {
-            dialogWidgetVar = cfg.sourceComponentId.replace(/:/g, '_') + '_dlgwidget';
-        }
+        const dialogWidgetVar = cfg.options.widgetVar || cfg.sourceComponentId.replace(/:/g, '_') + '_dlgwidget';
 
-        var styleClass = cfg.options.styleClass||'',
-        dialogDOM = $('<div id="' + dialogId + '" class="ui-dialog ui-widget ui-widget-content ui-shadow ui-hidden-container ui-overlay-hidden ' + styleClass + '"' +
+        const styleClass = cfg.options.styleClass||'';
+        const dialogDOM = $('<div id="' + dialogId + '" class="ui-dialog ui-widget ui-widget-content ui-shadow ui-hidden-container ui-overlay-hidden ' + styleClass + '"' +
                 ' data-pfdlgcid="' + PrimeFaces.escapeHTML(cfg.pfdlgcid) + '" data-widget="' + dialogWidgetVar + '"></div>')
                 .append('<div class="ui-dialog-titlebar ui-widget-header ui-helper-clearfix"><span id="' + dialogId + '_title" class="ui-dialog-title"></span></div>');
 
-        var titlebar = dialogDOM.children('.ui-dialog-titlebar');
+        const titlebar = dialogDOM.children('.ui-dialog-titlebar');
         if(cfg.options.closable !== false) {
             titlebar.append('<a class="ui-dialog-titlebar-icon ui-dialog-titlebar-close" href="#" role="button"><span class="ui-icon ui-icon-closethick"></span></a>');
         }
@@ -169,13 +166,13 @@ export class DialogHandler {
         }
 
         dialogFrame.on('load', function() {
-            var $frame = $(this),
-            headerElement = $frame.contents().find('title'),
-            isCustomHeader = false;
+            const $frame = $(this);
+            let headerElement: JQuery = $frame.contents().find('title');
+            let isCustomHeader = false;
 
             if(cfg.options.headerElement) {
-                var customHeaderId = PrimeFaces.escapeClientId(cfg.options.headerElement),
-                customHeaderElement = dialogFrame.contents().find(customHeaderId);
+                const customHeaderId = PrimeFaces.escapeClientId(cfg.options.headerElement);
+                const customHeaderElement = dialogFrame.contents().find(customHeaderId);
 
                 if(customHeaderElement.length) {
                     headerElement = customHeaderElement;
@@ -253,7 +250,7 @@ export class DialogHandler {
                 });
             }
 
-            var title = rootWindow.PF(dialogWidgetVar).titlebar.children('span.ui-dialog-title');
+            const title = rootWindow.PF(dialogWidgetVar).titlebar.children('span.ui-dialog-title');
             if(headerElement.length > 0) {
                 if(isCustomHeader) {
                     title.append(headerElement);
@@ -266,15 +263,20 @@ export class DialogHandler {
                 dialogFrame.attr('title', title.text());
             }
 
-            //adjust height
-            var frameHeight = null;
+            // adjust height
+            let frameHeight: number;
             if(cfg.options.contentHeight) {
                 frameHeight = cfg.options.contentHeight;
             }
             else {
-                var frameBody = $frame.get(0).contentWindow.document.body;
-                var frameBodyStyle = window.getComputedStyle(frameBody);
-                frameHeight = frameBody.scrollHeight + parseFloat(frameBodyStyle.marginTop) + parseFloat(frameBodyStyle.marginBottom);
+                const frame = $frame.get(0);
+                if (frame && frame.contentWindow) {
+                    const frameBody = frame.contentWindow.document.body;
+                    const frameBodyStyle = window.getComputedStyle(frameBody);
+                    frameHeight = frameBody.scrollHeight + parseFloat(frameBodyStyle.marginTop) + parseFloat(frameBodyStyle.marginBottom);
+                } else {
+                    frameHeight = 0;
+                }
             }
 
             $frame.css('height', String(frameHeight));
@@ -291,29 +293,29 @@ export class DialogHandler {
      * @param cfg Configuration of the dialog.
      */
     closeDialog(cfg: PrimeType.dialog.DialogHandlerCfg): void {
-        var rootWindow = this.findRootWindow(),
-        dlgs = $(rootWindow.document.body).children('div.ui-dialog[data-pfdlgcid="' + CSS.escape(cfg.pfdlgcid) +'"]').not('[data-queuedforremoval]'),
-        dlgsLength = dlgs.length,
-        dlg = dlgs.eq(dlgsLength - 1),
-        parentDlg = dlgsLength > 1 ? dlgs.eq(dlgsLength - 2) : null,
-        dialogReturnBehavior = null,
-        windowContext = null;
+        const rootWindow = this.findRootWindow();
+        const dlgs = $(rootWindow.document.body).children('div.ui-dialog[data-pfdlgcid="' + CSS.escape(cfg.pfdlgcid) +'"]').not('[data-queuedforremoval]');
+        const dlgsLength = dlgs.length;
+        const dlg = dlgs.eq(dlgsLength - 1);
+        const parentDlg = dlgsLength > 1 ? dlgs.eq(dlgsLength - 2) : null;
+        let dialogReturnBehavior: null = null;
+        let windowContext: Window | null = null;
 
-        var dlgWidget = rootWindow.PF(dlg.data('widget'));
+        const dlgWidget = rootWindow.PF(dlg.data('widget'));
         if(!dlgWidget) {
             // GitHub #2039 dialog may already be closed on slow internet
             PrimeFaces.error('Dialog widget was not found to close.');
             return;
         }
 
-        var sourceWidgetVar = dlgWidget.cfg.sourceWidgetVar,
-            sourceComponentId = dlgWidget.cfg.sourceComponentId;
+        const  sourceWidgetVar = dlgWidget.cfg.sourceWidgetVar;
+        const sourceComponentId = dlgWidget.cfg.sourceComponentId;
 
-        dlg.attr('data-queuedforremoval', true);
+        dlg.attr('data-queuedforremoval', "true");
 
         if(parentDlg) {
-            var parentDlgFrame = parentDlg.find('> .ui-dialog-content > iframe').get(0);
-            windowContext = parentDlgFrame.contentWindow||parentDlgFrame;
+            const parentDlgFrame = parentDlg.find('> .ui-dialog-content > iframe').get(0);
+            windowContext = parentDlgFrame.contentWindow || parentDlgFrame;
         }
         else {
             // We have to resolve the frames from the root window to the source widget to invoke the dialog return behavior

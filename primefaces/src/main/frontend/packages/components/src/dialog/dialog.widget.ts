@@ -1,5 +1,5 @@
 /**
- * The configuration for the {@link  Dialog} widget.
+ * The configuration for the {@link Dialog} widget.
  * 
  * You can access this configuration via {@link Dialog.cfg | cfg}. Please note that this
  * configuration is usually meant to be read-only and should not be modified.
@@ -44,9 +44,21 @@ export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg {
      */
     fitViewport: boolean;
     /**
-     * The height of the dialog in pixels.
+     * Defines which component to apply focus by search expression.
      */
-    height: number;
+    focus: string;
+    /**
+     * Optional handler for obtaining additional DOM elements which are allowed to be focused via tabbing.
+     */
+    getModalTabbables: PrimeType.widget.Dialog.GetModalTabbablesHandler;
+    /**
+     * Whether the dialog contents contain an {@link HTMLIFrameElement}. 
+     */
+    hasIframe: boolean;
+    /**
+     * The height of the dialog in pixels. Can also be a CSS string such as "auto".
+     */
+    height: number | string;
     /**
      * Effect to use when hiding the dialog.
      */
@@ -125,9 +137,13 @@ export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg {
      */
     styleClass: string;
     /**
-     * The width of the dialog in pixels.
+     * When enabled, dialog is visible by default.
      */
-    width: number;
+    visible: boolean;
+    /**
+     * The width of the dialog in pixels. Can also be a CSS string such as "auto".
+     */
+    width: number | string;
 }
 
 /**
@@ -153,7 +169,7 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
     /**
      * Element that was focused before the dialog was opened.
      */
-    focusedElementBeforeDialogOpened: HTMLElement;
+    focusedElementBeforeDialogOpened: Element | null = null;
 
     /**
      * DOM element of the container with the footer of this dialog.
@@ -174,7 +190,7 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
      * The native DOM element instance of the container element of this widget (same element as the
      * `jq` property).
      */
-    jqEl: HTMLElement;
+    jqEl: HTMLElement | undefined;
 
     /**
      * The last known vertical scrolling position.
@@ -329,7 +345,7 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
             'height': 'auto'
         });
 
-        this.content.height(this.cfg.height);
+        this.content.height(this.cfg.height ?? "auto");
 
         if(this.cfg.fitViewport) {
             this.fitViewport();
@@ -340,18 +356,18 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
      * Makes this dialog fit the current browser window, if the `fitViewport` option is enabled.
      */
     protected fitViewport(): void {
-        var windowHeight = $(window).height();
+        const windowHeight = $(window).height() ?? 0;
 
-        var margin = this.jq.outerHeight(true) - this.jq.outerHeight();
-        var headerHeight = this.titlebar.outerHeight(true);
-        var contentPadding = this.content.innerHeight() - this.content.height();
-        var footerHeight = this.footer.outerHeight(true) || 0;
+        const margin = (this.jq.outerHeight(true) ?? 0) - (this.jq.outerHeight() ?? 0);
+        const headerHeight = this.titlebar.outerHeight(true) ?? 0;
+        const contentPadding = (this.content.innerHeight() ?? 0) - (this.content.height() ?? 0);
+        const footerHeight = this.footer.outerHeight(true) || 0;
 
-        var maxHeight = windowHeight - (margin + headerHeight + contentPadding + footerHeight);
+        const maxHeight = windowHeight - (margin + headerHeight + contentPadding + footerHeight);
 
         this.content.css('max-height', maxHeight + 'px');
 
-        if(this.cfg.hasIframe) {
+        if (this.cfg.hasIframe) {
             this.content.children('iframe').css('max-height', maxHeight + 'px');
         }
     }
@@ -361,7 +377,7 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
      * @returns The DOM elements which are allowed to be focused via tabbing.
      */
     protected override getModalTabbables(): JQuery {
-        var tabbablesInIframe = this.cfg.getModalTabbables ? this.cfg.getModalTabbables() : undefined;
+        const tabbablesInIframe = this.cfg.getModalTabbables ? this.cfg.getModalTabbables() : $();
         
         return this.jq.find(':tabbable').add(tabbablesInIframe).add(this.footer.find(':tabbable'));
     }
@@ -388,7 +404,7 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
             this.loadContents();
         }
         else {
-            if (this.positionInitialized === false) {
+            if (this.positionInitialized === false && this.jqEl) {
                 this.jqEl.style.visibility = "hidden";
                 this.jqEl.style.display = "block";
                 this.initPosition();
@@ -417,17 +433,14 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
 
         //offset
         if(this.cfg.absolutePositioned) {
-            var winScrollTop = $(window).scrollTop();
-            this.jq.css('top', parseFloat(this.jq.css('top')) + (winScrollTop - this.lastScrollTop) + 'px');
+            var winScrollTop = $(window).scrollTop() ?? 0;
+            this.jq.css('top', parseFloat(this.jq.css('top')) + (winScrollTop - (this.lastScrollTop ?? 0)) + 'px');
             this.lastScrollTop = winScrollTop;
         }
 
-        var animated = this.cfg.showEffect;
-        if(animated) {
-            var $this = this;
-
-            this.jq.show(this.cfg.showEffect, duration, 'normal', function() {
-                $this.postShow();
+        if (this.cfg.showEffect) {
+            this.jq.show(this.cfg.showEffect, duration, 'normal', () => {
+                this.postShow();
             });
         }
         else {
@@ -474,20 +487,17 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
      * animations, not faster ones. The strings `fast` and `slow` can be supplied to indicate durations of 200 and 600
      * milliseconds, respectively.
      */
-    hide(duration: number | string): void {
-        if(!this.isVisible()) {
+    hide(duration?: number | string): void {
+        if (!this.isVisible()) {
             return;
         }
 
-        var animated = this.cfg.hideEffect;
-        if(animated) {
-            var $this = this;
-
-            this.jq.hide(this.cfg.hideEffect, duration, 'normal', function() {
-                if($this.cfg.modal) {
-                    $this.disableModality();
+        if (this.cfg.hideEffect) {
+            this.jq.hide(this.cfg.hideEffect, duration, 'normal', () => {
+                if(this.cfg.modal) {
+                    this.disableModality();
                 }
-                $this.onHide();
+                this.onHide();
             });
         }
         else {
@@ -504,23 +514,22 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
      */
     protected applyFocus(): void {
         if (this.cfg.focus) {
-            var $this = this;
-            PrimeFaces.queueTask(function() {
-                PrimeFaces.expressions.SearchExpressionFacade.resolveComponentsAsSelector($this.jq, $this.cfg.focus).trigger('focus')
+            PrimeFaces.queueTask(() => {
+                PrimeFaces.expressions.SearchExpressionFacade.resolveComponentsAsSelector(this.jq, this.cfg.focus).trigger('focus')
             }, 100);
         }
         else
-            PrimeFaces.focus(null, this.id);
+            PrimeFaces.focus(null, this.getId());
     }
     
     /**
      * Puts focus on the element that opened this dialog.
      */
     protected returnFocus(): void {
-        var el = this.focusedElementBeforeDialogOpened;
-        if (el) {
+        const el = this.focusedElementBeforeDialogOpened;
+        if (el instanceof HTMLElement || el instanceof SVGElement) {
             // #11860 do not return focus to caller if other dialogs are still open
-            var otherDialogs = $(".ui-dialog:visible").length > 0;
+            const otherDialogs = $(".ui-dialog:visible").length > 0;
             if (otherDialogs) {
                 return;
             }
@@ -570,17 +579,23 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
 
         if(this.cfg.hasIframe && !this.cfg.resizable && this.cfg.resizeObserver) {
             // https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver
-            var resizeObserver = new ResizeObserver((entries) => {
-                var iframe = this.content.children('iframe')[0];
-                var frameHeight = $(iframe.contentWindow.document.body).outerHeight(true) + 8; // 8 because of weird p:messages - sizing issue
-                $(iframe).height(frameHeight);
+            const resizeObserver = new ResizeObserver(() => {
+                const iframe = this.content.children('iframe')[0];
+                const body = iframe?.contentWindow?.document.body;
+                const frameHeight = body ? ($(body).outerHeight(true) ?? 0) + 8 : 8; // 8 because of weird p:messages - sizing issue
+                if (iframe) {
+                    $(iframe).height(frameHeight);
+                }
 
                 if (this.cfg.resizeObserverCenter) {
                     // further improvement possible - maybe only center the dialog again if parts of the dialog are outside the window
                     this.initPosition();
                 }
             });
-            resizeObserver.observe(this.content.children('iframe')[0].contentWindow.document.body);
+            const bodyToObserve = this.content.children('iframe')[0]?.contentWindow?.document.body;
+            if (bodyToObserve) {
+                resizeObserver.observe(bodyToObserve);
+            }
         }
 
         if(this.cfg.closeOnEscape) {
@@ -632,46 +647,45 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
      * Sets up all event listeners required to make this dialog resizable.
      */
     protected setupResizable(): void {
-        var $this = this;
-
         this.jq.resizable({
             handles : 'n,s,e,w,ne,nw,se,sw',
             minWidth : this.cfg.minWidth,
             minHeight : this.cfg.minHeight,
             alsoResize : this.content,
             containment: 'document',
-            start: function(event, ui) {
-                $this.jq.data('offset', $this.jq.offset());
+            start: (_, ui) => {
+                const offset: JQuery.Coordinates = this.jq.offset() ?? { left: 0, top: 0 };
+                this.jq.data('offset', offset);
 
-                if($this.cfg.hasIframe) {
-                    $this.iframeFix = $('<div style="position:absolute;background-color:transparent;width:100%;height:100%;top:0;left:0;"></div>').appendTo($this.content);
+                if(this.cfg.hasIframe) {
+                    this.iframeFix = $('<div style="position:absolute;background-color:transparent;width:100%;height:100%;top:0;left:0;"></div>').appendTo(this.content);
                 }
 
-                if ($this.hasBehavior('resizeStart')) {
+                if (this.hasBehavior('resizeStart')) {
                     var ext = {
                         params: [
-                            {name: $this.id + '_width', value: ui.size.width},
-                            {name: $this.id + '_height', value: ui.size.height}
+                            {name: this.id + '_width', value: ui.size.width},
+                            {name: this.id + '_height', value: ui.size.height}
                         ]
                     };
-                    $this.callBehavior('resizeStart', ext);
+                    this.callBehavior('resizeStart', ext);
                 }
             },
-            stop: function(event, ui) {
-                $this.jq.css('position', 'fixed');
+            stop: (_, ui) => {
+                this.jq.css('position', 'fixed');
 
-                if($this.cfg.hasIframe) {
-                    $this.iframeFix.remove();
+                if(this.cfg.hasIframe) {
+                    this.iframeFix?.remove();
                 }
 
-                if ($this.hasBehavior('resizeStop')) {
+                if (this.hasBehavior('resizeStop')) {
                     var ext = {
                         params: [
-                            {name: $this.id + '_width', value: ui.size.width},
-                            {name: $this.id + '_height', value: ui.size.height}
+                            {name: this.id + '_width', value: ui.size.width},
+                            {name: this.id + '_height', value: ui.size.height}
                         ]
                     };
-                    $this.callBehavior('resizeStop', ext);
+                    this.callBehavior('resizeStop', ext);
                 }
             }
         });
@@ -695,19 +709,19 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
         //reset
         this.jq.css({left:'0',top:'0'});
 
-        if(/(center|left|top|right|bottom)/.test(this.cfg.position)) {
-            this.cfg.position = this.cfg.position.replace(',', ' ');
+        if(/(center|left|top|right|bottom)/.test(this.cfg.position ?? "")) {
+            this.cfg.position = this.cfg.position?.replace(',', ' ');
 
             this.jq.position({
-                        my: this.cfg.my
-                        ,at: this.cfg.position
-                        ,collision: 'fit'
-                        ,of: window
+                        my: this.cfg.my,
+                        at: this.cfg.position,
+                        collision: 'fit',
+                        of: window,
                         //make sure dialog stays in viewport
-                        ,using: function(pos) {
-                            var l = pos.left < 0 ? 0 : pos.left,
-                            t = pos.top < 0 ? 0 : pos.top,
-                            scrollTop = $(window).scrollTop();
+                        using: function(pos: JQuery.Coordinates) {
+                            const l = pos.left < 0 ? 0 : pos.left;
+                            let t = pos.top < 0 ? 0 : pos.top;
+                            const scrollTop = $(window).scrollTop() ?? 0;
 
                             //offset
                             if($this.cfg.absolutePositioned) {
@@ -716,20 +730,20 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
                             }
 
                             $(this).css({
-                                left: l + 'px'
-                                ,top: t + 'px'
+                                left: l + 'px',
+                                top: t + 'px',
                             });
-                        }
+                        },
                     });
         }
         else {
-            var coords = this.cfg.position.split(','),
-            x = PrimeFaces.trim(coords[0]),
-            y = PrimeFaces.trim(coords[1]);
+            const coords = this.cfg.position?.split(',') ?? [];
+            const x = PrimeFaces.trim(coords[0]);
+            const y = PrimeFaces.trim(coords[1]);
 
             this.jq.offset({
-                left: x
-                ,top: y
+                left: parseFloat(x),
+                top: parseFloat(y),
             });
         }
 
@@ -738,19 +752,18 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
 
     /**
      * Called when this dialog was closed. Invokes the appropriate behaviors and event listeners.
-     * @param event Unused.
-     * @param ui Unused. 
+     * @param duration The duration for the hide effect, if any. 
      */
-    protected onHide(event: JQuery.TriggeredEvent, ui: unknown): void {
+    protected onHide(duration?: number | string): void {
         this.callBehavior('close');
 
         this.jq.attr({
-            'aria-hidden': true
-            ,'aria-live': 'off'
+            'aria-hidden': true,
+            'aria-live': 'off',
         });
 
         if(this.cfg.onHide) {
-            this.cfg.onHide.call(this, event, ui);
+            this.cfg.onHide.call(this, duration);
         }
         
         // return focus to where it was before we opened the dialog
@@ -769,7 +782,7 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
      * maximized, maximizes it. If this dialog is already maximized, reverts it back to its original size.
      */
     toggleMaximize(): void {
-        if(this.minimized) {
+        if (this.minimized) {
             this.toggleMinimize();
         }
 
@@ -786,18 +799,18 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
             this.saveState();
 
             this.jq.addClass('ui-dialog-maximized').css({
-                'width': String($(window).width() - 6),
+                'width': String(($(window).width() ?? 0) - 6),
                 'height': String($(window).height()),
             }).offset({
-                top: $(window).scrollTop(),
-                left: $(window).scrollLeft(),
+                top: $(window).scrollTop() ?? 0,
+                left: $(window).scrollLeft() ?? 0,
             });
 
             //maximize content
-            var contentPadding = this.content.innerHeight() - this.content.height();
+            var contentPadding = (this.content.innerHeight() ?? 0) - (this.content.height() ?? 0);
             this.content.css({
                 width: 'auto',
-                height: String(this.jq.height() - this.titlebar.outerHeight() - contentPadding)
+                height: String((this.jq.height() ?? 0) - (this.titlebar.outerHeight() ?? 0) - contentPadding)
             });
 
             this.maximizeIcon.removeClass('ui-state-hover').children('.ui-icon').removeClass('ui-icon-extlink').addClass('ui-icon-newwin');
@@ -820,8 +833,6 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
             animate = false;
         }
 
-        var $this = this;
-
         if(this.minimized) {
             this.removeMinimize();
 
@@ -841,14 +852,14 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
                 this.minimizeClone.children('.ui-resizable-handle').remove();
             }
 
-            if(animate) {
-                this.jq.transfer({
-                    to: dockingZone,
-                    className: 'ui-dialog-minimizing',
-                    duration: 500
-                    }, function () {
-                        $this.dock(dockingZone);
-                    });
+            if (animate) {
+                this.jq.transfer(
+                    {
+                        to: dockingZone,
+                        className: 'ui-dialog-minimizing',
+                        duration: 500,
+                    },
+                    () => this.dock(dockingZone));
             }
             else {
                 this.dock(dockingZone);
@@ -883,33 +894,35 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
     }
 
     /**
-     * Saves the current state of this dialog, such as its width and height. Used for example to preserve that state
-     * during AJAX updates.
+     * Saves the current state of this dialog, such as its width and height. Used by the minimize and maximize
+     * feature to restore the dialog's original position and size.
      */
     protected saveState(): void {
         this.state = {
             width: this.jq.width() ?? 0,
             height: this.jq.height() ?? 0,
-            contentWidth: parseInt(this.content[0].style.width) || this.content.width(),
+            contentWidth: parseInt(this.content[0]?.style.width ?? "0") || (this.content.width() ?? 0),
             contentHeight: this.content.height() ?? 0,
+            offset: this.jq.offset() ?? { top: 0, left: 0},
+            windowScrollLeft: $(window).scrollLeft() ?? 0,
+            windowScrollTop: $(window).scrollTop() ?? 0,
         };
-
-        this.state.offset = this.jq.offset();
-        this.state.windowScrollLeft = $(window).scrollLeft() ?? 0;
-        this.state.windowScrollTop = $(window).scrollTop() ?? 0;
     }
 
     /**
-     * Restores the state as saved by `saveState`, usually called after an AJAX update.
+     * Restores the state as saved by {@link saveState}. Used by the minimize and maximize
+     * feature to restore the dialog's original position and size.
      */
     protected restoreState(): void {
-        this.jq.width(this.state.width).height(this.state.height);
-        this.content.width(this.state.contentWidth).height(this.state.contentHeight);
-
-        this.jq.offset({
-                top: this.state.offset.top + ($(window).scrollTop() - this.state.windowScrollTop)
-                ,left: this.state.offset.left + ($(window).scrollLeft() - this.state.windowScrollLeft)
-        });
+        if (this.state) {
+            this.jq.width(this.state.width).height(this.state.height);
+            this.content.width(this.state.contentWidth).height(this.state.contentHeight);
+    
+            this.jq.offset({
+                top: this.state.offset.top + (($(window).scrollTop() ?? 0) - this.state.windowScrollTop),
+                left: this.state.offset.left + (($(window).scrollLeft() ?? 0) - this.state.windowScrollLeft),
+            });
+        }
     }
 
     /**
@@ -917,28 +930,27 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
      * loaded.
      */
     protected loadContents(): void {
-        var $this = this,
-        options = {
-            source: this.id,
-            process: this.id,
-            update: this.id,
+        const options: PrimeType.ajax.Configuration = {
+            source: this.getId(),
+            process: this.getId(),
+            update: this.getId(),
             ignoreAutoUpdate: true,
             params: [
-                {name: this.id + '_contentLoad', value: true}
+                {name: this.getId() + '_contentLoad', value: true}
             ],
-            onsuccess: function(responseXML, status, xhr) {
+            onsuccess: (responseXML, status, xhr) => {
                 PrimeFaces.ajax.Response.handle(responseXML, status, xhr, {
-                        widget: $this,
-                        handle: function(content) {
-                            this.content.html(content);
-                        }
-                    });
+                    widget: this,
+                    handle: (content) => {
+                        this.content.html(content);
+                    }
+                });
 
                 return true;
             },
-            oncomplete: function() {
-                $this.loaded = true;
-                $this.show();
+            oncomplete: () => {
+                this.loaded = true;
+                this.show();
             }
         };
 
@@ -1010,10 +1022,12 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
             const observer = new ResizeObserver(_entries => {
                 handleResize();
             });
-            observer.observe(this.jq[0]);
+            const firstElement = this.jq[0];
+            if (firstElement) {
+                observer.observe(firstElement);
+            }
         }
     }
-
 }
 
 /**
@@ -1022,6 +1036,10 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
  * read-only and should not be modified.
  */
 export interface ConfirmDialogCfg extends DialogCfg {
+    /**
+     * When enabled, the confirm dialog becomes a shared for other components that require confirmation.
+     */
+    global: boolean;
 }
 
 /**
@@ -1033,6 +1051,30 @@ export interface ConfirmDialogCfg extends DialogCfg {
  * @typeParam Cfg Type of the configuration object.
  */
 export class ConfirmDialog<Cfg extends ConfirmDialogCfg> extends Dialog<Cfg> {
+    /**
+     * DOM element of the icon displayed next to the confirmation message.
+     */
+    icon: JQuery = $();
+
+    /**
+     * DOM element of the confirmation message displayed in this confirm dialog.
+     */
+    message: JQuery = $();
+
+    /**
+     * DOM element of the No button.
+     */
+    noButton: JQuery = $();
+
+    /**
+     * DOM element of the title bar text.
+     */
+    title: JQuery = $();
+
+    /**
+     * DOM element of the Yes button.
+     */
+    yesButton: JQuery = $();
 
     override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         cfg.draggable = false;
@@ -1054,29 +1096,31 @@ export class ConfirmDialog<Cfg extends ConfirmDialogCfg> extends Dialog<Cfg> {
             
             this.title.data('p-text', this.title.text());
             this.message.data('p-text', this.message.text());
-            this.icon.data('p-icon', this.icon.removeClass('ui-icon ui-confirm-dialog-severity').attr('class'));
+            this.icon.data('p-icon', this.icon.removeClass('ui-icon ui-confirm-dialog-severity').attr('class') ?? "");
             this.yesButton = this.jq.find('.ui-confirmdialog-yes');
             this.noButton = this.jq.find('.ui-confirmdialog-no');
             this.yesButton.data('p-text', this.yesButton.children('.ui-button-text').text());
             this.noButton.data('p-text', this.noButton.children('.ui-button-text').text());
-            this.yesButton.data('p-icon', this.yesButton.children('.ui-icon').attr('class'));
-            this.noButton.data('p-icon', this.noButton.children('.ui-icon').attr('class'));
+            this.yesButton.data('p-icon', this.yesButton.children('.ui-icon').attr('class') ?? "");
+            this.noButton.data('p-icon', this.noButton.children('.ui-icon').attr('class') ?? "");
 
             this.jq.on('click.ui-confirmdialog', '.ui-confirmdialog-yes, .ui-confirmdialog-no', null, function(e) {
-                var el = $(this);
+                const el = $(this);
 
                 if(el.hasClass('ui-confirmdialog-yes') && PrimeFaces.confirmSource) {
-                    var source = PrimeFaces.confirmSource;
-                    var id = source.get(0);
-                    var js = source.data('pfconfirmcommand');
-                    var command = $(id);
+                    const source = PrimeFaces.confirmSource;
+                    const id = source.get(0) ?? document.createElement("div");
+                    const js = source.data('pfconfirmcommand');
+                    const command = id ? $(id) : $();
 
                     if (PrimeFaces.ajax.Utils.isAjaxRequest(js) || command.is('a')) {
                         // command is ajax=true
                         var originalOnClick;
 
                         if (source[0]) {
-                            var events = $._data(source[0], "events");
+                            // @ts-expect-error Internal JQuery method
+                            // TODO Do we really need to use JQuery internals?
+                            const events = $._data(source[0], "events");
                             originalOnClick = source.prop('onclick') || (events && events.click ? events.click[0].handler : null);
                         }
 
@@ -1099,11 +1143,11 @@ export class ConfirmDialog<Cfg extends ConfirmDialogCfg> extends Dialog<Cfg> {
                         command.removeAttr("data-pfconfirmcommand").click();
                     }
 
-                    PrimeFaces.confirmDialog.hide();
+                    PrimeFaces.confirmDialog?.hide();
                     PrimeFaces.confirmSource = null;
                 }
                 else if(el.hasClass('ui-confirmdialog-no')) {
-                    PrimeFaces.confirmDialog.hide();
+                    PrimeFaces.confirmDialog?.hide();
                     PrimeFaces.confirmSource = null;
                 }
 
@@ -1116,8 +1160,8 @@ export class ConfirmDialog<Cfg extends ConfirmDialogCfg> extends Dialog<Cfg> {
         this.jq.find(':button,:submit').filter(':visible:enabled').eq(0).trigger('focus');
     }
     
-    protected override onHide(event: JQuery.TriggeredEvent, ui: unknown): void {
-        super.onHide(event, ui);
+    protected override onHide(duration?: string | number): void {
+        super.onHide(duration);
 
         // Remove added classes and reset button labels to their original values
         if (this.cfg.global) {
@@ -1240,7 +1284,7 @@ export class DynamicDialog<Cfg extends DynamicDialogCfg> extends Dialog<Cfg> {
         this.jq.show();
 
         if(this.cfg.height != "auto") {
-            this.content.height(this.jq.outerHeight() - this.titlebar.outerHeight(true));
+            this.content.height((this.jq.outerHeight() ?? 0) - (this.titlebar.outerHeight(true) ?? 0));
         }
 
         this.postShow();

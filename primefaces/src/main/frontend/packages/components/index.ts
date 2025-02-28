@@ -37,7 +37,7 @@ import { TabMenu } from "./src/menu/menu.tabmenu.widget.js";
 import { TieredMenu } from "./src/menu/menu.tieredmenu.widget.js";
 
 import { dialog, type Dialogs, type DialogHandler as _DialogHandler } from "./src/core.dialog.js";
-import { ConfirmDialog, Dialog, DynamicDialog } from "./src/dialog/dialog.widget.js";
+import { ConfirmDialog, Dialog as _Dialog, DynamicDialog, type ConfirmDialogCfg } from "./src/dialog/dialog.widget.js";
 
 import "./src/accordion/accordion.widget.js";
 import "./src/autocomplete/autocomplete.widget.js";
@@ -111,7 +111,7 @@ function exposeToGlobalScope() {
     // src/dialog
     PrimeFaces.dialog = dialog;
     PrimeFaces.widget.ConfirmDialog = ConfirmDialog;
-    PrimeFaces.widget.Dialog = Dialog;
+    PrimeFaces.widget.Dialog = _Dialog;
     PrimeFaces.widget.DynamicDialog = DynamicDialog;
 
     // src/forms
@@ -146,10 +146,20 @@ declare global {
     namespace PrimeType {
         export interface PrimeFaces {
             dialog: Dialogs;
+            /**
+             * When the global feature of the confirm dialog is used, this stores the current
+             * confirm dialog instance that is used as the global confirm dialog.
+             */
+            confirmDialog?: ConfirmDialog<ConfirmDialogCfg> | undefined;
+            /**
+             * When the global feature of the confirm dialog is used, this stores
+             * the source element that requested the currently open global confirm dialog.
+             */
+            confirmSource?: JQuery | null;
         }
         export interface WidgetRegistry {
             ConfirmDialog: typeof ConfirmDialog;
-            Dialog: typeof Dialog;
+            Dialog: typeof _Dialog;
             DynamicDialog: typeof DynamicDialog;
         }
         export type Dialog = Dialogs;
@@ -157,6 +167,13 @@ declare global {
     namespace PrimeType.dialog {
         export type DialogHandler = _DialogHandler;
 
+    }
+    namespace PrimeType.widget {
+        export type ConfirmDialogCfg = import("./src/dialog/dialog.widget.js").ConfirmDialogCfg;
+        export type DialogCfg = import("./src/dialog/dialog.widget.js").DialogCfg;
+        export type DynamicDialogCfg = import("./src/dialog/dialog.widget.js").DynamicDialogCfg;
+    }
+    namespace PrimeType.dialog {
         /**
          * Interface of the dialog
          * configuration object for a dialog of the dialog framework. Used by `PrimeFaces.dialog.DialogHandlerCfg`. This is
@@ -217,11 +234,6 @@ declare global {
             source: string | HTMLElement | JQuery;
         }
     }
-    namespace PrimeType.widget {
-        export type ConfirmDialogCfg = import("./src/dialog/dialog.widget.js").ConfirmDialogCfg;
-        export type DialogCfg = import("./src/dialog/dialog.widget.js").DialogCfg;
-        export type DynamicDialogCfg = import("./src/dialog/dialog.widget.js").DynamicDialogCfg;
-    }
     namespace PrimeType.widget.ConfirmDialog {
         /**
          * Interface for the message that is shown in the confirm dialog.
@@ -250,6 +262,30 @@ declare global {
              * Main content of the dialog message.
              */
             message: string;
+            /**
+             * The CSS class for the yes (deny) button.
+             */
+            noButtonClass?: string;
+            /**
+             * The icon for the no (deny) button, a CSS class to add.
+             */
+            noButtonIcon?: string;
+            /**
+             * The label for the no (deny) button.
+             */
+            noButtonLabel?: string;
+            /**
+             * The CSS class for the yes (confirm) button.
+             */
+            yesButtonClass?: string;
+            /**
+             * The icon for the yes (confirm) button, a CSS class to add.
+             */
+            yesButtonIcon?: string;
+            /**
+             * The label for the yes (confirm) button.
+             */
+            yesButtonLabel?: string;
         }
     }
     namespace PrimeType.widget.Dialog {
@@ -257,13 +293,23 @@ declare global {
          * Client-side callback to invoke when the dialog is closed, see
          * {@link DialogCfg.onHide}.
          */
-        export type OnHideCallback = (this: Dialog) => void;
+        export type OnHideCallback = <Cfg extends DialogCfg>(this: _Dialog<Cfg>, duration: string | number | undefined) => void;
 
         /**
          * Client-side callback to invoke when the dialog is opened, see
          * {@link DialogCfg.onShow}
          */
-        export type OnShowCallback = (this: Dialog) => void;
+        export type OnShowCallback = <Cfg extends DialogCfg>(this: _Dialog<Cfg>) => void;
+
+        /**
+         * Handler for obtaining additional DOM elements which are allowed to be focused via tabbing.
+         */
+        export type GetModalTabbablesHandler = 
+            /**
+             * @returns The additional DOM elements which are allowed to be focused via tabbing.
+             */
+            () => JQuery;
+
         /**
          * The client-side state of the dialog such as its width
          * and height. The client-side state can be preserved during AJAX updates by sending it to the server.
@@ -284,7 +330,7 @@ declare global {
             /**
              * Vertical and horizontal offset of the top-left corner of the dialog.
              */
-            offset?: JQuery.Coordinates;
+            offset: JQuery.Coordinates;
             /**
              * The total width of the dialog in pixels, including the header and its content.
              */
@@ -382,7 +428,7 @@ declare global {
              * @return ` true` to show the context menu, `false` to
              * prevent is from getting displayed.
              */
-            (this: ContextMenu<ContextMenuCfg>, event: JQuery.TriggeredEvent) => boolean;
+            <Cfg extends ContextMenuCfg>(this: ContextMenu<Cfg>, event: JQuery.TriggeredEvent) => boolean;
 
         /**
          * Selection mode for the context, whether the user may select only

@@ -1278,9 +1278,9 @@ declare global {
          */
         export type PreConstructCallback =
             /**
-             * @param widget The widget that is about to be destroyed.
+             * @param widgetCfg The configuration of the widget that is about to be constructed.
              */
-            (this: null, widget: import("./src/core/core.widget.js").BaseWidgetCfg) => void;
+            (this: null, widgetCfg: PrimeType.widget.PartialWidgetCfg<import("./src/core/core.widget.js").BaseWidgetCfg>) => void;
         
         /**
          * An optional callback that is invoked before a widget is about to be

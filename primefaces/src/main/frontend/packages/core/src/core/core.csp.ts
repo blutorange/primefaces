@@ -189,7 +189,7 @@ export class Csp {
      */
     executeEvent(id: HTMLElement, js: string, e: JQuery.TriggeredEvent): void {
         // create the wrapper function
-        var scriptEval = 'var cspFunction = function(event){'+ js +'}';
+        const scriptEval = 'var cspFunction = function(event){'+ js +'}';
 
         // evaluate JS into a function
         this.eval(scriptEval, this.NONCE_VALUE);
