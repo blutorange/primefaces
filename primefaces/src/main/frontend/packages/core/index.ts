@@ -1239,13 +1239,24 @@ declare global {
          * value of a property is equal to the default value, it is not transmitted from the server to the client. Only the
          * two properties `id` and `widgetVar` are guaranteed to be always available.
          * @typeParam Cfg Type of a widget configuration. It must have at least the two properties `id` and `widgetVar`.
-         * @return A new type with all properties in the given type made optional, exception for `id` and `widgetVar`.
+         * @return A new type with all properties in the given type made optional, except for `id` and `widgetVar`.
          */
         export type PartialWidgetCfg<Cfg extends {
             id: string | string[];
             widgetVar: string;
         }> = Partial<Omit<Cfg, "id" | "widgetVar">> & Pick<Cfg, "id" | "widgetVar">;
 
+        /**
+         * Same as {@link PartialWidgetCfg}, but with the widgetVar being optional. Used by the `PrimeFaces.cw` function
+         * when creating widgets, which receives the widget variable explicitly as a separate argument.
+         * @typeParam Cfg Type of a widget configuration. It must have at least the on property `id`.
+         * @return A new type with all properties in the given type made optional, except for `id`.
+         */
+        export type PartialCreateWidgetCfg<Cfg extends {
+            id: string | string[];
+            widgetVar: string;
+        }> = Partial<Omit<Cfg, "id">> & Pick<Cfg, "id">;
+        
         /**
          * A destroy listener for a PrimeFaces widget. It is invoked when the
          * widget is removed, such as during AJAX updates. Use {@link BaseWidget.addDestroyListener} to add a destroy

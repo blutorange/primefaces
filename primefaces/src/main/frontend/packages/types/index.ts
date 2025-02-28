@@ -87,7 +87,13 @@ declare global {
         /**
          * Extensions to the global `window` scope added by PrimeFaces.
          */
-        export interface WindowExtensions {}
+        export interface WindowExtensions {
+            /**
+             * Evaluates JavaScript code and executes it.
+             * @param code A String value that contains valid JavaScript code.
+             */
+            eval(code: string): unknown;
+        }
     }
 
     interface Window extends PrimeType.WindowExtensions {}

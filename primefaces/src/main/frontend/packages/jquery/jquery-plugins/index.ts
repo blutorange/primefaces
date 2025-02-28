@@ -40,8 +40,7 @@ declare global {
     }
 }
 
-// Missing types in JQueryUI
-// TODO Contribute this as a PR for the JQueryUI types at https://github.com/DefinitelyTyped/DefinitelyTyped
+// TODO: remove once https://github.com/DefinitelyTyped/DefinitelyTyped/pull/72074 was merged (and update @types/jqueryui)
 declare global {
     namespace JQueryUI {
         /**
@@ -51,7 +50,7 @@ declare global {
             /**
              * The target of the transfer effect.
              */
-            to: string | HTMLElement | ArrayLike<HTMLElement>;
+            to: string | Element | ArrayLike<Element>;
             /**
              * A class to add to the transfer element, in addition to `ui-effects-transfer`.
              */

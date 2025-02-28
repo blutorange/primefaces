@@ -1289,7 +1289,7 @@ export class Core {
     cw<WidgetName extends keyof PrimeType.WidgetRegistry>(
         widgetName: WidgetName,
         widgetVar: string,
-        cfg: PrimeType.widget.PartialWidgetCfg<PrimeType.widget.WidgetCfg<PrimeType.WidgetRegistry[WidgetName]>>
+        cfg: PrimeType.widget.PartialCreateWidgetCfg<PrimeType.widget.WidgetCfg<PrimeType.WidgetRegistry[WidgetName]>>
     ): void {
         this.createWidget(widgetName, widgetVar, cfg);
     }
@@ -1318,7 +1318,7 @@ export class Core {
     createWidget<WidgetName extends keyof PrimeType.WidgetRegistry>(
         widgetName: WidgetName,
         widgetVar: string,
-        cfg: PrimeType.widget.PartialWidgetCfg<PrimeType.widget.WidgetCfg<PrimeType.WidgetRegistry[WidgetName]>>
+        cfg: PrimeType.widget.PartialCreateWidgetCfg<PrimeType.widget.WidgetCfg<PrimeType.WidgetRegistry[WidgetName]>>
     ): void {
         cfg.widgetVar = widgetVar;
 

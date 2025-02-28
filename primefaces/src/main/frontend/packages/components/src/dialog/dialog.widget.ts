@@ -56,6 +56,10 @@ export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg {
      */
     hasIframe: boolean;
     /**
+     * Used by the dialog framework. Expression for the element to use as the dialog header.
+     */
+    headerElement: string;
+    /**
      * The height of the dialog in pixels. Can also be a CSS string such as "auto".
      */
     height: number | string;
@@ -63,6 +67,10 @@ export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg {
      * Effect to use when hiding the dialog.
      */
     hideEffect: string;
+    /**
+     * Used by the dialog framework when showing dialogs in iframes. The IFrame to use.
+     */
+    iframe: JQuery<HTMLIFrameElement>;
     /**
      * One or more CSS classes for the iframe within the dialog.
      */
@@ -137,6 +145,21 @@ export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg {
      */
     styleClass: string;
     /**
+     * Used by the dialog framework when opening dialogs within iframes. ID of the
+     * component that requested the dialog to open.
+     */
+    sourceComponentId: string;
+    /**
+     * Used by the dialog framework when opening dialogs within iframes. CSS selectors
+     * of the source frames.
+     */
+    sourceFrames: string[];
+    /**
+     * Used by the dialog framework when opening dialogs within iframes. Name of the
+     * widget variable of the widget that requested the dialog to open.
+     */
+    sourceWidgetVar: string;
+    /**
      * When enabled, dialog is visible by default.
      */
     visible: boolean;
@@ -165,6 +188,11 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
      * DOM element of the container for the content of this dialog.
      */
     content: JQuery = $();
+
+    /**
+     * Used by the dialog framework to open the dialog.
+     */
+    destroyIntervalId?: number;
 
     /**
      * Element that was focused before the dialog was opened.
@@ -256,6 +284,11 @@ export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOver
      * DOM element of the title bar container of this dialog.
      */
     titlebar: JQuery = $();
+
+    /**
+     * Used by the dialog framework to store the element for the title.
+     */
+    titleContainer?: JQuery;
 
     override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);

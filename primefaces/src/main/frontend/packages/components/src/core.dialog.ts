@@ -1,6 +1,9 @@
 /**
  * The class with functionality related to working with dialogs and the dialog framework.
 */
+
+import type { Dialog, DialogCfg } from "./dialog/dialog.widget.js";
+
 // Note: Named "Dialogs" to avoid name collision with the "Dialog" widget class
 export class Dialogs {
     DialogHandler: DialogHandler = new DialogHandler();
@@ -10,6 +13,8 @@ export class Dialogs {
  * The class with functionality for handling dialogs, as part of the dialog framework.
  */
 export class DialogHandler {
+    messageDialog?: Dialog<DialogCfg>;
+
     /**
      * Opens the dialog as specified by the given configuration. When the dialog is dynamic, loads the content from
      * the server.
@@ -63,8 +68,8 @@ export class DialogHandler {
         // Finally, we can look up the source widget `$(frame1_1Window.document).find("#sourceWidgetId")`.
 
         var sourceFrames = function() {
-            var w = window;
-            var sourceFrames = [];
+            const w = window;
+            const sourceFrames: string[] = [];
             // Traverse up frameElement i.e. while we are in frames
             while(w.frameElement) {
                 var parent = w.parent;
@@ -78,8 +83,8 @@ export class DialogHandler {
                 // If we can't find an id, we collect class names and the tag name of an element.
                 // If that doesn't uniquely identify an element within it's parent, we also append the node index via the `:eq(index)` selector.
                 // We connect selectors for each DOM element with the `>` operator.
-                var e = w.frameElement;
-                var pieces = [];
+                let e = w.frameElement;
+                const pieces: string[] = [];
 
                 // Traverse up tags from the frameElement to generate an identifying selector
                 for (; e && e.tagName !== undefined; e = e.parentNode) {
@@ -102,14 +107,14 @@ export class DialogHandler {
                         classSelectorPieces.unshift(e.tagName);
 
                         var classSelector = classSelectorPieces.join('');
-                        var elems = $(e.parentNode).find(classSelector);
+                        var elems = wrapParentNodeInJq(e.parentNode).find(classSelector);
                         if (elems.length > 1) {
                             pieces.unshift(":eq(" + elems.index(e) + ")");
                         }
                         pieces.unshift(classSelector);
                     } else {
                         // Without classes, we try to work with :eq and the tag name
-                        var tagElems = $(e.parentNode).find(e.tagName);
+                        var tagElems = wrapParentNodeInJq(e.parentNode).find(e.tagName);
                         if (tagElems.length > 1) {
                             pieces.unshift(":eq(" + tagElems.index(e) + ")");
                         }
@@ -118,7 +123,7 @@ export class DialogHandler {
                     pieces.unshift(' > ');
                 }
 
-                var s = pieces.slice(1).join('');
+                const s = pieces.slice(1).join('');
 
                 sourceFrames.unshift(s);
                 w = parent;
@@ -181,7 +186,9 @@ export class DialogHandler {
             }
 
             if(!$frame.data('initialized')) {
-                PrimeFaces.cw.call(rootWindow.PrimeFaces, 'DynamicDialog', dialogWidgetVar, {
+                PrimeFaces.cw.call<
+                    PrimeType.PrimeFaces, ["DynamicDialog", string, PrimeType.widget.PartialCreateWidgetCfg<PrimeType.widget.DynamicDialogCfg>], void
+                >(rootWindow.PrimeFaces, 'DynamicDialog', dialogWidgetVar, {
                     id: dialogId,
                     position: cfg.options.position||'center',
                     sourceFrames: sourceFrames,
@@ -212,9 +219,10 @@ export class DialogHandler {
                         var $dialogWidget = this,
                         dialogFrame = this.content.children('iframe');
 
-                        if(dialogFrame.get(0).contentWindow.PrimeFaces) {
+                        const dialogFramePF = dialogFrame.get(0)?.contentWindow?.PrimeFaces;
+                        if(dialogFramePF) {
                             this.destroyIntervalId = setInterval(function() {
-                                if(dialogFrame.get(0).contentWindow.PrimeFaces.ajax.Queue.isEmpty()) {
+                                if(dialogFramePF.ajax.Queue.isEmpty()) {
                                     clearInterval($dialogWidget.destroyIntervalId);
                                     dialogFrame.attr('src','about:blank');
                                     $dialogWidget.jq.remove();
@@ -226,7 +234,7 @@ export class DialogHandler {
                             $dialogWidget.jq.remove();
                         }
 
-                        rootWindow.PrimeFaces.widgets[dialogWidgetVar] = undefined;
+                        rootWindow.PrimeFaces.widgets[dialogWidgetVar] = undefined as any;
                     },
                     getModalTabbables: function(){
                         return $frame.contents().find(':tabbable');
@@ -299,35 +307,35 @@ export class DialogHandler {
         const dlg = dlgs.eq(dlgsLength - 1);
         const parentDlg = dlgsLength > 1 ? dlgs.eq(dlgsLength - 2) : null;
         let dialogReturnBehavior: null = null;
-        let windowContext: Window | null = null;
+        let windowContext: Window | HTMLIFrameElement | null | undefined = null;
 
-        const dlgWidget = rootWindow.PF(dlg.data('widget'));
+        const dlgWidget = rootWindow.PF(dlg.data('widget')) as PrimeType.Widget<"Dialog"> | undefined;
         if(!dlgWidget) {
             // GitHub #2039 dialog may already be closed on slow internet
             PrimeFaces.error('Dialog widget was not found to close.');
             return;
         }
 
-        const  sourceWidgetVar = dlgWidget.cfg.sourceWidgetVar;
+        const sourceWidgetVar = dlgWidget.cfg.sourceWidgetVar;
         const sourceComponentId = dlgWidget.cfg.sourceComponentId;
 
         dlg.attr('data-queuedforremoval', "true");
 
         if(parentDlg) {
-            const parentDlgFrame = parentDlg.find('> .ui-dialog-content > iframe').get(0);
-            windowContext = parentDlgFrame.contentWindow || parentDlgFrame;
+            const parentDlgFrame = parentDlg.find('> .ui-dialog-content > iframe').get(0) as HTMLIFrameElement | undefined;
+            windowContext = parentDlgFrame?.contentWindow || parentDlgFrame;
         }
         else {
             // We have to resolve the frames from the root window to the source widget to invoke the dialog return behavior
             // Each source frame element is a selector. We step into every nested frame until we are in the source widget frame.
             windowContext = rootWindow;
-            var frames = dlgWidget.cfg.sourceFrames;
-            for (const frame of frames) {
+            const frames = dlgWidget.cfg.sourceFrames;
+            for (const frame of frames ?? []) {
                 windowContext = $(windowContext.document).find(frame).get(0).contentWindow;
             }
         }
 
-        if(sourceWidgetVar) {
+        if (sourceWidgetVar) {
             var sourceWidget = windowContext.PF(sourceWidgetVar);
             dialogReturnBehavior = sourceWidget.cfg.behaviors ? sourceWidget.cfg.behaviors['dialogReturn']: null;
         }
@@ -362,7 +370,7 @@ export class DialogHandler {
      * @param msg Details of the message to show.
      */
     showMessageInDialog(msg: PrimeType.widget.ConfirmDialog.ConfirmDialogMessage): void {
-        if(!this.messageDialog) {
+        if (!this.messageDialog) {
             $('<div id="primefacesmessagedlg" class="ui-message-dialog ui-dialog ui-widget ui-widget-content ui-shadow ui-hidden-container"></div>')
                         .append('<div class="ui-dialog-titlebar ui-widget-header ui-helper-clearfix"><span class="ui-dialog-title"></span>' +
                         '<a class="ui-dialog-titlebar-icon ui-dialog-titlebar-close" href="#" role="button"><span class="ui-icon ui-icon-closethick"></span></a></div>' +
@@ -375,9 +383,9 @@ export class DialogHandler {
                 draggable: false,
                 resizable: false,
                 showEffect: 'fade',
-                hideEffect: 'fade'
+                hideEffect: 'fade',
             });
-            this.messageDialog = PF('primefacesmessagedialog');
+            this.messageDialog = PF('primefacesmessagedialog') as Dialog<DialogCfg>;
             this.messageDialog.titleContainer = this.messageDialog.titlebar.children('span.ui-dialog-title');
         }
 
@@ -425,6 +433,16 @@ export class DialogHandler {
 
         return w;
     }
+}
+
+/**
+ * Wraps a {@link ParentNode} in a JQuery instance, accounting for the fact
+ * the parent node might not exist.
+ * @param node Parent node to wrap.
+ * @returns The wrapped node, empty if parent node does not exist.
+ */
+function wrapParentNodeInJq(node: ParentNode | null): JQuery<ParentNode> {
+    return node === null ? $() : $(node);
 }
 
 /**
