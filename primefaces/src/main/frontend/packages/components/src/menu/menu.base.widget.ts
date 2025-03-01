@@ -210,7 +210,7 @@ export class Menu<Cfg extends MenuCfg = MenuCfg>  extends PrimeFaces.widget.Base
                 if (eventTarget.is(menuItemLink) || eventTarget.closest(menuItemLink).length) {
                     this.itemMouseDown = true;
                 }
-                else if (!($menu.is(eventTarget) || (eventTarget instanceof Element && $menu.has(eventTarget).length > 0))) {
+                else if (!($menu.is(eventTarget) || $menu.has(eventTarget[0] ?? "").length > 0)) {
                     this.hide();
                 }
             });

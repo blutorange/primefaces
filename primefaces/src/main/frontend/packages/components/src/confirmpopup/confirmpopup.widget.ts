@@ -189,7 +189,7 @@ export class ConfirmPopup<Cfg extends ConfirmPopupCfg = ConfirmPopupCfg> extends
             this.hideOverlayHandler = PrimeFaces.utils.registerHideOverlayHandler(this, 'mousedown.' + this.id + '_hide', this.jq,
                 () => PrimeFaces.confirmPopupSource,
                 (e, eventTarget) => {
-                    if (e && eventTarget instanceof Element && !(this.jq.is(eventTarget) || this.jq.has(eventTarget).length > 0)) {
+                    if (e && !(this.jq.is(eventTarget) || this.jq.has(eventTarget[0] ?? "").length > 0)) {
                         this.hide();
                     }
                 });
