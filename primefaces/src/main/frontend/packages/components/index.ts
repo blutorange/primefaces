@@ -36,7 +36,7 @@ import { Steps } from "./src/menu/menu.steps.widget.js";
 import { TabMenu } from "./src/menu/menu.tabmenu.widget.js";
 import { TieredMenu } from "./src/menu/menu.tieredmenu.widget.js";
 
-import { dialog, registerDialogFeaturesFeature, type Dialogs, type DialogHandler as _DialogHandler } from "./src/core.dialog.js";
+import { dialog, registerDialogHooks, type Dialogs, type DialogHandler as _DialogHandler } from "./src/core.dialog.js";
 import { ConfirmDialog, Dialog as _Dialog, DynamicDialog } from "./src/dialog/dialog.widget.js";
 
 import { Growl } from "./src/growl/growl.widget.js";
@@ -148,7 +148,7 @@ function exposeToGlobalScope() {
     PrimeFaces.widget.StaticMessage = StaticMessage;
 
     // Core features contributes by this "components" module
-    registerDialogFeaturesFeature();
+    registerDialogHooks();
 }
 
 // Global extensions

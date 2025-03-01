@@ -22,7 +22,7 @@ declare global {
     }
 }
 
-type FeatureMap = {[P in keyof PrimeType.CoreFeatureRegistry]: Set<PrimeType.CoreFeatureRegistry[P]>};
+type HookMap = {[P in keyof PrimeType.HookRegistry]: Set<PrimeType.HookRegistry[P]>};
 
 const LocaleEnUs: PrimeType.Locale = {
     "accept": "Yes",
@@ -271,7 +271,7 @@ export class Core {
         '=': '&#x3D;'
     };
 
-    private features: Partial<FeatureMap> = {};
+    private hooks: Partial<HookMap> = {};
 
     /**
      * Registry with the client-side implementation of some faces converters. The
@@ -1675,9 +1675,9 @@ export class Core {
      * Opens the dialog with the given configuration.
      * @param cfg Configuration of the dialog.
      */
-    openDialog(cfg: PrimeType.feature.dialog.DialogConfiguration): void {
-        for (const dialogFeature of this.features.dialog ?? []) {
-            const handled = dialogFeature.openDialog(cfg);
+    openDialog(cfg: PrimeType.hook.dialog.DialogConfiguration): void {
+        for (const dialogHook of this.hooks.dialog ?? []) {
+            const handled = dialogHook.openDialog(cfg);
             if (handled) {
                 return;
             }
@@ -1688,9 +1688,9 @@ export class Core {
      * Close the dialog with the given configuration.
      * @param cfg Configuration of the dialog.
      */
-    closeDialog(cfg: PrimeType.feature.dialog.DialogConfiguration): void {
-        for (const dialogFeature of this.features.dialog ?? []) {
-            const handled = dialogFeature.closeDialog(cfg);
+    closeDialog(cfg: PrimeType.hook.dialog.DialogConfiguration): void {
+        for (const dialogHook of this.hooks.dialog ?? []) {
+            const handled = dialogHook.closeDialog(cfg);
             if (handled) {
                 return;
             }
@@ -1701,9 +1701,9 @@ export class Core {
      * Shows the given message inside a dialog.
      * @param msg Message to show in a dialog.
      */
-    showMessageInDialog(msg: PrimeType.feature.messageInDialog.DialogMessageData): void {
-        for (const messageInDialogFeature of this.features.messageInDialog ?? []) {
-            const handled = messageInDialogFeature.showMessage(msg);
+    showMessageInDialog(msg: PrimeType.hook.messageInDialog.DialogMessageData): void {
+        for (const messageInDialogHook of this.hooks.messageInDialog ?? []) {
+            const handled = messageInDialogHook.showMessage(msg);
             if (handled) {
                 return;
             }
@@ -1714,9 +1714,9 @@ export class Core {
      * Displays dialog or popup according to the type of confirm component.
      * @param msg Message to show with the confirm dialog or popup.
      */
-    confirm(msg: PrimeType.feature.confirm.ExtendedConfirmMessage): void {
-        for (const confirmFeature of this.features.confirm ?? []) {
-            const handled = confirmFeature.handleMessage(msg);
+    confirm(msg: PrimeType.hook.confirm.ExtendedConfirmMessage): void {
+        for (const confirmHook of this.hooks.confirm ?? []) {
+            const handled = confirmHook.handleMessage(msg);
             if (handled) {
                 return;
             }
@@ -1724,61 +1724,61 @@ export class Core {
     }
 
     /**
-     * Registers a core feature with this PrimeFaces core instance. A feature
+     * Registers a hook with this PrimeFaces core instance. A hook
      * can extend the core in various ways to provide additional functionality.
      * 
-     * Each feature allows multiple implementation to be registered. The semantics
-     * depend on the feature, but usually implementations are invoked in the
+     * Each hook allows multiple implementation to be registered. The semantics
+     * depend on the hook, but usually implementations are invoked in the
      * order they were registered.
-     * @typeParam Feature Type of the the feature name to register.
-     * @param name Name of the feature to register.
-     * @param feature Feature implementation to register.
+     * @typeParam HookName Type of the the hook name to register.
+     * @param name Name of the hook to register.
+     * @param hook Hook implementation to register.
      */
-    registerFeature<Feature extends keyof PrimeType.CoreFeatureRegistry>(
-        name: Feature,
-        feature: PrimeType.CoreFeatureRegistry[Feature],
+    registerHook<HookName extends keyof PrimeType.HookRegistry>(
+        name: HookName,
+        hook: PrimeType.HookRegistry[HookName],
     ): void {
-        this.features[name] ??= new Set() as FeatureMap[Feature];
-        this.features[name].add(feature);
+        this.hooks[name] ??= new Set() as HookMap[HookName];
+        this.hooks[name].add(hook);
     }
 
     /**
-     * Unregisters a core feature from this PrimeFaces core instance, that was
-     * previously registered via {@link registerFeature}.
+     * Unregisters a core hook from this PrimeFaces core instance, that was
+     * previously registered via {@link registerHook}.
      * 
-     * @typeParam Feature Type of the the feature name to register.
-     * @param name Name of the feature to unregister.
-     * @param feature Feature implementation to register.
+     * @typeParam HookName Type of the the hook name to register.
+     * @param name Name of the hook to unregister.
+     * @param hook Hook implementation to register.
      */
-    unregisterFeature<Feature extends keyof PrimeType.CoreFeatureRegistry>(
-        name: Feature,
-        feature: PrimeType.CoreFeatureRegistry[Feature],
+    unregisterHook<HookName extends keyof PrimeType.HookRegistry>(
+        name: HookName,
+        hook: PrimeType.HookRegistry[HookName],
     ): void {
-        this.features[name]?.delete(feature);
+        this.hooks[name]?.delete(hook);
     }
 
     /**
-     * Removes all implementation for the given feature that were registered via
-     * {@link registerFeature}.
-     * @typeParam Feature Type of the the feature name to register.
-     * @param name Name of the feature to unregister.
+     * Removes all implementation for the given hook name that were registered via
+     * {@link registerHook}.
+     * @typeParam HookName Type of the the hook name to register.
+     * @param name Name of the hook to unregister.
      */
-    clearFeature<Feature extends keyof PrimeType.CoreFeatureRegistry>(name: Feature): void {
-        this.features[name] = undefined;
+    clearHook<HookName extends keyof PrimeType.HookRegistry>(name: HookName): void {
+        this.hooks[name] = undefined;
     }
 
     /**
-     * Removes all implementation for the given feature that were registered via
-     * {@link registerFeature}. The returned array is mutable, but mutations
-     * will not have any effect. Use {@link registerFeature} and
-     * {@link unregisterFeature} to modify the registered implementations.
-     * @typeParam Feature Type of the the feature name to register.
-     * @param name Name of the feature to unregister.
+     * Gets all implementation for the given hook that were registered via
+     * {@link registerHook}. The returned array is mutable, but mutations
+     * will not have any effect. Use {@link registerHook} and
+     * {@link unregisterHook} to modify the registered implementations.
+     * @typeParam HookName Type of the the hook name to register.
+     * @param name Name of the hook to unregister.
      */
-    getFeature<Feature extends keyof PrimeType.CoreFeatureRegistry>(
-        name: Feature,
-    ): PrimeType.CoreFeatureRegistry[Feature][] {
-        return [...this.features[name] ?? []];
+    getHook<HookName extends keyof PrimeType.HookRegistry>(
+        name: HookName,
+    ): PrimeType.HookRegistry[HookName][] {
+        return [...this.hooks[name] ?? []];
     }
 
     /**

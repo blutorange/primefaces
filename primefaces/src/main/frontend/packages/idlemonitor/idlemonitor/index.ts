@@ -2,13 +2,13 @@
 
 import "./src/jquery.idletimer.js";
 
-import { IdleMonitor, registerKillSwitchFeatureForIdleMonitor } from "./src/idlemonitor.widget.js";
+import { IdleMonitor, registerKillSwitchHookForIdleMonitor } from "./src/idlemonitor.widget.js";
 
 // Expose widgets to the global scope
 PrimeFaces.widget.IdleMonitor = IdleMonitor;
 
 // Register a kill switch feature  implementation that kills active idle monitors
-registerKillSwitchFeatureForIdleMonitor();
+registerKillSwitchHookForIdleMonitor();
 
 // Global types
 declare global {

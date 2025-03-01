@@ -4,7 +4,7 @@
  * You can access this configuration via {@link Dialog.cfg | cfg}. Please note that this
  * configuration is usually meant to be read-only and should not be modified.
  */
-export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg, PrimeType.feature.dialog.SharedDialogOptions {
+export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg, PrimeType.hook.dialog.SharedDialogOptions {
     /**
      * Whether the dialog is positioned absolutely.
      */
@@ -1151,7 +1151,7 @@ export class ConfirmDialog<Cfg extends ConfirmDialogCfg = ConfirmDialogCfg> exte
      * Shows the given message in this confirmation dialog.
      * @param msg Message to show.
      */
-    showMessage(msg: Partial<PrimeType.feature.confirm.ConfirmMessage>): void {
+    showMessage(msg: Partial<PrimeType.hook.confirm.ConfirmMessage>): void {
         // Execute any code specified to run before showing the message
         if (msg.beforeShow) {
             PrimeFaces.csp.eval(msg.beforeShow);

@@ -20,7 +20,7 @@ export class DialogHandler {
      * the server.
      * @param cfg Configuration of the dialog.
      */
-    openDialog(cfg: PrimeType.feature.dialog.DialogConfiguration): void {
+    openDialog(cfg: PrimeType.hook.dialog.DialogConfiguration): void {
         var rootWindow = this.findRootWindow(),
             dialogId = cfg.sourceComponentId + '_dlg';
 
@@ -301,7 +301,7 @@ export class DialogHandler {
      * Closes the dialog as specified by the given configuration.
      * @param cfg Configuration of the dialog.
      */
-    closeDialog(cfg: PrimeType.feature.dialog.DialogConfiguration): void {
+    closeDialog(cfg: PrimeType.hook.dialog.DialogConfiguration): void {
         const rootWindow = this.findRootWindow();
         const dlgs = $(rootWindow.document.body).children('div.ui-dialog[data-pfdlgcid="' + CSS.escape(cfg.pfdlgcid) + '"]').not('[data-queuedforremoval]');
         const dlgsLength = dlgs.length;
@@ -384,7 +384,7 @@ export class DialogHandler {
      * Displays a message in the messages dialog.
      * @param msg Details of the message to show.
      */
-    showMessageInDialog(msg: PrimeType.feature.messageInDialog.DialogMessageData): void {
+    showMessageInDialog(msg: PrimeType.hook.messageInDialog.DialogMessageData): void {
         if (!this.messageDialog) {
             $('<div id="primefacesmessagedlg" class="ui-message-dialog ui-dialog ui-widget ui-widget-content ui-shadow ui-hidden-container"></div>')
                 .append('<div class="ui-dialog-titlebar ui-widget-header ui-helper-clearfix"><span class="ui-dialog-title"></span>' +
@@ -420,7 +420,7 @@ export class DialogHandler {
      * `<p:confirmDialog>` to be available on the current page.
      * @param msg Message to show in the confirmation dialog.
      */
-    confirm(msg: PrimeType.feature.confirm.ExtendedConfirmMessage): void {
+    confirm(msg: PrimeType.hook.confirm.ExtendedConfirmMessage): void {
         if (PrimeFaces.confirmDialog) {
             PrimeFaces.confirmSource = (typeof (msg.source) === 'string') ? $(PrimeFaces.escapeClientId(msg.source)) : $(msg.source);
             PrimeFaces.confirmDialog.showMessage(msg);
@@ -455,7 +455,7 @@ export class DialogHandler {
  * 
  * - `confirm` feature: Redirects the emitted messages
  * either to the ConfirmPopup widget if available and the message's
- * {@link PrimeType.feature.confirm.ExtendedConfirmMessage.type | type} is
+ * {@link PrimeType.hook.confirm.ExtendedConfirmMessage.type | type} is
  * `popup`; or to the {@link DialogHandler | PrimeFaces.dialog.DialogHandler}
  * otherwise.
  * - `dialog` feature: Opens and closes dialogs via the
@@ -463,8 +463,8 @@ export class DialogHandler {
  * - `messageInDialog` feature: Shows messages via the
  * {@link DialogHandler | PrimeFaces.dialog.DialogHandler}.
  */
-export function registerDialogFeaturesFeature(): void {
-    PrimeFaces.registerFeature("confirm", {
+export function registerDialogHooks(): void {
+    PrimeFaces.registerHook("confirm", {
         handleMessage: message => {
             if (message.type === 'popup' && PrimeFaces.confirmPopup) {
                 PrimeFaces.confirmPopup.showMessage(message);
@@ -477,14 +477,14 @@ export function registerDialogFeaturesFeature(): void {
         },
     });
 
-    PrimeFaces.registerFeature("messageInDialog", {
+    PrimeFaces.registerHook("messageInDialog", {
         showMessage: message => {
             PrimeFaces.dialog.DialogHandler.showMessageInDialog(message);
             return true;
         },
     });
 
-    PrimeFaces.registerFeature("dialog", {
+    PrimeFaces.registerHook("dialog", {
         closeDialog: cfg => {
             dialog.DialogHandler.closeDialog(cfg);
             return true;

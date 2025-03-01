@@ -137,8 +137,8 @@ export class IdleMonitor<Cfg extends IdleMonitorCfg = IdleMonitorCfg> extends Pr
  * Registers an implementation for the kill switch feature with the PrimeFaces
  * core. Stops all idle monitors when a kill signal is received.
  */
-export function registerKillSwitchFeatureForIdleMonitor(): void {
-    PrimeFaces.registerFeature("killSwitch", {
+export function registerKillSwitchHookForIdleMonitor(): void {
+    PrimeFaces.registerHook("killSwitch", {
         kill: () => {
             for (const widget of PrimeFaces.getWidgetsByType(IdleMonitor)) {
                 PrimeFaces.warn("Stopping IdleMonitor");

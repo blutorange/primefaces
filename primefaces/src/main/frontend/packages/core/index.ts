@@ -7,7 +7,7 @@ import { globalUtilsSetup } from "./src/core/core.utils.js";
 import { AjaxExceptionHandler } from "./src/ajaxexceptionhandler/ajaxexceptionhandler.js";
 import { AjaxStatus } from "./src/ajaxstatus/ajaxstatus.js";
 import { BaseWidget, DeferredWidget, DynamicOverlayWidget } from "./src/core/core.widget.js";
-import { Poll, registerKillSwitchFeature as registerKillSwitchFeatureForPoll } from "./src/poll/poll.js";
+import { Poll, registerKillSwitchHookForPoll } from "./src/poll/poll.js";
 
 import { registerCommonConverters } from "./src/validation/validation.converters.js";
 import { registerCommonValidationMessages } from "./src/validation/validation.common.js";
@@ -45,7 +45,7 @@ function exposeToGlobalScope() {
     registerBeanValidationMessages();
 
     // Register additional features
-    registerKillSwitchFeatureForPoll();
+    registerKillSwitchHookForPoll();
 
     // Global setup
     globalAjaxSetup();
@@ -340,20 +340,24 @@ declare global {
     }
 }
 
-// Core features
+// Features for the core
 declare global {
     namespace PrimeType {
         /**
-         * Registry for additional features for the core, such as showing
-         * confirmation messages in dialogs. The PrimeFaces core does not know
-         * about dialogs, but additional scripts may add such functionality.
+         * Registry for hooks. Hooks are a way for external code to interact
+         * with and adjust core functions. The core provides entry points
+         * external code can hook into. 
+         *  
+         * Includes hooks such as showing confirmation messages in dialogs.
+         * The PrimeFaces core does not know about dialogs, but additional
+         * scripts may add such functionality.
          */
-        export interface CoreFeatureRegistry { }
+        export interface HookRegistry { }
     }
 
-    namespace PrimeType.feature {
+    namespace PrimeType.hook {
         /**
-         * The confirm feature that lets external scripts subscribe to emitted
+         * The confirm hook. Lets external scripts subscribe to emitted
          * confirmation messages. Implementations usually make use of this
          * feature to show confirmation messages, such as in a confirm popup
          * or a confirm dialog.
@@ -370,7 +374,7 @@ declare global {
         }
 
         /**
-         * The dialog feature. Lets external scripts react to requests for
+         * The dialog hook. Lets external scripts react to requests for
          * opening and closing a dialog. The default implementation is provided
          * by PrimeFace's dialog framework.
          */
@@ -392,7 +396,7 @@ declare global {
         }
 
         /**
-         * The kill switch features. Lets external scripts react to a kill signal
+         * The kill switch hook. Lets external scripts react to a kill signal
          * and stop ongoing operations, such as AJAX requests, polling operations
          * etc.
          */
@@ -406,8 +410,12 @@ declare global {
             kill: () => void;
         }
 
+        export interface MessageDisplay {
+
+        }
+
         /**
-         * The message-in-dialog feature that lets external scripts subscribe
+         * The message-in-dialog hook that lets external scripts subscribe
          * to requests to the core for showing messages within a dialog.
          */
         export interface MessageInDialog {
@@ -417,11 +425,11 @@ declare global {
              * @returns Whether the message was handled. If true, subsequent
              * registered implementations will not be called anymore.
              */
-            showMessage: (message: PrimeType.feature.messageInDialog.DialogMessageData) => boolean;
+            showMessage: (message: PrimeType.hook.messageInDialog.DialogMessageData) => boolean;
         }
     }
 
-    namespace PrimeType.feature.confirm {
+    namespace PrimeType.hook.confirm {
         /**
          * Interface for a confirmation message to show, such as in a confirm
          * popup or a confirm dialog. Used by the {@link ConfirmCoreFeature}.
@@ -506,7 +514,7 @@ declare global {
         }
     }
 
-    namespace PrimeType.feature.dialog {
+    namespace PrimeType.hook.dialog {
         /**
          * Interface with the options shared by the open / close methods of the
          * `PrimeFaces.dialog.DialogHandler` and the configuration of the
@@ -686,7 +694,9 @@ declare global {
         }
     }
 
-    namespace PrimeType.feature.messageInDialog {
+    namespace PrimeType.hook.messageDisplay {}
+
+    namespace PrimeType.hook.messageInDialog {
         /**
          * Interface for a message received from the server that is to be shown
          * in a dialog, via the dialog framework.
@@ -2166,10 +2176,9 @@ declare global {
         }
     }
 
-    // Extend core feature registry
+    // Extend hook registry
     namespace PrimeType {
-        // Extend core feature registry
-        export interface CoreFeatureRegistry {
+        export interface HookRegistry {
             /**
              * The confirm feature that lets external scripts subscribe to emitted
              * confirmation messages. Implementations usually make use of this
@@ -2178,7 +2187,7 @@ declare global {
              * The default implementation is provided by either the ConfirmDialog
              * widget or PrimeFaces's dialog framework.
              */
-            confirm: feature.Confirm;
+            confirm: hook.Confirm;
 
             /**
              * The dialog feature. Lets external scripts react to requests for
@@ -2186,14 +2195,16 @@ declare global {
              * 
              * The default implementation is provided by PrimeFace's dialog framework.
              */
-            dialog: feature.Dialog;
+            dialog: hook.Dialog;
 
             /**
              * The kill switch features. Lets external scripts react to a kill signal
              * and stop ongoing operations, such as AJAX requests, polling operations
              * etc.
              */
-            killSwitch: feature.KillSwitch;
+            killSwitch: hook.KillSwitch;
+
+            messageDisplay: hook.MessageDisplay;
 
             /**
              * The message-in-dialog feature that lets external scripts subscribe
@@ -2201,7 +2212,7 @@ declare global {
              * 
              * The default implementation is provided by PrimeFaces's dialog framework.
              */
-            messageInDialog: feature.MessageInDialog;
+            messageInDialog: hook.MessageInDialog;
         }
     }
 

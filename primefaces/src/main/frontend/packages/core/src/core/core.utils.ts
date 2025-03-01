@@ -1246,9 +1246,9 @@ export class Utils {
         ajax.Queue.abortAll();
 
         // stop all pollers and idle monitors, etc.
-        for (const killSwitchFeature of core.getFeature("killSwitch")) {
+        for (const killSwitchHook of core.getHook("killSwitch")) {
             try {
-                killSwitchFeature.kill();            
+                killSwitchHook.kill();            
             } catch (e) {
                 core.error(e);
             }
