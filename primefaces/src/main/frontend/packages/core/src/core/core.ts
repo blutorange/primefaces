@@ -642,6 +642,51 @@ export class Core {
     }
 
     /**
+     * Finds all widgets in the current page that are of the given type.
+     * @typeParam TypeName Type of the widgets of interest, e.g. `DataTable`.
+     * @param type The type (name) of the widgets of interest, e.g. `DataTable`.
+     * @return An array of widgets that are of the requested type. If no suitable widgets
+     * are found on the current page, an empty array will be returned.
+     */
+    getWidgetsByTypeName<
+        TypeName extends keyof PrimeType.WidgetRegistry,
+    >(type: TypeName): InstanceType<PrimeType.WidgetRegistry[TypeName]>[] {
+        const widgetType = this.getWidgetTypeByName(type);
+        return widgetType !== undefined ? this.getWidgetsByType(widgetType) : [];
+    }
+
+    /**
+     * Finds the type of the widget with the given name. Returns undefined when
+     * no such widget was loaded and registered yet.
+     * @typeParam TypeName Type name of the widget of interest, e.g. `DataTable`.
+     * @param type The type name of the widget of interest, e.g. `DataTable`.
+     * @return The type of the widget with the given name. If no suitable widgets
+     * are found on the current page, returns undefined.
+     */
+    getWidgetTypeByName<
+        TypeName extends keyof PrimeType.WidgetRegistry,
+    >(type: TypeName): PrimeType.WidgetRegistry[TypeName] | undefined {
+        return PrimeFaces.widget[type];
+    }
+
+    /**
+     * Checks if the widget class with the given name was loaded and registered,
+     * and, if it was, the given widget is an instance of that class.
+     * 
+     * If possible, simply check against `PrimeFaces.widget.<name>` if you are
+     * certain the widget class was loaded already.
+     * @param widget A widget to check.
+     * @param typeName The name of a widget class to check against, e.g. `DataTable`.
+     * @returns If the widget is an instance of the given widget type. Returns false
+     * when the widget class was not yet loaded or registered (in which case you
+     * could not possibly have an instance of it...)
+     */
+    isWidgetOfTypeName(widget: BaseWidget, typeName: string): boolean {
+        const type = (PrimeFaces.widget as unknown as Record<string, typeof BaseWidget<any>>)[typeName];
+        return type !== undefined ? widget instanceof type : false;
+    }
+
+    /**
      * Resolves the given target as a JQuery instance. The target may be one of the
      * following:
      * 

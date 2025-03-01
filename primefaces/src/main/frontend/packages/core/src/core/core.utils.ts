@@ -163,7 +163,7 @@ export class Utils {
         const id = widget.getId();
         const zIndex = parseInt(overlay.css('z-index')) - 1;
 
-        const role = widget instanceof core.widget.ConfirmDialog ? 'alertdialog' : 'dialog';
+        const role = core.isWidgetOfTypeName(widget, "ConfirmDialog") ? 'alertdialog' : 'dialog';
         overlay.attr({
             'role': role,
             'aria-hidden': false,
