@@ -1226,16 +1226,12 @@ export class Utils {
         core.warn("Abort all AJAX requests!");
         ajax.Queue.abortAll();
 
-        // stop all pollers and idle monitors
-        for (var item in core.widgets) {
-            var widget = core.widgets[item];
-            if (widget instanceof Poll) {
-                core.warn("Stopping Poll");
-                widget.stop();
-            }
-            if (core.widget.IdleMonitor && widget instanceof core.widget.IdleMonitor) {
-                core.warn("Stopping IdleMonitor");
-                widget?.pause();
+        // stop all pollers and idle monitors, etc.
+        for (const killSwitchFeature of core.getFeature("killSwitch")) {
+            try {
+                killSwitchFeature.kill();            
+            } catch (e) {
+                core.error(e);
             }
         }
     }

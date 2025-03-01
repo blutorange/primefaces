@@ -1,3 +1,4 @@
+import { core } from "../core/core.js";
 import { BaseWidget, type BaseWidgetCfg } from "../core/core.widget.js";
 
 /**
@@ -115,4 +116,19 @@ export class Poll<Cfg extends PollCfg = PollCfg> extends BaseWidget<Cfg> {
     isActive(): boolean {
         return this.active;
     }
+}
+
+/**
+ * Registers an implementation for the kill switch feature with the PrimeFaces
+ * core. Stops all pollers when a kill signal is received.
+ */
+export function registerKillSwitchFeature(): void {
+    PrimeFaces.registerFeature("killSwitch", {
+        kill: () => {
+            for (const widget of PrimeFaces.getWidgetsByType(Poll)) {
+                core.warn("Stopping Poll");
+                widget.stop();
+            }
+        },
+    });
 }

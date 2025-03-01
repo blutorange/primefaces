@@ -7,7 +7,7 @@ import { globalUtilsSetup } from "./src/core/core.utils.js";
 import { AjaxExceptionHandler } from "./src/ajaxexceptionhandler/ajaxexceptionhandler.js";
 import { AjaxStatus } from "./src/ajaxstatus/ajaxstatus.js";
 import { BaseWidget, DeferredWidget, DynamicOverlayWidget } from "./src/core/core.widget.js";
-import { Poll } from "./src/poll/poll.js";
+import { Poll, registerKillSwitchFeature as registerKillSwitchFeatureForPoll } from "./src/poll/poll.js";
 
 import { registerCommonConverters } from "./src/validation/validation.converters.js";
 import { registerCommonValidationMessages } from "./src/validation/validation.common.js";
@@ -43,6 +43,9 @@ function exposeToGlobalScope() {
 
     registerCommonValidationMessages();
     registerBeanValidationMessages();
+
+    // Register additional features
+    registerKillSwitchFeatureForPoll();
 
     // Global setup
     globalAjaxSetup();
@@ -235,7 +238,7 @@ declare global {
          * 
          * Similar to {@link BaseFacesMessage}, but `severity` and `rendered` are guaranteed to be present.
          */
-        export interface FacesMessage extends BaseFacesMessage{
+        export interface FacesMessage extends BaseFacesMessage {
             /**
              * The severity of this message, i.e. whether it is an information message, a warning message, or an error
              * message.
@@ -389,6 +392,21 @@ declare global {
         }
 
         /**
+         * The kill switch features. Lets external scripts react to a kill signal
+         * and stop ongoing operations, such as AJAX requests, polling operations
+         * etc.
+         */
+        export interface KillSwitch {
+            /**
+             * Kills all ongoing actions. Implementations might stop running
+             * polling operations, idle monitor listeners, etc.
+             * 
+             * Errors are caught, logged, and ignored otherwise.
+             */
+            kill: () => void;
+        }
+
+        /**
          * The message-in-dialog feature that lets external scripts subscribe
          * to requests to the core for showing messages within a dialog.
          */
@@ -401,44 +419,6 @@ declare global {
              */
             showMessage: (message: PrimeType.feature.messageInDialog.DialogMessageData) => boolean;
         }
-    }
-
-    namespace PrimeType.feature.messageInDialog {
-        /**
-         * Interface for a message received from the server that is to be shown
-         * in a dialog, via the dialog framework.
-         */
-        export interface DialogMessageData {
-            /**
-             * If `true`, the message is escaped for HTML. If `false`, the message is
-             * interpreted as an HTML string.
-             */
-            escape: boolean;
-
-            /**
-             * A short summary of the message.
-             */
-            summary: string;
-
-            /**
-             * In-depth details of the message.
-             */
-            detail: string;
-
-            /**
-             * The severity of this message, i.e. whether it is an information message, a warning message, or an error
-             * message.
-             * 
-             * This is the stringified representation of a FacesMessage's severity, with
-             * the severity level's name and its ordinal value, i.e.:
-             * - `INFO 0`
-             * - `WARN 1`
-             * - `ERROR 2`
-             * - `FATAL 3` 
-             */
-            severity: string;
-        }
-
     }
 
     namespace PrimeType.feature.confirm {
@@ -568,7 +548,7 @@ declare global {
              * The title of the iframe with the dialog.
              */
             iframeTitle: string;
-            
+
             /**
              * The height of the dialog in pixels. Can also be a CSS string such as "auto".
              */
@@ -583,7 +563,7 @@ declare global {
              * Whether the dialog is minimizable.
              */
             minimizable: boolean;
-            
+
             /**
              * Whether the dialog is modal and blocks the main content and other dialogs.
              */
@@ -703,6 +683,43 @@ declare global {
              * Source URL for the IFRAME element with the dialog.
              */
             url: string;
+        }
+    }
+
+    namespace PrimeType.feature.messageInDialog {
+        /**
+         * Interface for a message received from the server that is to be shown
+         * in a dialog, via the dialog framework.
+         */
+        export interface DialogMessageData {
+            /**
+             * If `true`, the message is escaped for HTML. If `false`, the message is
+             * interpreted as an HTML string.
+             */
+            escape: boolean;
+
+            /**
+             * A short summary of the message.
+             */
+            summary: string;
+
+            /**
+             * In-depth details of the message.
+             */
+            detail: string;
+
+            /**
+             * The severity of this message, i.e. whether it is an information message, a warning message, or an error
+             * message.
+             * 
+             * This is the stringified representation of a FacesMessage's severity, with
+             * the severity level's name and its ordinal value, i.e.:
+             * - `INFO 0`
+             * - `WARN 1`
+             * - `ERROR 2`
+             * - `FATAL 3` 
+             */
+            severity: string;
         }
     }
 }
@@ -2123,18 +2140,22 @@ declare global {
 
 // Module augmentation
 declare global {
+    // Extend PrimeFaces namespace with core methods and properties
     namespace PrimeType {
-        // Extend PrimeFaces namespace
         export interface PrimeFaces extends Core { }
+    }
 
-        // Extend Window global
+    // Extend Window global
+    namespace PrimeType {
         export interface WindowExtensions {
             Cookies: typeof Cookies;
             PrimeFaces: PrimeFaces;
             PF: typeof _PF;
         }
+    }
 
-        // Extend widget registry (available widget types)
+    // Extend widget registry (available widget types)
+    namespace PrimeType {
         export interface WidgetRegistry {
             AjaxExceptionHandler: typeof AjaxExceptionHandler;
             AjaxStatus: typeof AjaxStatus;
@@ -2143,7 +2164,10 @@ declare global {
             DynamicOverlayWidget: typeof DynamicOverlayWidget;
             Poll: typeof Poll;
         }
+    }
 
+    // Extend core feature registry
+    namespace PrimeType {
         // Extend core feature registry
         export interface CoreFeatureRegistry {
             /**
@@ -2163,6 +2187,13 @@ declare global {
              * The default implementation is provided by PrimeFace's dialog framework.
              */
             dialog: feature.Dialog;
+
+            /**
+             * The kill switch features. Lets external scripts react to a kill signal
+             * and stop ongoing operations, such as AJAX requests, polling operations
+             * etc.
+             */
+            killSwitch: feature.KillSwitch;
 
             /**
              * The message-in-dialog feature that lets external scripts subscribe

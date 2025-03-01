@@ -20,6 +20,8 @@ export interface SpotlightCfg extends PrimeType.widget.BaseWidgetCfg {
  * __PrimeFaces Spotlight Widget__
  * 
  * Spotlight highlights a certain component on page, drawing the user's attention to it.
+ * 
+ * @typeParam Cfg Type of the configuration object.
  */
 export class Spotlight<Cfg extends SpotlightCfg = SpotlightCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
     /**
