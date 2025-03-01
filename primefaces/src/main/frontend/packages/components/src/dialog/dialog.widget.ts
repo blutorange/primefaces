@@ -4,7 +4,7 @@
  * You can access this configuration via {@link Dialog.cfg | cfg}. Please note that this
  * configuration is usually meant to be read-only and should not be modified.
  */
-export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg {
+export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg, PrimeType.feature.dialog.SharedDialogOptions {
     /**
      * Whether the dialog is positioned absolutely.
      */
@@ -27,30 +27,9 @@ export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg {
     cache: boolean;
 
     /**
-     * Whether the dialog can be closed by the user.
-     */
-    closable: boolean;
-
-    /**
-     * Whether the dialog is closed when the user presses the escape button.
-     */
-    closeOnEscape: boolean;
-
-    /**
-     * Whether the dialog is draggable.
-     */
-    draggable: boolean;
-
-    /**
      * Whether lazy loading of the content via AJAX is enabled.
      */
     dynamic: boolean;
-
-    /**
-     * Dialog size might exceed the viewport if the content is taller than viewport in terms
-     * of height. When this is set to `true`, automatically adjust the height to fit the dialog within the viewport.
-     */
-    fitViewport: boolean;
 
     /**
      * Defines which component to apply focus by search expression.
@@ -73,34 +52,9 @@ export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg {
     headerElement: string;
 
     /**
-     * The height of the dialog in pixels. Can also be a CSS string such as "auto".
-     */
-    height: number | string;
-
-    /**
      * Effect to use when hiding the dialog.
      */
     hideEffect: string;
-
-    /**
-     * Used by the dialog framework when showing dialogs in iframes. The IFrame to use.
-     */
-    iframe: JQuery<HTMLIFrameElement>;
-
-    /**
-     * One or more CSS classes for the iframe within the dialog.
-     */
-    iframeStyleClass: string;
-
-    /**
-     * The title of the iframe with the dialog.
-     */
-    iframeTitle: string;
-
-    /**
-     * Whether the dialog is maximizable.
-     */
-    maximizable: boolean;
 
     /**
      * The minimum height of the dialog in pixels.
@@ -111,16 +65,6 @@ export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg {
      * The minimum width of the dialog in pixels.
      */
     minWidth: number;
-
-    /**
-     * Whether the dialog is minimizable.
-     */
-    minimizable: boolean;
-
-    /**
-     * Whether the dialog is modal and blocks the main content and other dialogs.
-     */
-    modal: boolean;
 
     /**
      * Position of the dialog relative to the target.
@@ -139,43 +83,9 @@ export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg {
     onShow: PrimeType.widget.Dialog.OnShowCallback;
 
     /**
-     * Defines where the dialog should be displayed
-     */
-    position: string;
-
-    /**
-     * Whether the dialog can be resized by the user.
-     */
-    resizable: boolean;
-
-    /**
-     * Use ResizeObserver to automatically adjust dialog-height after e.g. AJAX-updates. Resizable must be set to false
-     * to use this option. (Known limitation: Dialog does not automatically resize yet when resizing the browser
-     * window.)
-     */
-    resizeObserver: boolean;
-
-    /**
-     * Can be used together with resizeObserver = true. Centers the dialog again after it was resized to ensure the
-     * whole dialog is visible onscreen.
-     */
-    resizeObserverCenter: boolean;
-
-    /**
-     * Whether the dialog is responsive. In responsive mode, the dialog adjusts itself based
-     * on the screen width.
-     */
-    responsive: boolean;
-
-    /**
      * Effect to use when showing the dialog
      */
     showEffect: string;
-
-    /**
-     * One or more CSS classes for the dialog.
-     */
-    styleClass: string;
 
     /**
      * Used by the dialog framework when opening dialogs within iframes. ID of the
@@ -199,11 +109,6 @@ export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg {
      * When enabled, dialog is visible by default.
      */
     visible: boolean;
-
-    /**
-     * The width of the dialog in pixels. Can also be a CSS string such as "auto".
-     */
-    width: number | string;
 }
 
 /**
@@ -1257,7 +1162,7 @@ export class ConfirmDialog<Cfg extends ConfirmDialogCfg> extends Dialog<Cfg> {
      * Shows the given message in this confirmation dialog.
      * @param msg Message to show.
      */
-    showMessage(msg: Partial<PrimeType.widget.ConfirmDialog.ConfirmDialogMessage>): void {
+    showMessage(msg: Partial<PrimeType.feature.confirm.ConfirmMessage>): void {
         // Execute any code specified to run before showing the message
         if (msg.beforeShow) {
             PrimeFaces.csp.eval(msg.beforeShow);

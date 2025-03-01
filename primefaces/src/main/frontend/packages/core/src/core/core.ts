@@ -22,6 +22,8 @@ declare global {
     }
 }
 
+type FeatureMap = {[P in keyof PrimeType.CoreFeatureRegistry]: Set<PrimeType.CoreFeatureRegistry[P]>};
+
 const LocaleEnUs: PrimeType.Locale = {
     "accept": "Yes",
     "addRule": "Add Rule",
@@ -269,7 +271,7 @@ export class Core {
         '=': '&#x3D;'
     };
 
-    private features: {[P in keyof PrimeType.CoreFeatureRegistry]?: Set<PrimeType.CoreFeatureRegistry[P]>} = {};
+    private features: Partial<FeatureMap> = {};
 
     /**
      * Registry with the client-side implementation of some faces converters. The
@@ -1670,24 +1672,27 @@ export class Core {
 
     /**
      * Opens the dialog with the given configuration.
-     * @deprecated Deprecated, use `PrimeFaces.dialog.DialogHandler.openDialog` instead.
      * @param cfg Configuration of the dialog.
      */
-    openDialog(cfg: PrimeFaces.dialog.DialogHandlerCfg): void {
-        if (this.dialog) {
-            this.dialog.DialogHandler.openDialog(cfg);
+    openDialog(cfg: PrimeType.feature.dialog.DialogConfiguration): void {
+        for (const dialogFeature of this.features.dialog ?? []) {
+            const handled = dialogFeature.openDialog(cfg);
+            if (handled) {
+                return;
+            }
         }
     }
 
     /**
-     * 
      * Close the dialog with the given configuration.
-     * @deprecated Deprecated, use `PrimeFaces.dialog.DialogHandler.closeDialog` instead.
      * @param cfg Configuration of the dialog.
      */
-    closeDialog(cfg: PrimeFaces.dialog.DialogHandlerCfg): void {
-        if (this.dialog) {
-            this.dialog.DialogHandler.closeDialog(cfg);
+    closeDialog(cfg: PrimeType.feature.dialog.DialogConfiguration): void {
+        for (const dialogFeature of this.features.dialog ?? []) {
+            const handled = dialogFeature.closeDialog(cfg);
+            if (handled) {
+                return;
+            }
         }
     }
 
@@ -1730,9 +1735,9 @@ export class Core {
      */
     registerFeature<Feature extends keyof PrimeType.CoreFeatureRegistry>(
         name: Feature,
-        feature: PrimeType.CoreFeatureRegistry[Feature]
+        feature: PrimeType.CoreFeatureRegistry[Feature],
     ): void {
-        this.features[name] ??= new Set();
+        this.features[name] ??= new Set() as FeatureMap[Feature];
         this.features[name].add(feature);
     }
 
@@ -1746,7 +1751,7 @@ export class Core {
      */
     unregisterFeature<Feature extends keyof PrimeType.CoreFeatureRegistry>(
         name: Feature,
-        feature: PrimeType.CoreFeatureRegistry[Feature]
+        feature: PrimeType.CoreFeatureRegistry[Feature],
     ): void {
         this.features[name]?.delete(feature);
     }
@@ -1770,7 +1775,7 @@ export class Core {
      * @param name Name of the feature to unregister.
      */
     getFeature<Feature extends keyof PrimeType.CoreFeatureRegistry>(
-        name: Feature
+        name: Feature,
     ): PrimeType.CoreFeatureRegistry[Feature][] {
         return [...this.features[name] ?? []];
     }

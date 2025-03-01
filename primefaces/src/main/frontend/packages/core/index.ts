@@ -365,6 +365,29 @@ declare global {
              */
             handleMessage: (message: confirm.ExtendedConfirmMessage) => boolean;
         }
+
+        /**
+         * The dialog feature. Lets external scripts react to requests for
+         * opening and closing a dialog. The default implementation is provided
+         * by PrimeFace's dialog framework.
+         */
+        export interface Dialog {
+            /**
+             * Opens a dialog with the given configuration.
+             * @param cfg Dialog configuration to use.
+             * @returns Whether the request was handled. If true, subsequent
+             * registered implementations will not be called anymore.
+             */
+            openDialog: (cfg: dialog.DialogConfiguration) => boolean;
+            /**
+             * Closes a dialog with the given configuration.
+             * @param cfg Dialog configuration to use.
+             * @returns Whether the request was handled. If true, subsequent
+             * registered implementations will not be called anymore.
+             */
+            closeDialog: (cfg: dialog.DialogConfiguration) => boolean;
+        }
+
         /**
          * The message-in-dialog feature that lets external scripts subscribe
          * to requests to the core for showing messages within a dialog.
@@ -500,6 +523,186 @@ declare global {
              * the main DOM element of the source component.
              */
             source: string | HTMLElement | JQuery;
+        }
+    }
+
+    namespace PrimeType.feature.dialog {
+        /**
+         * Interface with the options shared by the open / close methods of the
+         * `PrimeFaces.dialog.DialogHandler` and the configuration of the
+         * `PrimeFaces.widget.Dialog` widget. 
+         */
+        export interface SharedDialogOptions {
+            /**
+             * Whether the dialog can be closed by the user.
+             */
+            closable: boolean;
+
+            /**
+             * Whether the dialog is closed when the user presses the escape button.
+             */
+            closeOnEscape: boolean;
+
+            /**
+             * Whether the dialog is draggable.
+             */
+            draggable: boolean;
+
+            /**
+             * Dialog size might exceed the viewport if the content is taller than viewport in terms
+             * of height. When this is set to `true`, automatically adjust the height to fit the dialog within the viewport.
+             */
+            fitViewport: boolean;
+
+            /**
+             * Used by the dialog framework when showing dialogs in iframes. The IFrame to use.
+             */
+            iframe: JQuery<HTMLIFrameElement>;
+
+            /**
+             * One or more CSS classes for the iframe within the dialog.
+             */
+            iframeStyleClass: string;
+
+            /**
+             * The title of the iframe with the dialog.
+             */
+            iframeTitle: string;
+            
+            /**
+             * The height of the dialog in pixels. Can also be a CSS string such as "auto".
+             */
+            height: number | string;
+
+            /**
+             * Whether the dialog is maximizable.
+             */
+            maximizable: boolean;
+
+            /**
+             * Whether the dialog is minimizable.
+             */
+            minimizable: boolean;
+            
+            /**
+             * Whether the dialog is modal and blocks the main content and other dialogs.
+             */
+            modal: boolean;
+
+            /**
+             * Defines where the dialog should be displayed
+             */
+            position: string;
+
+            /**
+             * Whether the dialog can be resized by the user.
+             */
+            resizable: boolean;
+
+            /**
+             * Use ResizeObserver to automatically adjust dialog-height after e.g. AJAX-updates. Resizable must be set to false
+             * to use this option. (Known limitation: Dialog does not automatically resize yet when resizing the browser
+             * window.)
+             */
+            resizeObserver: boolean;
+
+            /**
+             * Can be used together with resizeObserver = true. Centers the dialog again after it was resized to ensure the
+             * whole dialog is visible onscreen.
+             */
+            resizeObserverCenter: boolean;
+
+            /**
+             * Whether the dialog is responsive. In responsive mode, the dialog adjusts itself based
+             * on the screen width.
+             */
+            responsive: boolean;
+
+            /**
+             * One or more CSS classes for the dialog.
+             */
+            styleClass: string;
+
+            /**
+             * The width of the dialog in pixels. Can also be a CSS string such as "auto".
+             */
+            width: number | string;
+        }
+
+        /**
+         * Interface of the configuration object for a dialog of the
+         * dialog framework. Used by `PrimeFaces.dialog.DialogHandlerCfg`.
+         */
+        export interface DialogOptions extends SharedDialogOptions {
+            /**
+             * `true` to prevent the body from being scrolled, `false` otherwise.
+             */
+            blockScroll: boolean;
+
+            /**
+             * Height of the iframe in pixels.
+             */
+            contentHeight: number;
+
+            /**
+             * Width of the iframe in pixels.
+             */
+            contentWidth: number;
+
+            /**
+             * ID of the header element of the dialog.
+             */
+            headerElement: string;
+
+            /**
+             * Client-side callback to invoke when the dialog is
+             * closed. Must be a valid JavaScript expression or statement. The
+             * this context will point to the DialogHandler instance.
+             */
+            onHide: string;
+
+            /**
+             * Client-side callback to invoke when the dialog is
+             * opened. Must be a valid JavaScript expression or statement. The
+             * this context will point to the DialogHandler instance.
+             */
+            onShow: string;
+
+            /**
+             * Widget variable name of the dialog widget to target. 
+             */
+            widgetVar: string;
+        }
+
+        /**
+         * Interface of the configuration object for a dialog of the dialog framework.
+         * Used by `PrimeFaces.dialog.DialogHandler.openDialog`.
+         */
+        export interface DialogConfiguration {
+            /**
+             * The options for the dialog.
+             */
+            options: Partial<DialogOptions>;
+
+            /**
+             * PrimeFaces dialog client ID.
+             */
+            pfdlgcid: string;
+
+            /**
+             * ID of the dialog.
+             */
+            sourceComponentId: string;
+
+            /**
+             * Widget variable of the dialog.
+             */
+            sourceWidgetVar: string;
+
+            /**
+             * Source URL for the IFRAME element with the dialog.
+             */
+            url: string;
         }
     }
 }
@@ -2014,14 +2217,26 @@ declare global {
             /**
              * The confirm feature that lets external scripts subscribe to emitted
              * confirmation messages. Implementations usually make use of this
-             * feature to show confirmation messages, such as in a confirm popup
-             * or a confirm dialog.
+             * feature to show the confirmation message to the user.
+             * 
+             * The default implementation is provided by either the ConfirmDialog
+             * widget or PrimeFaces's dialog framework.
              */
             confirm: feature.Confirm;
 
             /**
+             * The dialog feature. Lets external scripts react to requests for
+             * opening and closing a dialog.
+             * 
+             * The default implementation is provided by PrimeFace's dialog framework.
+             */
+            dialog: feature.Dialog;
+
+            /**
              * The message-in-dialog feature that lets external scripts subscribe
              * to requests to the core for showing messages within a dialog.
+             * 
+             * The default implementation is provided by PrimeFaces's dialog framework.
              */
             messageInDialog: feature.MessageInDialog;
         }

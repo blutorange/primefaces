@@ -20,7 +20,7 @@ export class DialogHandler {
      * the server.
      * @param cfg Configuration of the dialog.
      */
-    openDialog(cfg: PrimeType.dialog.DialogHandlerCfg): void {
+    openDialog(cfg: PrimeType.feature.dialog.DialogConfiguration): void {
         var rootWindow = this.findRootWindow(),
             dialogId = cfg.sourceComponentId + '_dlg';
 
@@ -301,7 +301,7 @@ export class DialogHandler {
      * Closes the dialog as specified by the given configuration.
      * @param cfg Configuration of the dialog.
      */
-    closeDialog(cfg: PrimeType.dialog.DialogHandlerCfg): void {
+    closeDialog(cfg: PrimeType.feature.dialog.DialogConfiguration): void {
         const rootWindow = this.findRootWindow();
         const dlgs = $(rootWindow.document.body).children('div.ui-dialog[data-pfdlgcid="' + CSS.escape(cfg.pfdlgcid) + '"]').not('[data-queuedforremoval]');
         const dlgsLength = dlgs.length;
@@ -458,6 +458,8 @@ export class DialogHandler {
  * {@link PrimeType.feature.confirm.ExtendedConfirmMessage.type | type} is
  * `popup`; or to the {@link DialogHandler | PrimeFaces.dialog.DialogHandler}
  * otherwise.
+ * - `dialog` feature: Opens and closes dialogs via the
+ * {@link DialogHandler | PrimeFaces.dialog.DialogHandler}.
  * - `messageInDialog` feature: Shows messages via the
  * {@link DialogHandler | PrimeFaces.dialog.DialogHandler}.
  */
@@ -481,6 +483,17 @@ export function registerDialogFeaturesFeature(): void {
             return true;
         },
     });
+
+    PrimeFaces.registerFeature("dialog", {
+        closeDialog: cfg => {
+            dialog.DialogHandler.closeDialog(cfg);
+            return true;
+        },
+        openDialog: cfg => {
+            dialog.DialogHandler.openDialog(cfg);
+            return true;
+        },
+    }); 
 }
 
 /**

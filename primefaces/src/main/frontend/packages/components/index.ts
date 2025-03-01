@@ -203,55 +203,6 @@ declare global {
         export type DynamicDialogCfg = import("./src/dialog/dialog.widget.js").DynamicDialogCfg;
     }
     namespace PrimeType.dialog {
-        /**
-         * Interface of the dialog configuration object for a dialog of the
-         * dialog framework. Used by `PrimeFaces.dialog.DialogHandlerCfg`. This
-         * is mainly just the `PrimeFaces.widget.DialogCfg`, but adds a few more
-         * properties.
-         */
-        export interface DialogHandlerCfgOptions extends widget.DialogCfg {
-            /**
-             * Height of the IFRAME in pixels.
-             */
-            contentHeight: number;
-
-            /**
-             * Width of the IFRAME in pixels.
-             */
-            contentWidth: number;
-
-            /**
-             * ID of the header element of the dialog.
-             */
-            headerElement: string;
-        }
-
-        /**
-         * Interface of the configuration object for a dialog of the dialog framework.
-         * Used by `PrimeFaces.dialog.DialogHandler.openDialog`.
-         */
-        export interface DialogHandlerCfg {
-            /**
-             * The options for the dialog.
-             */
-            options: Partial<DialogHandlerCfgOptions>;
-            /**
-             * PrimeFaces dialog client ID.
-             */
-            pfdlgcid: string;
-            /**
-             * ID of the dialog.
-             */
-            sourceComponentId: string;
-            /**
-             * Widget variable of the dialog.
-             */
-            sourceWidgetVar: string;
-            /**
-             * Source URL for the IFRAME element with the dialog.
-             */
-            url: string;
-        }
     }
     namespace PrimeType.widget.Dialog {
         /**

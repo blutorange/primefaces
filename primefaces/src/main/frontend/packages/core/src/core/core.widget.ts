@@ -90,6 +90,7 @@ export interface DynamicOverlayWidgetCfg extends BaseWidgetCfg {
      * The search expression for the element to which the overlay panel should be appended.
      */
     appendTo: string | null;
+
     /**
      * `true` to prevent the body from being scrolled, `false` otherwise.
      */
