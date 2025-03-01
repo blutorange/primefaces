@@ -1,7 +1,7 @@
 import { AjaxExceptionHandler } from "../ajaxexceptionhandler/ajaxexceptionhandler.js";
 import { csp } from "./core.csp.js";
 import { expressions } from "./core.expressions.js";
-import { core, PF } from "./core.js";
+import { core } from "./core.js";
 import { utils } from "./core.utils.js";
 import { BaseWidget } from "./core.widget.js";
 
