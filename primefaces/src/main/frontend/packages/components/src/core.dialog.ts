@@ -68,7 +68,7 @@ export class DialogHandler {
         // Finally, we can look up the source widget `$(frame1_1Window.document).find("#sourceWidgetId")`.
 
         var sourceFrames = function() {
-            const w = window;
+            let w: Window = window;
             const sourceFrames: string[] = [];
             // Traverse up frameElement i.e. while we are in frames
             while(w.frameElement) {
@@ -83,11 +83,11 @@ export class DialogHandler {
                 // If we can't find an id, we collect class names and the tag name of an element.
                 // If that doesn't uniquely identify an element within it's parent, we also append the node index via the `:eq(index)` selector.
                 // We connect selectors for each DOM element with the `>` operator.
-                let e = w.frameElement;
+                let e: Element | ParentNode | null = w.frameElement;
                 const pieces: string[] = [];
 
                 // Traverse up tags from the frameElement to generate an identifying selector
-                for (; e && e.tagName !== undefined; e = e.parentNode) {
+                for (; e && "tagName" in e && e.tagName !== undefined; e = e.parentNode) {
                     if (e.id && !/\s/.test(e.id)) {
                         // If we find a parent with an id, we can use that as basis and stop there
                         pieces.unshift(e.id);
@@ -196,10 +196,10 @@ export class DialogHandler {
                     sourceWidgetVar: cfg.sourceWidgetVar,
                     onShow: function() {
                         if (cfg.options.onShow) {
-                            var onShowFunction = '(function(ext){' + cfg.options.onShow + '})';
-                            var onShowCallback = rootWindow.PrimeFaces.csp.NONCE_VALUE
-                                ? PrimeFaces.csp.evalResult(onShowFunction, rootWindow.PrimeFaces.csp.NONCE_VALUE, rootWindow)
-                                : rootWindow.eval(onShowFunction);
+                            const onShowFunction = '(function(ext){' + cfg.options.onShow + '})';
+                            const onShowCallback = rootWindow.PrimeFaces.csp.NONCE_VALUE
+                                ? PrimeFaces.csp.evalResult(onShowFunction, rootWindow.PrimeFaces.csp.NONCE_VALUE, rootWindow) as PrimeType.widget.Dialog.OnShowCallback | undefined
+                                : rootWindow.eval(onShowFunction) as PrimeType.widget.Dialog.OnShowCallback | undefined;
                             if (onShowCallback) {
                                 onShowCallback.call(this);
                             }
@@ -207,16 +207,16 @@ export class DialogHandler {
                     },
                     onHide: function() {
                         if (cfg.options.onHide) {
-                            var onHideFunction = '(function(ext){' + cfg.options.onHide + '})';
-                            var onHideCallback = rootWindow.PrimeFaces.csp.NONCE_VALUE
-                                ? PrimeFaces.csp.evalResult(onHideFunction, rootWindow.PrimeFaces.csp.NONCE_VALUE, rootWindow)
-                                : rootWindow.eval(onHideFunction);
+                            const onHideFunction = '(function(ext){' + cfg.options.onHide + '})';
+                            const onHideCallback = rootWindow.PrimeFaces.csp.NONCE_VALUE
+                                ? PrimeFaces.csp.evalResult(onHideFunction, rootWindow.PrimeFaces.csp.NONCE_VALUE, rootWindow) as PrimeType.widget.Dialog.OnHideCallback | undefined
+                                : rootWindow.eval(onHideFunction) as PrimeType.widget.Dialog.OnHideCallback | undefined;
                             if (onHideCallback) {
                                 onHideCallback.call(this);
                             }
                         }
 
-                        var $dialogWidget = this,
+                        const $dialogWidget = this,
                         dialogFrame = this.content.children('iframe');
 
                         const dialogFramePF = dialogFrame.get(0)?.contentWindow?.PrimeFaces;
@@ -258,7 +258,8 @@ export class DialogHandler {
                 });
             }
 
-            const title = rootWindow.PF(dialogWidgetVar).titlebar.children('span.ui-dialog-title');
+            const dialogWidget = rootWindow.PF(dialogWidgetVar) as PrimeType.Widget<"Dialog"> | undefined;
+            const title = dialogWidget?.titlebar.children('span.ui-dialog-title') ?? $();
             if(headerElement.length > 0) {
                 if(isCustomHeader) {
                     title.append(headerElement);
@@ -291,7 +292,7 @@ export class DialogHandler {
 
             // fix #1290 - dialogs are not centered vertically
             dialogFrame.data('initialized', true);
-            rootWindow.PF(dialogWidgetVar).show();
+            dialogWidget?.show();
         })
         .attr('src', frameURL);
     }
@@ -306,8 +307,8 @@ export class DialogHandler {
         const dlgsLength = dlgs.length;
         const dlg = dlgs.eq(dlgsLength - 1);
         const parentDlg = dlgsLength > 1 ? dlgs.eq(dlgsLength - 2) : null;
-        let dialogReturnBehavior: null = null;
-        let windowContext: Window | HTMLIFrameElement | null | undefined = null;
+        let dialogReturnBehavior: PrimeType.widget.Behavior | undefined = undefined;
+        let windowContext: Window | null | undefined = null;
 
         const dlgWidget = rootWindow.PF(dlg.data('widget')) as PrimeType.Widget<"Dialog"> | undefined;
         if(!dlgWidget) {
@@ -321,9 +322,9 @@ export class DialogHandler {
 
         dlg.attr('data-queuedforremoval', "true");
 
-        if(parentDlg) {
+        if (parentDlg) {
             const parentDlgFrame = parentDlg.find('> .ui-dialog-content > iframe').get(0) as HTMLIFrameElement | undefined;
-            windowContext = parentDlgFrame?.contentWindow || parentDlgFrame;
+            windowContext = parentDlgFrame?.contentWindow;
         }
         else {
             // We have to resolve the frames from the root window to the source widget to invoke the dialog return behavior
@@ -331,23 +332,28 @@ export class DialogHandler {
             windowContext = rootWindow;
             const frames = dlgWidget.cfg.sourceFrames;
             for (const frame of frames ?? []) {
-                windowContext = $(windowContext.document).find(frame).get(0).contentWindow;
+                const foundFrame: HTMLIFrameElement | undefined = windowContext 
+                    ? $(windowContext.document).find(frame).get(0) as HTMLIFrameElement | undefined
+                    : undefined;
+                windowContext = foundFrame?.contentWindow;
             }
         }
 
         if (sourceWidgetVar) {
-            var sourceWidget = windowContext.PF(sourceWidgetVar);
-            dialogReturnBehavior = sourceWidget.cfg.behaviors ? sourceWidget.cfg.behaviors['dialogReturn']: null;
+            const sourceWidget = windowContext?.PF(sourceWidgetVar);
+            dialogReturnBehavior = sourceWidget?.cfg.behaviors?.['dialogReturn'];
         }
         else if(sourceComponentId) {
-            var dialogReturnBehaviorStr = $(windowContext.document.getElementById(sourceComponentId)).data('dialogreturn');
-            if(dialogReturnBehaviorStr) {
-                var dialogFunction = '(function(ext){this.' + dialogReturnBehaviorStr + '})';
-                if (windowContext.PrimeFaces.csp.NONCE_VALUE) {
-                    dialogReturnBehavior = PrimeFaces.csp.evalResult(dialogFunction, windowContext.PrimeFaces.csp.NONCE_VALUE, windowContext);
+            const sourceComponent = windowContext?.document.getElementById(sourceComponentId);
+            const dialogReturnBehaviorStr = sourceComponent ? $(sourceComponent).data('dialogreturn') : "";
+            if (dialogReturnBehaviorStr) {
+                const dialogFunction = '(function(ext){this.' + dialogReturnBehaviorStr + '})';
+                const nonceValue = windowContext?.PrimeFaces.csp.NONCE_VALUE;
+                if (nonceValue && windowContext) {
+                    dialogReturnBehavior = PrimeFaces.csp.evalResult(dialogFunction, nonceValue, windowContext) as PrimeType.widget.Behavior | undefined;
                 }
                 else {
-                    dialogReturnBehavior = windowContext.eval(dialogFunction);
+                    dialogReturnBehavior = windowContext?.eval(dialogFunction) as PrimeType.widget.Behavior | undefined;
                 }
             }
         }
@@ -359,6 +365,15 @@ export class DialogHandler {
                     ]
                 };
 
+            // TODO Possible issue: All other behaviors are called with the widget
+            // as the "this context". Only here are we passing "window" instead, which
+            // does not type check and may also be confusing for users. We should
+            // change the following line as follows, then the @ts-expect-error
+            // can also be removed.
+            //
+            // dialogReturnBehavior.call(dlgWidget, ext);
+
+            // @ts-expect-error See comment above.
             dialogReturnBehavior.call(windowContext, ext);
         }
 
@@ -369,7 +384,7 @@ export class DialogHandler {
      * Displays a message in the messages dialog.
      * @param msg Details of the message to show.
      */
-    showMessageInDialog(msg: PrimeType.widget.ConfirmDialog.ConfirmDialogMessage): void {
+    showMessageInDialog(msg: PrimeType.dialog.ServerMessage): void {
         if (!this.messageDialog) {
             $('<div id="primefacesmessagedlg" class="ui-message-dialog ui-dialog ui-widget ui-widget-content ui-shadow ui-hidden-container"></div>')
                         .append('<div class="ui-dialog-titlebar ui-widget-header ui-helper-clearfix"><span class="ui-dialog-title"></span>' +
@@ -391,10 +406,10 @@ export class DialogHandler {
 
         var escape = msg.escape !== false;
         var summaryHtml = msg.summary ? msg.summary.split(/\r\n|\n|\r/g).map(function(line) { return escape ? PrimeFaces.escapeHTML(line) : line; }).join("<br>") : "";
-        this.messageDialog.titleContainer.html(summaryHtml);
+        this.messageDialog.titleContainer?.html(summaryHtml);
 
         var detailHtml = msg.detail ? msg.detail.split(/\r\n|\n|\r/g).map(function(line) { return escape ? PrimeFaces.escapeHTML(line) : line; }).join("<br>") : "";
-        this.messageDialog.content.html('').append('<span class="ui-dialog-message ui-messages-' + msg.severity.split(' ')[0].toLowerCase() + '-icon"></span>')
+        this.messageDialog.content.html('').append('<span class="ui-dialog-message ui-messages-' + (msg.severity.split(' ')[0] ?? "INFO").toLowerCase() + '-icon"></span>')
             .append('<span class="ui-dialog-message-content"></span');
         this.messageDialog.content.children('.ui-dialog-message-content').append(detailHtml);
         this.messageDialog.show();

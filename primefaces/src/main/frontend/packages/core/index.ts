@@ -227,16 +227,25 @@ declare global {
              */
             rendered?: boolean;
         }
-        
 
         /**
          * A 'FacesMessage' with a short summary message and a more detailed message, as well as a severity level that
          * indicates the type of this message. Used by the client-side validation framework and some widgets such as the
          * growl widget.
          * 
-         * Similar to {@link BaseFacesMessage}, but all fields are required.
+         * Similar to {@link BaseFacesMessage}, but `severity` and `rendered` are guaranteed to be present.
          */
-        export type FacesMessage = Required<BaseFacesMessage>;
+        export interface FacesMessage {
+            /**
+             * The severity of this message, i.e. whether it is an information message, a warning message, or an error
+             * message.
+             */
+            severity: FacesMessageSeverity;
+            /**
+             * If the message was successfully rendered by a message/growl component.
+             */
+            rendered: boolean;
+        }
 
         /**
          * Represents a deferred render added for a deferred widget.

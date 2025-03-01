@@ -1702,7 +1702,6 @@ export class Core {
 
     /**
      * Displays dialog or popup according to the type of confirm component.
-     * @deprecated Deprecated, use `PrimeFaces.dialog.DialogHandler.confirm` instead.
      * @param msg Message to show with the confirm dialog or popup.
      */
     confirm(msg: PrimeFaces.dialog.ExtendedConfirmDialogMessage): void {

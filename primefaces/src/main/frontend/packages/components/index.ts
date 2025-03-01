@@ -233,6 +233,38 @@ declare global {
              */
             source: string | HTMLElement | JQuery;
         }
+
+        /**
+         * Interface for a message received from the server that is to be shown
+         * in a dialog, via the dialog framework.
+         */
+        export interface ServerMessage {
+            /**
+             * If `true`, the message is escaped for HTML. If `false`, the message is
+             * interpreted as an HTML string.
+             */
+            escape: boolean;
+            /**
+             * A short summary of the message.
+             */
+            summary: string;
+            /**
+             * In-depth details of the message.
+             */
+            detail: string;
+            /**
+             * The severity of this message, i.e. whether it is an information message, a warning message, or an error
+             * message.
+             * 
+             * This is the stringified representation of a FacesMessage's severity, with
+             * the severity level's name and its ordinal value, i.e.:
+             * - `INFO 0`
+             * - `WARN 1`
+             * - `ERROR 2`
+             * - `FATAL 3` 
+             */
+            severity: string;
+        }
     }
     namespace PrimeType.widget.ConfirmDialog {
         /**
@@ -292,8 +324,11 @@ declare global {
         /**
          * Client-side callback to invoke when the dialog is closed, see
          * {@link DialogCfg.onHide}.
+         * 
+         * Note: The `duration` parameter appears to be legacy and may be removed
+         * soon. Do not use it!
          */
-        export type OnHideCallback = <Cfg extends DialogCfg>(this: _Dialog<Cfg>, duration: string | number | undefined) => void;
+        export type OnHideCallback = <Cfg extends DialogCfg>(this: _Dialog<Cfg>, duration?: string | number | undefined) => void;
 
         /**
          * Client-side callback to invoke when the dialog is opened, see
@@ -304,7 +339,7 @@ declare global {
         /**
          * Handler for obtaining additional DOM elements which are allowed to be focused via tabbing.
          */
-        export type GetModalTabbablesHandler = 
+        export type GetModalTabbablesHandler =
             /**
              * @returns The additional DOM elements which are allowed to be focused via tabbing.
              */

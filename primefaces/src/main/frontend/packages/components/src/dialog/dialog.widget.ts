@@ -9,160 +9,197 @@ export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg {
      * Whether the dialog is positioned absolutely.
      */
     absolutePositioned: boolean;
+
     /**
      * A search expression for the element to which the dialog is appended. Defaults to the
      * body.
      */
     appendTo: string;
+
     /**
      * Whether to prevent the document from scrolling when the dialog is visible.
      */
     blockScroll: boolean;
+
     /**
      * Only relevant for dynamic="true": Defines if activating the dialog should load the contents from server again. For cache="true" (default) the dialog content is only loaded once.
      */
     cache: boolean;
+
     /**
      * Whether the dialog can be closed by the user.
      */
     closable: boolean;
+
     /**
      * Whether the dialog is closed when the user presses the escape button.
      */
     closeOnEscape: boolean;
+
     /**
      * Whether the dialog is draggable.
      */
     draggable: boolean;
+
     /**
      * Whether lazy loading of the content via AJAX is enabled.
      */
     dynamic: boolean;
+
     /**
      * Dialog size might exceed the viewport if the content is taller than viewport in terms
      * of height. When this is set to `true`, automatically adjust the height to fit the dialog within the viewport.
      */
     fitViewport: boolean;
+
     /**
      * Defines which component to apply focus by search expression.
      */
     focus: string;
+
     /**
      * Optional handler for obtaining additional DOM elements which are allowed to be focused via tabbing.
      */
     getModalTabbables: PrimeType.widget.Dialog.GetModalTabbablesHandler;
+
     /**
      * Whether the dialog contents contain an {@link HTMLIFrameElement}. 
      */
     hasIframe: boolean;
+
     /**
      * Used by the dialog framework. Expression for the element to use as the dialog header.
      */
     headerElement: string;
+
     /**
      * The height of the dialog in pixels. Can also be a CSS string such as "auto".
      */
     height: number | string;
+
     /**
      * Effect to use when hiding the dialog.
      */
     hideEffect: string;
+
     /**
      * Used by the dialog framework when showing dialogs in iframes. The IFrame to use.
      */
     iframe: JQuery<HTMLIFrameElement>;
+
     /**
      * One or more CSS classes for the iframe within the dialog.
      */
     iframeStyleClass: string;
+
     /**
      * The title of the iframe with the dialog.
      */
     iframeTitle: string;
+
     /**
      * Whether the dialog is maximizable.
      */
     maximizable: boolean;
+
     /**
      * The minimum height of the dialog in pixels.
      */
     minHeight: number;
+
     /**
      * The minimum width of the dialog in pixels.
      */
     minWidth: number;
+
     /**
      * Whether the dialog is minimizable.
      */
     minimizable: boolean;
+
     /**
      * Whether the dialog is modal and blocks the main content and other dialogs.
      */
     modal: boolean;
+
     /**
      * Position of the dialog relative to the target.
      */
     my: string;
+
     /**
      * Client-side callback to invoke when the dialog is
      * closed.
      */
     onHide: PrimeType.widget.Dialog.OnHideCallback;
+
     /**
      * Client-side callback to invoke when the dialog is opened.
      */
     onShow: PrimeType.widget.Dialog.OnShowCallback;
+
     /**
      * Defines where the dialog should be displayed
      */
     position: string;
+
     /**
      * Whether the dialog can be resized by the user.
      */
     resizable: boolean;
+
     /**
      * Use ResizeObserver to automatically adjust dialog-height after e.g. AJAX-updates. Resizable must be set to false
      * to use this option. (Known limitation: Dialog does not automatically resize yet when resizing the browser
      * window.)
      */
     resizeObserver: boolean;
+
     /**
      * Can be used together with resizeObserver = true. Centers the dialog again after it was resized to ensure the
      * whole dialog is visible onscreen.
      */
     resizeObserverCenter: boolean;
+
     /**
      * Whether the dialog is responsive. In responsive mode, the dialog adjusts itself based
      * on the screen width.
      */
     responsive: boolean;
+
     /**
      * Effect to use when showing the dialog
      */
     showEffect: string;
+
     /**
      * One or more CSS classes for the dialog.
      */
     styleClass: string;
+
     /**
      * Used by the dialog framework when opening dialogs within iframes. ID of the
      * component that requested the dialog to open.
      */
     sourceComponentId: string;
+
     /**
      * Used by the dialog framework when opening dialogs within iframes. CSS selectors
      * of the source frames.
      */
     sourceFrames: string[];
+
     /**
      * Used by the dialog framework when opening dialogs within iframes. Name of the
      * widget variable of the widget that requested the dialog to open.
      */
     sourceWidgetVar: string;
+
     /**
      * When enabled, dialog is visible by default.
      */
     visible: boolean;
+
     /**
      * The width of the dialog in pixels. Can also be a CSS string such as "auto".
      */
