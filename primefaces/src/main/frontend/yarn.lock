@@ -311,6 +311,7 @@ __metadata:
     "@types/jquery": "npm:3.5.32"
     "@types/jquery-cropper": "npm:1.0.4"
     "@types/jquery-mousewheel": "npm:3.1.12"
+    "@types/jquery-touchswipe": "npm:1.6.0"
     "@types/jquery.browser": "npm:0.1.4"
     "@types/jqueryui": "npm:1.12.23"
     "@types/js-cookie": "npm:3.0.6"
@@ -417,6 +418,15 @@ __metadata:
   dependencies:
     "@types/jquery": "npm:*"
   checksum: 10c0/d5a139197b7b0a8667806566ac5e2e2ed164691f2b32a88e762e5327484c1d0951a8c824fab979670d62b506e0f428079c61eea72346121d11ccbe879ba6f187
+  languageName: node
+  linkType: hard
+
+"@types/jquery-touchswipe@npm:1.6.0":
+  version: 1.6.0
+  resolution: "@types/jquery-touchswipe@npm:1.6.0"
+  peerDependencies:
+    "@types/jquery": "*"
+  checksum: 10c0/6c58874ad73d77e3d4a95c3a6fd9a2810ed1c74388403d463b8c6ce9939dc5e2a1d4a38bf63bbda720a7d5aaf33f07e88d751de018cd060ff59d1c7f6f4abea4
   languageName: node
   linkType: hard
 
