@@ -52,11 +52,6 @@ export interface SplitButtonCfg extends PrimeType.widget.BaseWidgetCfg {
  */
 export class SplitButton<Cfg extends SplitButtonCfg = SplitButtonCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
     /**
-     * Number of concurrent active Ajax requests.
-     */
-    ajaxCount: number = 0;
-
-    /**
      * The DOM element for the main button.
      */
     button: JQuery = $();
@@ -156,7 +151,7 @@ export class SplitButton<Cfg extends SplitButtonCfg = SplitButtonCfg> extends Pr
     /**
      * Disables this button so that the user cannot press the button anymore.
      */
-    disable(): void {
+    override disable(): void {
         this.cfg.disabled = true;
         this.hide();
         PrimeFaces.utils.disableButton(this.button);
@@ -166,7 +161,7 @@ export class SplitButton<Cfg extends SplitButtonCfg = SplitButtonCfg> extends Pr
     /**
      * Enables this button so that the user can press the button.
      */
-    enable(): void {
+    override enable(): void {
         this.cfg.disabled = false;
         PrimeFaces.utils.enableButton(this.button);
         PrimeFaces.utils.enableButton(this.menuButton);

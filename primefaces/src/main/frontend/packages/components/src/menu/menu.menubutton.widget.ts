@@ -34,11 +34,6 @@ export interface MenuButtonCfg extends TieredMenuCfg {
  */
 export class MenuButton<Cfg extends MenuButtonCfg = MenuButtonCfg> extends TieredMenu<Cfg> {
     /**
-     * Number of concurrent active Ajax requests.
-     */
-    ajaxCount: number = 0;
-
-    /**
      * The DOM element for the menu button.
      */
     button: JQuery = $();
@@ -265,7 +260,7 @@ export class MenuButton<Cfg extends MenuButtonCfg = MenuButtonCfg> extends Tiere
     /**
      * Disables this button so that the user cannot press the button anymore.
      */
-    disable(): void {
+    override disable(): void {
         this.cfg.disabled = true;
         this.hide();
         PrimeFaces.utils.disableButton(this.trigger);
@@ -274,7 +269,7 @@ export class MenuButton<Cfg extends MenuButtonCfg = MenuButtonCfg> extends Tiere
     /**
      * Enables this button so that the user can press the button.
      */
-    enable(): void {
+    override enable(): void {
         this.cfg.disabled = false;
         PrimeFaces.utils.enableButton(this.trigger);
     }

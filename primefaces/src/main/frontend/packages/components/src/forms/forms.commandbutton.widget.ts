@@ -22,11 +22,6 @@ export interface CommandButtonCfg extends PrimeType.widget.BaseWidgetCfg {
  * @typeParam Cfg Type of the configuration object.
  */
 export class CommandButton<Cfg extends CommandButtonCfg = CommandButtonCfg> extends PrimeFaces.widget.BaseWidget {
-    /**
-     * Number of concurrent active Ajax requests.
-     */
-    ajaxCount: number = 0;
-
     override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);
 
@@ -64,14 +59,14 @@ export class CommandButton<Cfg extends CommandButtonCfg = CommandButtonCfg> exte
     /**
      * Disables this button so that the user cannot press the button anymore.
      */
-    disable(): void {
+    override disable(): void {
         PrimeFaces.utils.disableButton(this.jq);
     }
 
     /**
      * Enables this button so that the user can press the button.
      */
-    enable(): void {
+    override enable(): void {
         PrimeFaces.utils.enableButton(this.jq);
     }
 }

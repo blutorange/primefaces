@@ -9,7 +9,7 @@ import type { Resources } from "./core.resources.js";
 import { resources } from "./core.resources.js";
 import { utils, type Utils } from "./core.utils.js";
 
-import { BaseWidget, DeferredWidget, DynamicOverlayWidget } from "./core.widget.js";
+import { BaseWidget, DeferredWidget, DynamicOverlayWidget, type BaseWidgetCfg } from "./core.widget.js";
 import { AjaxExceptionHandler } from "../ajaxexceptionhandler/ajaxexceptionhandler.js";
 import { AjaxStatus } from "../ajaxstatus/ajaxstatus.js";
 import { Poll } from "../poll/poll.js";
@@ -1011,23 +1011,23 @@ export class Core {
     /**
      * Applies the inline AJAX status (ui-state-loading) to the given widget / button.
      * 
-     * If the widget defines a `disable` method, it will be disabled during
-     * the AJAX call, if the `disableOnAjax` property of its configuration is
-     * set to `true`.
+     * If the widget defines a {@link BaseWidget.disable disable} method, it will
+     * be disabled during the AJAX call, if the
+     * {@link BaseWidgetCfg.disableOnAjax disableOnAjax} property of its
+     * configuration is set to `true`.
+     * 
+     * It it also defines an {@link BaseWidget.enable enable} method, the widget
+     * will be enabled again once the request finishes.
      *
-     * @typeParam Cfg Type of the widget configuration. Must be a toggleable
-     * widget configuration with a
-     * {@link PrimeType.widget.ToggleFeatureWidgetCfg.disableOnAjax disableOnAjax} property.
-     * @typeParam Widget Type of the widget. Must be a toggleable widget with a
-     * {@link PrimeType.widget.AjaxOptionalToggleFeatureWidget.disable | disable} and
-     * {@link PrimeType.widget.AjaxOptionalToggleFeatureWidget.enable | enable} method.
+     * @typeParam Cfg Type of the widget configuration.
+     * @typeParam Widget Type of the widget
      * @param widget The widget.
      * @param button The button DOM element.
      * @param isXhrSource Callback that checks if the widget is the source of the current AJAX request.
      */
     bindButtonInlineAjaxStatus<
-        Cfg extends PrimeType.widget.ToggleFeatureWidgetCfg,
-        Widget extends PrimeType.widget.AjaxOptionalToggleFeatureWidget<Cfg>
+        Cfg extends BaseWidgetCfg,
+        Widget extends BaseWidget<Cfg>
     >(
         widget: Widget,
         button: JQuery,
@@ -1071,7 +1071,7 @@ export class Core {
                     () => $this.buttonEndAjaxDisabled(widget, button),
                     Math.max(ajax.minLoadAnimation + (widget.ajaxStart ?? 0) - Date.now(), 0)
                 );
-                delete widget.ajaxStart;
+                widget.ajaxStart = null;
             }
         });
         widget.addDestroyListener(function() {
@@ -1080,19 +1080,20 @@ export class Core {
     }
 
     /**
-     * Ends the AJAX disabled state.
-     * @typeParam Cfg Type of the widget configuration. Must be a toggleable
-     * widget configuration with a
-     * {@link PrimeType.widget.ToggleFeatureWidgetCfg.disableOnAjax disableOnAjax} property.
-     * @typeParam Widget Type of the widget. Must be a toggleable widget with a
-     * {@link PrimeType.widget.AjaxOptionalToggleFeatureWidget.disable | disable} and
-     * {@link PrimeType.widget.AjaxOptionalToggleFeatureWidget.enable | enable} method.
+     * Ends the AJAX disabled state. If the widget defines an
+     * {@link BaseWidget.enable enable} method, it will be enabled at the end
+     * of the AJAX request, if the
+     * {@link BaseWidgetCfg.disableOnAjax disableOnAjax} property of its
+     * configuration is set to `true`.
+     *
+     * @typeParam Cfg Type of the widget configuration.
+     * @typeParam Widget Type of the widget.
      * @param widget the widget.
      * @param button The button DOM element.
      */
     buttonEndAjaxDisabled<
-        Cfg extends PrimeType.widget.ToggleFeatureWidgetCfg,
-        Widget extends PrimeType.widget.AjaxOptionalToggleFeatureWidget<Cfg>
+        Cfg extends BaseWidgetCfg,
+        Widget extends BaseWidget<Cfg>
     >(widget: Widget, button: JQuery): void {
         button.removeClass('ui-state-loading');
 

@@ -11,11 +11,6 @@ export interface SpotlightCfg extends PrimeType.widget.BaseWidgetCfg {
     active: boolean;
 
     /**
-     * `true` to block scrolling when the spotlight is turned on, or `false` otherwise.
-     */
-    blockScroll: boolean;
-
-    /**
      * The search expression for the target component to highlight.
      */
     target: string;

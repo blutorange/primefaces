@@ -21,7 +21,7 @@ export interface BaseWidgetCfg {
     /**
      * `true` to block scrolling when a certain condition is satisfied, or `false` otherwise.
      */
-    blockScroll?: boolean;
+    blockScroll: boolean;
 
     /**
      * Whether the widget was disabled on the server-side, usually via the `disabled` attribute on the Faces component.
@@ -29,9 +29,23 @@ export interface BaseWidgetCfg {
     disabled: boolean;
 
     /**
+     * Whether the widget should be disabled during AJAX postback requests.
+     * E.g. a button could get disabled so that it cannot be pressed
+     * again until the request finishes. (Since requests need to be
+     * queued as mandated by the Faces spec, the user would have to wait
+     * anyway.)
+     */
+    disableOnAjax: boolean;
+
+    /**
+     * False to re-enable after disabled by an AJAX event.
+     */
+    disabledAttr: boolean;
+
+    /**
      * ID of the form to use for AJAX requests.
      */
-    formId?: string;
+    formId: string;
 
     /**
      * The client-side ID of the widget, with all parent naming containers, such as
@@ -44,7 +58,7 @@ export interface BaseWidgetCfg {
      * Optional reference to an iframe, e.g. the iframe inside which to
      * place the widget.
      */
-    iframe?: JQuery<HTMLIFrameElement>;
+    iframe: JQuery<HTMLIFrameElement>;
 
     /**
      * List of localized labels for the widget. Labels are normally rendered server-side. This property is set by the
@@ -106,16 +120,7 @@ export interface BaseWidgetCfg {
  * that this configuration is usually meant to be read-only and should not be
  * modified.
  */
-export interface DynamicOverlayWidgetCfg extends BaseWidgetCfg {
-    /**
-     * The search expression for the element to which the overlay panel should be appended.
-     */
-    appendTo: string | null;
-
-    /**
-     * `true` to prevent the body from being scrolled, `false` otherwise.
-     */
-    blockScroll: boolean;
+export interface DynamicOverlayWidgetCfg extends BaseWidgetCfg, PrimeType.widget.DynamicOverlayFeatureWidgetCfg {
 }
 
 /**
@@ -156,6 +161,16 @@ export interface DeferredWidgetCfg extends BaseWidgetCfg {
  * @prop {string} key The key of the JSON object.
  */
 export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg> {
+    /**
+     * Number of concurrent active Ajax requests.
+     */
+    ajaxCount: number = 0;
+
+    /**
+     * Keeps track of when the AJAX request started.
+     */
+    ajaxStart: number | null = null;
+
     /**
      * The configuration of this widget instance. Please note that
      * no property is guaranteed to be present, you should always check for `undefined` before accessing a property.
@@ -213,7 +228,7 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg> {
      * In addition, the `init` method is also called when the page is refreshed via AJAX. In that case, the
      * widget instance is reused, and only its `init` method gets called again.
      */
-    constructor() {}
+    constructor() { }
 
     /**
      * A widget class should not declare an explicit constructor, the default constructor provided by this base
@@ -240,7 +255,7 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg> {
         this.cfg = cfg;
         this.id = cfg.id;
         if (Array.isArray(this.id)) {
-            this.jqId = $.map(this.id, function(id) {
+            this.jqId = $.map(this.id, function (id) {
                 return core.escapeClientId(id);
             }).join(",");
         }
@@ -257,7 +272,7 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg> {
 
         if (this.widgetVar) {
             var $this = this;
-            this.jq.on("remove", function() {
+            this.jq.on("remove", function () {
                 if (!core.detachedWidgets.includes($this.widgetVar)) {
                     core.detachedWidgets.push($this.widgetVar);
                 }
@@ -340,6 +355,16 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg> {
     }
 
     /**
+     * Disables this widget, so that the user cannot interact with it anymore.
+     */
+    disable?(): void;
+
+    /**
+     * Enables this widget, so that the user can interact with it.
+     */
+    enable?(): void;
+
+    /**
      * Checks if this widget is detached, ie whether the HTML element of this widget is currently contained within
      * the DOM (the HTML body element). A widget may become detached during an AJAX update, and it may remain
      * detached in case the update removed this component from the component tree.
@@ -386,7 +411,7 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg> {
      */
     removeScriptElement(clientId: string | string[]): void {
         if (Array.isArray(clientId)) {
-            $.each(clientId, function(_, id) {
+            $.each(clientId, function (_, id) {
                 $(core.escapeClientId(id) + '_s').remove();
             });
         }
@@ -412,7 +437,7 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg> {
      * @return `true` if this widget has the given behavior, `false` otherwise.
      */
     hasBehavior(event: string): boolean {
-        if(this.cfg.behaviors) {
+        if (this.cfg.behaviors) {
             return this.cfg.behaviors[event] != undefined;
         }
 
@@ -437,7 +462,7 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg> {
      * @since 7.0
      */
     callBehavior(event: string, ext?: Partial<PrimeType.ajax.ConfigurationExtender>): void {
-        if(this.hasBehavior(event)) {
+        if (this.hasBehavior(event)) {
             this.cfg.behaviors?.[event]?.call(this, ext);
         }
         else if (this.cfg.behaviors === undefined && this.jq.length > 0) {
@@ -536,16 +561,16 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg> {
      * @since 10.0.0
      */
     getParentFormId(): string | undefined {
-        if(this.cfg.formId) {
+        if (this.cfg.formId) {
             return this.cfg.formId;
         }
-        
+
         //look for a parent of source
         var form = this.getParentForm();
         if (form.length > 0) {
             this.cfg.formId = form.attr('id');
         }
-        
+
         return this.cfg.formId;
     }
 
@@ -561,7 +586,7 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg> {
         }
         return core.getLocaleLabel(label);
     }
-    
+
     /**
      * Creates an ARIA label for an element.
      * @param label The label key to look up
@@ -624,19 +649,19 @@ export class DynamicOverlayWidget<Cfg extends DynamicOverlayWidgetCfg = DynamicO
         super.init(cfg);
 
         // do not bind overlay if widget disabled
-        if(this.cfg.disabled === true) {
+        if (this.cfg.disabled === true) {
             return;
         }
 
-        if(!overlay) {
+        if (!overlay) {
             overlay = this.jq;
         }
 
-        if(!overlayId) {
+        if (!overlayId) {
             overlayId = this.getId();
         }
 
-        if(!target) {
+        if (!target) {
             target = this.jq;
         }
 
@@ -672,7 +697,7 @@ export class DynamicOverlayWidget<Cfg extends DynamicOverlayWidgetCfg = DynamicO
      * @param overlay The target overlay, if not given defaults to {@link jq}.
      */
     enableModality(overlay?: JQuery | null): void {
-        const target = overlay||this.jq;
+        const target = overlay || this.jq;
         this.modalOverlay = utils.addModal(this, target, () => this.getModalTabbables() ?? $());
     }
 
@@ -681,7 +706,7 @@ export class DynamicOverlayWidget<Cfg extends DynamicOverlayWidgetCfg = DynamicO
      * overlay is currently displayed.
      * @param overlay The target overlay, if not given defaults to {@link jq}.
      */
-    disableModality(overlay?: JQuery | null | undefined): void{
+    disableModality(overlay?: JQuery | null | undefined): void {
         var target = overlay || this.jq;
         utils.removeModal(this, target);
         this.modalOverlay = null;
@@ -737,7 +762,7 @@ export class DeferredWidget<Cfg extends DeferredWidgetCfg = DeferredWidgetCfg> e
      * whether the container of this widget is visible and call {@link _render} only once it is.
      */
     renderDeferred(): void {
-        if(this.jq.is(':visible')) {
+        if (this.jq.is(':visible')) {
             this._render();
             this.postRender();
         }
@@ -745,7 +770,7 @@ export class DeferredWidget<Cfg extends DeferredWidgetCfg = DeferredWidgetCfg> e
             var container = this.jq[0].closest('.ui-hidden-container');
             if (container instanceof HTMLElement) {
                 var $container = $(container);
-                if($container.length) {
+                if ($container.length) {
                     var $this = this;
                     this.addDeferredRender(this.id, $container, () => {
                         return $this.render();
@@ -762,7 +787,7 @@ export class DeferredWidget<Cfg extends DeferredWidgetCfg = DeferredWidgetCfg> e
      * @return `true` if the widget container is visible, `false` or `undefined` otherwise.
      */
     render(): boolean | undefined | void {
-        if(this.jq.is(':visible')) {
+        if (this.jq.is(':visible')) {
             this._render();
             this.postRender();
             return true;
@@ -809,10 +834,10 @@ export class DeferredWidget<Cfg extends DeferredWidgetCfg = DeferredWidgetCfg> e
     protected addDeferredRender(widgetId: string | string[], container: JQuery, callback: () => boolean | undefined | void): void {
         core.addDeferredRender(widgetId, container.attr('id') ?? "", callback);
 
-        if(container.is(':hidden')) {
+        if (container.is(':hidden')) {
             var parentContainer = this.jq.closest('.ui-hidden-container');
 
-            if(parentContainer.length) {
+            if (parentContainer.length) {
                 this.addDeferredRender(widgetId, container.parent().closest('.ui-hidden-container'), callback);
             }
         }

@@ -94,11 +94,6 @@ export interface SimpleFileUploadCfg extends PrimeType.widget.BaseWidgetCfg {
  */
 export class SimpleFileUpload<Cfg extends SimpleFileUploadCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
     /**
-     * Number of concurrent active Ajax requests.
-     */
-    ajaxCount: number = 0;
-
-    /**
      * The DOM element for the button for selecting a file.
      */
     button: JQuery | undefined = undefined;

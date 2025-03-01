@@ -11,17 +11,6 @@ export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg, Pri
     absolutePositioned: boolean;
 
     /**
-     * A search expression for the element to which the dialog is appended. Defaults to the
-     * body.
-     */
-    appendTo: string;
-
-    /**
-     * Whether to prevent the document from scrolling when the dialog is visible.
-     */
-    blockScroll: boolean;
-
-    /**
      * Only relevant for dynamic="true": Defines if activating the dialog should load the contents from server again. For cache="true" (default) the dialog content is only loaded once.
      */
     cache: boolean;
