@@ -235,7 +235,7 @@ declare global {
          * 
          * Similar to {@link BaseFacesMessage}, but `severity` and `rendered` are guaranteed to be present.
          */
-        export interface FacesMessage {
+        export interface FacesMessage extends BaseFacesMessage{
             /**
              * The severity of this message, i.e. whether it is an information message, a warning message, or an error
              * message.

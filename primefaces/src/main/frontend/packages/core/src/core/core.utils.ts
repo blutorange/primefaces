@@ -228,14 +228,14 @@ export class Utils {
                         }
                     }
 
-                    const focusElement = (element) => {
+                    const focusElement = (element: JQuery) => {
                         element.focus(1);
                         event.preventDefault();
                     };
 
-                    if (target.is(document.body) || ($(event.target).is(last) || last.has(event.target).length > 0) && !event.shiftKey) {
+                    if (target.is(document.body) || ($(event.target).is(last) || (event.target instanceof Element && last.has(event.target).length > 0)) && !event.shiftKey) {
                         focusElement(first);
-                    } else if (($(event.target).is(first) || first.has(event.target).length > 0) && event.shiftKey) {
+                    } else if (($(event.target).is(first) || (event.target instanceof Element && first.has(event.target).length > 0)) && event.shiftKey) {
                         focusElement(last);
                     }
                 }

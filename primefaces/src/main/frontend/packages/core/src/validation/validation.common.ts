@@ -280,11 +280,11 @@ export class Validation {
             if (this.validate($source, process, update, false, false, false, false, false).valid) {
                 widget.jq.addClass('ui-state-csv-valid');
                 widget.jq.removeClass('ui-state-csv-invalid');
-                widget.enable();
+                widget.enable?.();
             } else {
                 widget.jq.addClass('ui-state-csv-invalid');
                 widget.jq.removeClass('ui-state-csv-valid');
-                widget.disable();
+                widget.disable?.();
             }
         } else {
             console.warn('No widget found for ID ' + btn.id);
