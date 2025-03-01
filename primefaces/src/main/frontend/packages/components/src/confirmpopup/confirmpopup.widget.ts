@@ -369,7 +369,7 @@ export class ConfirmPopup<Cfg extends ConfirmPopupCfg> extends PrimeFaces.widget
      * Shows the given message in this confirmation popup.
      * @param msg Message to show.
      */
-    showMessage(msg: Partial<PrimeType.dialog.ExtendedConfirmDialogMessage>): void {
+    showMessage(msg: Partial<PrimeType.feature.confirm.ExtendedConfirmMessage>): void {
         PrimeFaces.confirmPopupSource = typeof msg.source === 'string' ? $(PrimeFaces.escapeClientId(msg.source)) : PrimeFaces.utils.toJQuery(msg.source);
 
         const beforeShow = () => {

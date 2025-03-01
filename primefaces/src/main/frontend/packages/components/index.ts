@@ -36,7 +36,7 @@ import { Steps } from "./src/menu/menu.steps.widget.js";
 import { TabMenu } from "./src/menu/menu.tabmenu.widget.js";
 import { TieredMenu } from "./src/menu/menu.tieredmenu.widget.js";
 
-import { dialog, type Dialogs, type DialogHandler as _DialogHandler } from "./src/core.dialog.js";
+import { dialog, registerConfirmFeature, type Dialogs, type DialogHandler as _DialogHandler } from "./src/core.dialog.js";
 import { ConfirmDialog, Dialog as _Dialog, DynamicDialog, type ConfirmDialogCfg } from "./src/dialog/dialog.widget.js";
 
 import "./src/accordion/accordion.widget.js";
@@ -133,6 +133,9 @@ function exposeToGlobalScope() {
     PrimeFaces.widget.Steps = Steps;
     PrimeFaces.widget.TabMenu = TabMenu;
     PrimeFaces.widget.TieredMenu = TieredMenu;
+
+    // Core features contributes by this "components" module
+    registerConfirmFeature();
 }
 
 // Global extensions
@@ -248,36 +251,26 @@ declare global {
         }
 
         /**
-         * An extended confirmation message with an additional `source` attribute
-         * for specifying the source component or form.
-         */
-        export interface ExtendedConfirmDialogMessage extends widget.ConfirmDialog.ConfirmDialogMessage {
-            /**
-             * The source component (command button, AJAX callback etc) that triggered the confirmation.
-             * When a string, it is interpreted as the client ID of the component. Otherwise, it must be
-             * the main DOM element of the source component.
-             */
-            source: string | HTMLElement | JQuery;
-        }
-
-        /**
          * Interface for a message received from the server that is to be shown
          * in a dialog, via the dialog framework.
          */
-        export interface ServerMessage {
+        export interface ServerDialogMessageData {
             /**
              * If `true`, the message is escaped for HTML. If `false`, the message is
              * interpreted as an HTML string.
              */
             escape: boolean;
+
             /**
              * A short summary of the message.
              */
             summary: string;
+
             /**
              * In-depth details of the message.
              */
             detail: string;
+
             /**
              * The severity of this message, i.e. whether it is an information message, a warning message, or an error
              * message.
@@ -290,60 +283,6 @@ declare global {
              * - `FATAL 3` 
              */
             severity: string;
-        }
-    }
-    namespace PrimeType.widget.ConfirmDialog {
-        /**
-         * Interface for the message that is shown in the confirm dialog.
-         */
-        export interface ConfirmDialogMessage {
-            /**
-             * Optional code that is run before the message is shown. Must be valid JavaScript code.
-             * It is evaluated via {@link PrimeFaces.csp.eval}.
-             */
-            beforeShow?: string;
-            /**
-             * If `true`, the message is escaped for HTML. If `false`, the message is
-             * interpreted as an HTML string.
-             */
-            escape?: boolean;
-            /**
-             * Header of the dialog message.
-             */
-            header: string;
-            /**
-             * Optional icon that is shown to the left of the confirm dialog. When not given, defaults to
-             * `ui-icon-alert`. Must be a style class of some icon font.
-             */
-            icon?: string;
-            /**
-             * Main content of the dialog message.
-             */
-            message: string;
-            /**
-             * The CSS class for the yes (deny) button.
-             */
-            noButtonClass?: string;
-            /**
-             * The icon for the no (deny) button, a CSS class to add.
-             */
-            noButtonIcon?: string;
-            /**
-             * The label for the no (deny) button.
-             */
-            noButtonLabel?: string;
-            /**
-             * The CSS class for the yes (confirm) button.
-             */
-            yesButtonClass?: string;
-            /**
-             * The icon for the yes (confirm) button, a CSS class to add.
-             */
-            yesButtonIcon?: string;
-            /**
-             * The label for the yes (confirm) button.
-             */
-            yesButtonLabel?: string;
         }
     }
     namespace PrimeType.widget.Dialog {

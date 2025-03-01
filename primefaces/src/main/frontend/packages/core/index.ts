@@ -19,17 +19,17 @@ exposeToGlobalScope();
 
 function exposeToGlobalScope() {
     // Do nothing if the core script was already loaded
-    if("PrimeFaces" in window) {
+    if ("PrimeFaces" in window) {
         window.PrimeFaces.debug("PrimeFaces already loaded, ignoring duplicate execution.");
         return;
     }
 
     // Expose js-cookie to the global scope
-    Object.assign(window, { 
+    Object.assign(window, {
         Cookies,
         PrimeFaces: core,
         PF: _PF,
-     });
+    });
 
     // Seems unused, but define this for now for compatibility
     // TODO Can this be removed?
@@ -40,10 +40,10 @@ function exposeToGlobalScope() {
     registerCommonHighlighters();
     registerCommonValidators();
     registerBeanValidationValidators();
-    
+
     registerCommonValidationMessages();
     registerBeanValidationMessages();
-    
+
     // Global setup
     globalAjaxSetup();
     globalUtilsSetup();
@@ -77,7 +77,7 @@ declare global {
          * clicks outside the overlay. The {@link OverlayHideCallback} is not
          * invoked when the user clicks on one those elements.
          */
-        export type OverlayResolveIgnoredElementCallback = 
+        export type OverlayResolveIgnoredElementCallback =
             /**
              * @param event The event that occurred, with the element that was clicked.
              * @returns An optional set of elements to ignore.
@@ -87,7 +87,7 @@ declare global {
         /**
          * Callback invoked when an element or the window was resized.
          */
-        export type ResizeCallback = 
+        export type ResizeCallback =
             /**
              * @param event The resize event that occurred.
              */
@@ -107,7 +107,7 @@ declare global {
          * position or dimensions, such as a resize or DOM mutation event.
          */
         export type MutationCallback = () => void;
-        
+
         /**
          * Custom logger for logging messages. Set your custom logger via
          * `PrimeFaces.logger = ...`.
@@ -280,27 +280,27 @@ declare global {
              * `false` otherwise.
              */
             considerEmptyStringNull: boolean;
-        
+
             /**
              * The current servlet context path.
              */
             contextPath: string;
-        
+
             /**
              * If cookies are secured (allowed only via HTTPS).
              */
             cookiesSecure: boolean;
-        
+
             /**
              * The `same-site` attribute for cookies.
              */
             cookiesSameSite?: "strict" | "Strict" | "lax" | "Lax" | "none" | "None" | undefined;
-        
+
             /**
              * If AJAX post params are evaluated early.
              */
             earlyPostParamEvaluation: boolean;
-       
+
             /**
              * Contains the error pages that may be shown when an error occurs.
              *
@@ -313,26 +313,129 @@ declare global {
             * The current locale, such as `en`,`en_US`, or `ja`.
             */
             locale: string;
-        
+
             /**
              * If AJAX partial-submit is enabled.
              */
             partialSubmit: boolean;
-        
+
             /**
              * The Faces project stage.
              */
             projectStage: string;
-        
+
             /**
              * `true` if empty (input etc.) fields should be validated, or `false` otherwise.
              */
             validateEmptyFields: boolean;
-        
+
             /**
              * The Faces ID of the current view.
              */
             viewId: string;
+        }
+    }
+}
+
+// Core features
+declare global {
+    namespace PrimeType {
+        /**
+         * Registry for additional features for the core, such as showing
+         * confirmation messages in dialogs. The PrimeFaces core does not know
+         * about dialogs, but additional scripts may add such functionality.
+         */
+        export interface CoreFeatureRegistry { }
+    }
+
+    namespace PrimeType.feature {
+        export interface Confirm {
+            handleMessage: (message: confirm.ExtendedConfirmMessage) => void;
+        }
+    }
+
+    namespace PrimeType.feature.confirm {
+        /**
+         * Interface for a confirmation message to show, such as in a confirm
+         * popup or a confirm dialog. Used by the {@link ConfirmCoreFeature}.
+         */
+        export interface ConfirmMessage {
+            /**
+             * Optional code that is run before the message is shown. Must be valid JavaScript code.
+             * It is evaluated via {@link PrimeFaces.csp.eval}.
+             */
+            beforeShow?: string;
+
+            /**
+             * If `true`, the message is escaped for HTML. If `false`, the message is
+             * interpreted as an HTML string.
+             */
+            escape?: boolean;
+
+            /**
+             * Header of the dialog message.
+             */
+            header: string;
+
+            /**
+             * Optional icon that is shown to the left of the confirm dialog. When not given, defaults to
+             * `ui-icon-alert`. Must be a style class of some icon font.
+             */
+            icon?: string;
+
+            /**
+             * Main content of the dialog message.
+             */
+            message: string;
+
+            /**
+             * The CSS class for the yes (deny) button.
+             */
+            noButtonClass?: string;
+
+            /**
+             * The icon for the no (deny) button, a CSS class to add.
+             */
+            noButtonIcon?: string;
+
+            /**
+             * The label for the no (deny) button.
+             */
+            noButtonLabel?: string;
+
+            /**
+             * Optional type of the message that specified its intended use,
+             * e.g. `popup`.
+             */
+            type?: string;
+
+            /**
+             * The CSS class for the yes (confirm) button.
+             */
+            yesButtonClass?: string;
+
+            /**
+             * The icon for the yes (confirm) button, a CSS class to add.
+             */
+            yesButtonIcon?: string;
+
+            /**
+             * The label for the yes (confirm) button.
+             */
+            yesButtonLabel?: string;
+        }
+
+        /**
+         * An extended {@link ConfirmMessage} with an additional `source` attribute
+         * for specifying the source component or form.
+         */
+        export interface ExtendedConfirmMessage extends ConfirmMessage {
+            /**
+             * The source component (command button, AJAX callback etc) that triggered the confirmation.
+             * When a string, it is interpreted as the client ID of the component. Otherwise, it must be
+             * the main DOM element of the source component.
+             */
+            source: string | HTMLElement | JQuery;
         }
     }
 }
@@ -1008,7 +1111,7 @@ declare global {
              */
             Highlighter: ValidationHighlighter;
         }
-        
+
         /**
          * Options passed to `PrimeFaces.vb` as shortcut. This is the same as `Configuration`, but with shorter
          * option names and is used mainly by the method `PrimeFaces.vb`. See `Configuration` for a detailed description
@@ -1073,7 +1176,7 @@ declare global {
          * }
          * ```  
          */
-        export interface WidgetRegistry {}
+        export interface WidgetRegistry { }
     }
     namespace PrimeType.widget {
         /**
@@ -1217,7 +1320,7 @@ declare global {
          * attribute specifies a target where the overlay should be appended to.
          * @typeParam Cfg Type of the widget configuration.
          */
-        export interface DynamicOverlayFeatureWidget<Cfg extends DynamicOverlayFeatureWidgetCfg> extends BaseWidget<Cfg> {}
+        export interface DynamicOverlayFeatureWidget<Cfg extends DynamicOverlayFeatureWidgetCfg> extends BaseWidget<Cfg> { }
 
         /*
          * __Note__: Do not parametrize the this context via a type parameter. This would require changing the return type
@@ -1265,7 +1368,7 @@ declare global {
             id: string | string[];
             widgetVar: string;
         }> = Partial<Omit<Cfg, "id">> & Pick<Cfg, "id">;
-        
+
         /**
          * A destroy listener for a PrimeFaces widget. It is invoked when the
          * widget is removed, such as during AJAX updates. Use {@link BaseWidget.addDestroyListener} to add a destroy
@@ -1301,7 +1404,7 @@ declare global {
              * @param widgetCfg The configuration of the widget that is about to be constructed.
              */
             (this: null, widgetCfg: PrimeType.widget.PartialWidgetCfg<import("./src/core/core.widget.js").BaseWidgetCfg>) => void;
-        
+
         /**
          * An optional callback that is invoked before a widget is about to be
          * destroyed, e.g., when the component was removed at the end of an AJAX update. This is called at the beginning
@@ -1685,7 +1788,7 @@ declare global {
         /**
          * Callback invoked when an AJAX request fails.
          */
-        export type OnExceptionCallback = 
+        export type OnExceptionCallback =
             /**
              * @param errorName Name of the AJAX error.
              * @param errorMessage Message with details regarding the AJAX error.
@@ -1704,19 +1807,19 @@ declare global {
         /**
          * Optional callback invoked when polling starts. See {@link PollCfg.onActivated}.
          */
-        export type OnActivatedCallback = 
+        export type OnActivatedCallback =
             /**
              * @returns `false` to cancel polling, any other value to proceed.
              */
-            (this: Poll) => boolean | undefined | void; 
+            (this: Poll) => boolean | undefined | void;
         /**
          * Optional callback invoked when polling stops. See {@link PollCfg.onDeactivated}.
          */
-        export type OnDeactivatedCallback = 
+        export type OnDeactivatedCallback =
             /**
              * @returns `false` to continue polling, any other value to stop.
              */
-            (this: Poll) => boolean | undefined | void; 
+            (this: Poll) => boolean | undefined | void;
         /**
          * Callback that performs the polling action. See also
          * {@link PollCfg.fn}.
@@ -1823,7 +1926,7 @@ declare global {
 declare global {
     namespace PrimeType {
         // Extend PrimeFaces namespace
-        export interface PrimeFaces extends Core {}
+        export interface PrimeFaces extends Core { }
 
         // Extend Window global
         export interface WindowExtensions {
@@ -1840,6 +1943,11 @@ declare global {
             DeferredWidget: typeof DeferredWidget;
             DynamicOverlayWidget: typeof DynamicOverlayWidget;
             Poll: typeof Poll;
+        }
+
+        // Extend core feature registry
+        export interface CoreFeatureRegistry {
+            confirm: feature.Confirm;
         }
     }
 
@@ -1890,7 +1998,7 @@ declare global {
         export type DynamicOverlayWidgetCfg = import("./src/core/core.widget.js").DynamicOverlayWidgetCfg;
         export type PollCfg = import("./src/poll/poll.js").PollCfg;
     }
-    
+
     // Extend globals
     let PrimeFaces: PrimeType.PrimeFaces;
     let PF: typeof _PF;

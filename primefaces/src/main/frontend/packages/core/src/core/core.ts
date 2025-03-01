@@ -269,6 +269,8 @@ export class Core {
         '=': '&#x3D;'
     };
 
+    private features: {[P in keyof PrimeType.CoreFeatureRegistry]?: Set<PrimeType.CoreFeatureRegistry[P]>} = {};
+
     /**
      * Registry with the client-side implementation of some faces converters. The
      * key is the name of the converter, e.g. `jakarta.faces.Length`, the value is
@@ -1704,13 +1706,44 @@ export class Core {
      * Displays dialog or popup according to the type of confirm component.
      * @param msg Message to show with the confirm dialog or popup.
      */
-    confirm(msg: PrimeFaces.dialog.ExtendedConfirmDialogMessage): void {
-        if (msg.type === 'popup' && this.confirmPopup) {
-            this.confirmPopup.showMessage(msg);
+    confirm(msg: PrimeType.feature.confirm.ExtendedConfirmMessage): void {
+        for (const confirmFeature of this.features.confirm ?? []) {
+            confirmFeature.handleMessage(msg);
         }
-        else if (this.dialog) {
-            this.dialog.DialogHandler.confirm(msg);
-        }
+    }
+
+    /**
+     * Registers a core feature with this PrimeFaces core instance. A feature
+     * can extend the core in various ways to provide additional functionality.
+     * 
+     * Each feature allows multiple implementation to be registered. The semantics
+     * depend on the feature, but usually implementations are invoked in the
+     * order they were registered.
+     * @typeParam Feature Type of the the feature name to register.
+     * @param name Name of the feature to register.
+     * @param feature Feature implementation to register.
+     */
+    registerFeature<Feature extends keyof PrimeType.CoreFeatureRegistry>(
+        name: Feature,
+        feature: PrimeType.CoreFeatureRegistry[Feature]
+    ): void {
+        this.features[name] ??= new Set();
+        this.features[name].add(feature);
+    }
+
+    /**
+     * Unregisters a core feature from this PrimeFaces core instance, that was
+     * previously registered via {@link registerFeature}.
+     * 
+     * @typeParam Feature Type of the the feature name to register.
+     * @param name Name of the feature to register.
+     * @param feature Feature implementation to register.
+     */
+    unregisterFeature<Feature extends keyof PrimeType.CoreFeatureRegistry>(
+        name: Feature,
+        feature: PrimeType.CoreFeatureRegistry[Feature]
+    ): void {
+        this.features[name]?.delete(feature);
     }
 
     /**
