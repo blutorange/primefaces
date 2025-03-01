@@ -909,132 +909,18 @@ export class ValidationUtils {
     }
 
     /**
-     * Renders all given messages in the given container.
+     * Renders all given messages in the given containers.
      * @param messages The messages to render.
-     * @param containers The container for the messages. Either the element with the class `ui-messages`, or
-     * a parent of such an element.
+     * @param containers The container for the messages. Note that this JQuery
+     * instance may contain multiple elements -- you should iterate over them. 
      */
     renderMessages(messages: Record<string, PrimeType.FacesMessage[]>, containers: JQuery): void {
-        let messagesComponents = $();
-        let messageComponents = $();
-        let growlComponents = $();
-
-        for (const container of containers) {
-            const $container = $(container);
-
-            if ($container.is('div.ui-messages')) {
-                messagesComponents = messagesComponents.add($container);
-            }
-            else {
-                messagesComponents = messagesComponents.add($container.find('div.ui-messages'));
-            }
-
-            if ($container.is('div.ui-message')) {
-                messageComponents = messageComponents.add($container);
-            }
-            else {
-                messageComponents = messageComponents.add($container.find('div.ui-message'));
-            }
-
-            if ($container.is('.ui-growl-pl')) {
-                growlComponents = growlComponents.add($container);
-            }
-            else {
-                growlComponents = growlComponents.add($container.find('.ui-growl-pl'));
-            }
-        }
-
-        // filter out by severity
-        messagesComponents = messagesComponents.filter((_, el) => {
-            if ($(el).is('.ui-fileupload-messages')) {
-                return false;
-            }
-            return $(el).data('severity').indexOf('error') !== -1;
-        });
-        growlComponents = growlComponents.filter((_, el) => {
-            return $(el).data('severity').indexOf('error') !== -1;
-        });
-
-        for (let i = 0; i < messagesComponents.length; i++) {
-            const messagesComponent = messagesComponents.eq(i);
-            const globalOnly = messagesComponent.data('global');
-            const redisplay = messagesComponent.data('redisplay');
-            const showSummary = messagesComponent.data('summary');
-            const showDetail = messagesComponent.data('detail');
-            const messagesWidget = core.getWidgetById(messagesComponent.attr('id') ?? "");
-
-            messagesWidget?.clearMessages();
-
-            for (const clientId in messages) {
-                for (const msg of messages[clientId] ?? []) {
-                    if (globalOnly || (msg.rendered && !redisplay)) {
-                        continue;
-                    }
-
-                    const msgToRender = { ...msg };
-                    if (!showSummary) {
-                        msgToRender.summary = '';
-                    }
-                    if (!showDetail) {
-                        msgToRender.detail = '';
-                    }
-
-                    messagesWidget?.appendMessage(msgToRender);
-                    msg.rendered = true;
-                }
-            }
-        }
-
-        for (let i = 0; i < growlComponents.length; i++) {
-            const growlComponent = growlComponents.eq(i);
-            const redisplay = growlComponent.data('redisplay');
-            const globalOnly = growlComponent.data('global');
-            const showSummary = growlComponent.data('summary');
-            const showDetail = growlComponent.data('detail');
-            const growlWidget = core.getWidgetById(growlComponent.attr('id') ?? "");
-
-            growlWidget?.removeAll();
-
-            for (const clientId in messages) {
-                for (const msg of messages[clientId] ?? []) {
-                    if (globalOnly || (msg.rendered && !redisplay)) {
-                        continue;
-                    }
-
-                    const msgToRender = { ...msg };
-                    if (!showSummary) {
-                        msgToRender.summary = '';
-                    }
-                    if (!showDetail) {
-                        msgToRender.detail = '';
-                    }
-
-                    growlWidget?.renderMessage(msgToRender);
-                    msg.rendered = true;
-                }
-            }
-        }
-
-        for (let i = 0; i < messageComponents.length; i++) {
-            const messageComponent = messageComponents.eq(i);
-            const target = messageComponent.data('target');
-            const redisplay = messageComponent.data('redisplay');
-            const messageWidget = core.getWidgetById(messageComponent.attr('id') ?? "");
-
-            messageWidget?.clearMessage();
-
-            for (const clientId in messages) {
-                if (target !== clientId) {
-                    continue;
-                }
-                for (const msg of messages[clientId] ?? []) {
-                    if (msg.rendered && !redisplay) {
-                        continue;
-                    }
-
-                    messageWidget?.renderMessage(msg);
-                    msg.rendered = true;
-                }
+        for (const messageDisplayHook of core.getHook("messageRender")) {
+            try {
+                messageDisplayHook.renderMessagesInContainers(messages, containers);
+            } catch (e) {
+                core.error("Could not render messages");
+                core.error(e);
             }
         }
     }

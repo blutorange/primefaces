@@ -39,9 +39,9 @@ import { TieredMenu } from "./src/menu/menu.tieredmenu.widget.js";
 import { dialog, registerDialogHooks, type Dialogs, type DialogHandler as _DialogHandler } from "./src/core.dialog.js";
 import { ConfirmDialog, Dialog as _Dialog, DynamicDialog } from "./src/dialog/dialog.widget.js";
 
-import { Growl } from "./src/growl/growl.widget.js";
-import { Message } from "./src/message/message.widget.js";
-import { Messages } from "./src/messages/messages.widget.js";
+import { Growl, registerMessageRenderHookForGrowlWidget } from "./src/growl/growl.widget.js";
+import { Message, registerMessageRenderHookForMessageWidget } from "./src/message/message.widget.js";
+import { Messages, registerMessageRenderHookForMessagesWidget } from "./src/messages/messages.widget.js";
 import { StaticMessage } from "./src/staticmessage/staticmessage.widget.js";
 
 import "./src/accordion/accordion.widget.js";
@@ -103,6 +103,12 @@ function exposeToGlobalScope() {
         return;
     }
 
+    // Register hook contributions from this "components" module
+    registerDialogHooks();
+    registerMessageRenderHookForGrowlWidget();
+    registerMessageRenderHookForMessageWidget()
+    registerMessageRenderHookForMessagesWidget();
+    
     // Expose autosize to the global scope
     Object.assign(window, { autosize });
 
@@ -146,9 +152,6 @@ function exposeToGlobalScope() {
 
     // src/staticmessage
     PrimeFaces.widget.StaticMessage = StaticMessage;
-
-    // Core features contributes by this "components" module
-    registerDialogHooks();
 }
 
 // Global extensions

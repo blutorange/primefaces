@@ -410,8 +410,21 @@ declare global {
             kill: () => void;
         }
 
-        export interface MessageDisplay {
-
+        /**
+         * The message render hook. Lets external code hook into how and where
+         * messages are rendered.
+         * 
+         * Default implementations are provided for rendering messages into the
+         * message, messages, and growl widget.
+         */
+        export interface MessageRender {
+            /**
+             * Renders all given messages in the given containers.
+             * @param messages The messages to render.
+             * @param containers The container for the messages. Note that this JQuery
+             * instance may contain multiple elements -- you should iterate over them. 
+             */
+            renderMessagesInContainers: (messages: Record<string, PrimeType.FacesMessage[]>, containers: JQuery) => void;
         }
 
         /**
@@ -693,8 +706,6 @@ declare global {
             url: string;
         }
     }
-
-    namespace PrimeType.hook.messageDisplay {}
 
     namespace PrimeType.hook.messageInDialog {
         /**
@@ -2204,7 +2215,14 @@ declare global {
              */
             killSwitch: hook.KillSwitch;
 
-            messageDisplay: hook.MessageDisplay;
+            /**
+             * The message render hook. Lets external code hook into how and where
+             * messages are rendered.
+             * 
+             * Default implementations are provided for rendering messages into the
+             * message, messages, and growl widget.
+             */
+            messageRender: hook.MessageRender;
 
             /**
              * The message-in-dialog feature that lets external scripts subscribe

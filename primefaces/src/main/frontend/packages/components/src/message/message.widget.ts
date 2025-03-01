@@ -81,3 +81,53 @@ export class Message<Cfg extends MessageCfg = MessageCfg> extends PrimeFaces.wid
         this.jq.removeClass('ui-message-error ui-message-icon-only ui-widget ui-helper-clearfix');
     }
 }
+
+/**
+ * Registers an implementation for the message render hook that displays
+ * messages inside a message widget.
+ */
+export function registerMessageRenderHookForMessageWidget(): void {
+    PrimeFaces.registerHook("messageRender", {
+        renderMessagesInContainers: (messages, containers) => {
+            let messageComponents = $();
+
+            for (const container of containers) {
+                const $container = $(container);
+
+                if ($container.is('div.ui-message')) {
+                    messageComponents = messageComponents.add($container);
+                }
+                else {
+                    messageComponents = messageComponents.add($container.find('div.ui-message'));
+                }
+            }
+
+            for (let i = 0; i < messageComponents.length; i++) {
+                const messageComponent = messageComponents.eq(i);
+                const target = messageComponent.data('target');
+                const redisplay = messageComponent.data('redisplay');
+                const messageWidget = PrimeFaces.getWidgetById(messageComponent.attr('id') ?? "");
+
+                if (!(messageWidget instanceof Message)) {
+                    continue;
+                }
+
+                messageWidget.clearMessage();
+
+                for (const clientId in messages) {
+                    if (target !== clientId) {
+                        continue;
+                    }
+                    for (const msg of messages[clientId] ?? []) {
+                        if (msg.rendered && !redisplay) {
+                            continue;
+                        }
+
+                        messageWidget.renderMessage(msg);
+                        msg.rendered = true;
+                    }
+                }
+            }
+        },
+    });
+}

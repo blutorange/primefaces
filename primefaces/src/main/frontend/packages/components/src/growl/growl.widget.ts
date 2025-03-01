@@ -111,7 +111,7 @@ export class Growl<Cfg extends GrowlCfg = GrowlCfg> extends PrimeFaces.widget.Ba
      * Creates the HTML elements for the given faces message, and adds it to the DOM.
      * @param msg A message to translate into an HTML element.
      */
-    private renderMessage(msg: PrimeType.FacesMessage): void {
+    renderMessage(msg: PrimeType.FacesMessage): void {
         let markup = '<div class="ui-growl-item-container ui-state-highlight ui-helper-hidden ui-shadow ui-growl-' + msg.severity + '">';
         markup += '<div role="alert" class="ui-growl-item">';
         markup += '<div class="ui-growl-icon-close ui-icon ui-icon-closethick" style="display:none"></div>';
@@ -211,4 +211,65 @@ export class Growl<Cfg extends GrowlCfg = GrowlCfg> extends PrimeFaces.widget.Ba
         const timeout = PrimeFaces.queueTask(() => this.removeMessage(message), this.cfg.life);
         message.data('timeout', timeout ?? "");
     }
+}
+
+/**
+ * Registers an implementation for the message render hook that displays
+ * messages inside a growl widget.
+ */
+export function registerMessageRenderHookForGrowlWidget(): void {
+    PrimeFaces.registerHook("messageRender", {
+        renderMessagesInContainers: (messages, containers) => {
+            let growlComponents = $();
+
+            for (const container of containers) {
+                const $container = $(container);
+                if ($container.is('.ui-growl-pl')) {
+                    growlComponents = growlComponents.add($container);
+                }
+                else {
+                    growlComponents = growlComponents.add($container.find('.ui-growl-pl'));
+                }
+            }
+
+            // filter out by severity
+            growlComponents = growlComponents.filter((_, el) => {
+                return $(el).data('severity').indexOf('error') !== -1;
+            });
+
+            for (let i = 0; i < growlComponents.length; i++) {
+                const growlComponent = growlComponents.eq(i);
+                const redisplay = growlComponent.data('redisplay');
+                const globalOnly = growlComponent.data('global');
+                const showSummary = growlComponent.data('summary');
+                const showDetail = growlComponent.data('detail');
+                const growlWidget = PrimeFaces.getWidgetById(growlComponent.attr('id') ?? "");
+
+                if (!(growlWidget instanceof Growl)) {
+                    continue;
+                }
+
+                growlWidget.removeAll();
+
+                for (const clientId in messages) {
+                    for (const msg of messages[clientId] ?? []) {
+                        if (globalOnly || (msg.rendered && !redisplay)) {
+                            continue;
+                        }
+
+                        const msgToRender = { ...msg };
+                        if (!showSummary) {
+                            msgToRender.summary = '';
+                        }
+                        if (!showDetail) {
+                            msgToRender.detail = '';
+                        }
+
+                        growlWidget.renderMessage(msgToRender);
+                        msg.rendered = true;
+                    }
+                }
+            }
+        },
+    });
 }
