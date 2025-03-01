@@ -219,6 +219,18 @@ export class Growl<Cfg extends GrowlCfg = GrowlCfg> extends PrimeFaces.widget.Ba
  */
 export function registerMessageRenderHookForGrowlWidget(): void {
     PrimeFaces.registerHook("messageRender", {
+        clearMessagesForWidget: widget => {
+            if (widget instanceof Growl) {
+                widget.removeAll();
+            }
+        },
+        renderMessageForWidget: (widget, messages) => {
+            if (widget instanceof Growl) {
+                for (const message of messages) {
+                    widget.renderMessage(message);
+                }
+            }
+        },
         renderMessagesInContainers: (messages, containers) => {
             let growlComponents = $();
 

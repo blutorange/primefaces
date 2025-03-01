@@ -68,6 +68,18 @@ export class Messages<Cfg extends MessagesCfg = MessagesCfg> extends PrimeFaces.
  */
 export function registerMessageRenderHookForMessagesWidget(): void {
     PrimeFaces.registerHook("messageRender", {
+        clearMessagesForWidget: widget => {
+            if (widget instanceof Messages) {
+                widget.clearMessages();
+            }
+        },
+        renderMessageForWidget: (widget, messages) => {
+            if (widget instanceof Messages) {
+                for (const message of messages) {
+                    widget.appendMessage(message);
+                }
+            }
+        },
         renderMessagesInContainers: (messages, containers) => {
             let messagesComponents = $();
 

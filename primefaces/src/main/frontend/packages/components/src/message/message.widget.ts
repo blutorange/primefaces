@@ -74,7 +74,7 @@ export class Message<Cfg extends MessageCfg = MessageCfg> extends PrimeFaces.wid
     }
 
     /**
-     * Removes the current displayed message.
+     * Removes the currently displayed message.
      */
     clearMessage(): void {
         this.jq.html('');
@@ -88,6 +88,17 @@ export class Message<Cfg extends MessageCfg = MessageCfg> extends PrimeFaces.wid
  */
 export function registerMessageRenderHookForMessageWidget(): void {
     PrimeFaces.registerHook("messageRender", {
+        clearMessagesForWidget: widget => {
+            if (widget instanceof Message) {
+                widget.clearMessage();
+            }
+        },
+        renderMessageForWidget: (widget, messages) => {
+            const message = messages[0];
+            if (message && widget instanceof Message) {
+                widget.renderMessage(message);
+            }
+        },
         renderMessagesInContainers: (messages, containers) => {
             let messageComponents = $();
 

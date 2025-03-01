@@ -323,7 +323,7 @@ export class Validation {
                     : $(core.escapeClientId(messageComponentId));
             }
             else {
-                var messageComponents = element.closest('form').find('div.ui-message');
+                const messageComponents = element.closest('form').find('div.ui-message');
                 messageComponent = this.Utils.findTargetMessageComponent(clientId, messageComponents);
 
                 if (messageComponent) {
@@ -336,7 +336,11 @@ export class Validation {
 
             if (messageComponent) {
                 const messageWidget = core.getWidgetById(messageComponent.attr('id') ?? "");
-                messageWidget?.clearMessage();
+                if (messageWidget) {
+                    for (const messageRenderHook of core.getHook("messageRender")) {
+                        messageRenderHook.clearMessagesForWidget(messageWidget);
+                    }
+                }
             }
         }
 
@@ -347,7 +351,11 @@ export class Validation {
         if (!vc.isEmpty()) {
             if (messageComponent) {
                 const messageWidget = core.getWidgetById(messageComponent.attr('id') ?? "");
-                messageWidget?.renderMessage(vc.messages[clientId]?.[0]);
+                if (messageWidget) {
+                    for (const messageRenderHook of core.getHook("messageRender")) {
+                        messageRenderHook.renderMessageForWidget(messageWidget, vc.messages[clientId] ?? []);
+                    }
+                }
             }
 
             vc.clear();

@@ -418,6 +418,10 @@ declare global {
          * message, messages, and growl widget.
          */
         export interface MessageRender {
+            clearMessagesForWidget: (widget: BaseWidget) => void;
+
+            renderMessageForWidget: (widget: BaseWidget, messages: PrimeType.FacesMessage[]) => void;
+
             /**
              * Renders all given messages in the given containers.
              * @param messages The messages to render.
