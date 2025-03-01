@@ -194,7 +194,7 @@ export class SlideMenu<Cfg extends SlideMenuCfg = SlideMenuCfg> extends Menu<Cfg
      * Peeks the stack and returns the topmost item.
      * @return The last item on the stack, or `undefined` if the stack is empty
      */
-    private last(): JQuery | undefined {
+    last(): JQuery | undefined {
         return this.stack[this.stack.length - 1];
     }
 

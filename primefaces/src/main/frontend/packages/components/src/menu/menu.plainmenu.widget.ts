@@ -295,7 +295,7 @@ export class PlainMenu<Cfg extends PlainMenuCfg = PlainMenuCfg> extends Menu<Cfg
     /**
      * Clear the saved state (collapsed / expanded menu items) of this plain menu.
      */
-    private clearState(): void {
+    clearState(): void {
         localStorage.removeItem(this.stateKey);
     }
 }

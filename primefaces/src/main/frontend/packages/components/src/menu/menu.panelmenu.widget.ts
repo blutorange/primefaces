@@ -521,7 +521,7 @@ export class PanelMenu<Cfg extends PanelMenuCfg = PanelMenuCfg> extends PrimeFac
     /**
      * Deletes the UI state of this panel menu stored in an HTML5 Local Store.
      */
-    private clearState(): void {
+    clearState(): void {
         if (this.cfg.stateful) {
             localStorage.removeItem(this.stateKey);
         }
