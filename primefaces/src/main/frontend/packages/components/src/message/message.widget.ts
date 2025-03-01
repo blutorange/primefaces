@@ -1,48 +1,57 @@
+
+/**
+ * The configuration for the {@link  Message} widget.
+ * 
+ * You can access this configuration via {@link Message.cfg | cfg}. Please note
+ * that this configuration is usually meant to be read-only and should not be modified.
+ */
+export interface MessageCfg extends PrimeType.widget.BaseWidgetCfg {
+    /**
+     * Client ID of the target for which to show this message.
+     */
+    target: string;
+
+    /**
+     * Tooltip to show when the user hovers over the message.
+     */
+    tooltip: string;
+}
+
 /**
  * __PrimeFaces Message Widget__
  * 
  * Message is a pre-skinned extended version of the standard Jakarta Faces message component.
  * 
- * @interface {PrimeFaces.widget.MessageCfg} cfg The configuration for the {@link  Message| Message widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
- * 
- * @prop {string} cfg.target Client ID of the target for which to show this message.
+ * @typeParam Cfg Type of the configuration object.
  */
-PrimeFaces.widget.Message = class Message extends PrimeFaces.widget.BaseWidget {
+export class Message<Cfg extends MessageCfg = MessageCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
 
-    /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
-     */
-    init(cfg) {
+    override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);
 
-        var msgSrc = this.jq.find('.ui-message-error-summary');
+        let msgSrc = this.jq.find('.ui-message-error-summary');
         if (msgSrc.length === 0) {
             msgSrc = this.jq.find('.ui-message-error-detail');
         }
 
-        var text = msgSrc.text();
+        const text = msgSrc.text();
         if (text) {
-            var target = $(PrimeFaces.escapeClientId(this.cfg.target));
+            const target = this.cfg.target ? $(PrimeFaces.escapeClientId(this.cfg.target)) : $();
 
             if (this.cfg.tooltip) {
                 target.data('tooltip', text);
             }
 
-            target.attr('aria-describedby', msgSrc.attr('id'));
+            target.attr('aria-describedby', msgSrc.attr('id') ?? "");
         }
     }
 
     /**
      * Renders the given msg.
-     * @param {PrimeFaces.FacesMessage} msg Message to render.
+     * @param msg Message to render.
      */
-    renderMessage(msg) {
-        var display = this.jq.data('display');
+    renderMessage(msg: PrimeType.FacesMessage): void {
+        const display = this.jq.data('display');
 
         if (display !== 'tooltip') {
             this.jq.addClass('ui-message-error ui-widget ui-helper-clearfix');
@@ -67,7 +76,7 @@ PrimeFaces.widget.Message = class Message extends PrimeFaces.widget.BaseWidget {
     /**
      * Removes the current displayed message.
      */
-    clearMessage() {
+    clearMessage(): void {
         this.jq.html('');
         this.jq.removeClass('ui-message-error ui-message-icon-only ui-widget ui-helper-clearfix');
     }

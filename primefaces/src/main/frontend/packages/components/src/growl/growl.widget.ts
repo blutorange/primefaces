@@ -1,29 +1,48 @@
 /**
+ * The configuration for the {@link  Growl} widget.
+ * 
+ * You can access this configuration via {@link Growl.cfg | cfg}. Please note that this
+ * configuration is usually meant to be read-only and should not be modified.
+ */
+export interface GrowlCfg extends PrimeType.widget.BaseWidgetCfg {
+    /**
+     * `true` to treat the message's summary and details as plain text, `false` to treat them as
+     * an HTML string.
+     */
+    escape: boolean;
+
+    /**
+     * Defines if previous messages should be kept on a new message is shown.
+     */
+    keepAlive: boolean;
+
+    /**
+     * Duration in milliseconds to display non-sticky messages.
+     */
+    life: number;
+
+    /**
+     * List of messages that are shown initially when the widget is loaded or
+     * refreshed.
+     */
+    msgs: PrimeType.FacesMessage[];
+
+    /**
+     * Specifies if the message should stay instead of hidden automatically.
+     */
+    sticky: boolean;
+}
+
+/**
  * __PrimeFaces Growl Widget__
  *
  * Growl is based on the Mac’s growl notification widget and used to display FacesMessages in an overlay.
  *
- * @interface {PrimeFaces.widget.GrowlCfg} cfg The configuration for the {@link  Growl| Growl widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
- *
- * @prop {boolean} cfg.escape `true` to treat the message's summary and details as plain text, `false` to treat them as
- * an HTML string.
- * @prop {boolean} cfg.keepAlive Defines if previous messages should be kept on a new message is shown.
- * @prop {number} cfg.life Duration in milliseconds to display non-sticky messages.
- * @prop {PrimeFaces.FacesMessage[]} cfg.msgs List of messages that are shown initially when the widget is loaded or
- * refreshed.
- * @prop {boolean} cfg.sticky Specifies if the message should stay instead of hidden automatically.
+ * @typeParam Cfg Type of the configuration object.
  */
-PrimeFaces.widget.Growl = class Growl extends PrimeFaces.widget.BaseWidget {
+export class Growl<Cfg extends GrowlCfg = GrowlCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
 
-    /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
-     */
-    init(cfg) {
+    override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);
 
         //create container
@@ -33,17 +52,12 @@ PrimeFaces.widget.Growl = class Growl extends PrimeFaces.widget.BaseWidget {
         this.jq.appendTo($(document.body));
 
         //render messages
-        this.show(this.cfg.msgs);
+        this.show(this.cfg.msgs ?? []);
     }
 
-    /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
-     */
-    refresh(cfg) {
+    override refresh(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         this.cfg = cfg;
-        this.show(cfg.msgs);
+        this.show(cfg.msgs ?? []);
 
         this.removeScriptElement(this.id);
     }
@@ -51,32 +65,29 @@ PrimeFaces.widget.Growl = class Growl extends PrimeFaces.widget.BaseWidget {
     /**
      * Appends a message to the current displayed messages.
      *
-     * @param {PrimeFaces.FacesMessage} msg A message to translate into an HTML element.
+     * @param msg A message to translate into an HTML element.
      */
-    add(msg) {
+    add(msg: PrimeType.FacesMessage): void {
         this.renderMessage(msg);
     }
 
     /**
      * Appends all messages to the current displayed messages.
      *
-     * @param {PrimeFaces.FacesMessage[]} msgs The messages to translate into HTML elements.
+     * @param msgs The messages to translate into HTML elements.
      */
-    addAll(msgs) {
-        var $this = this;
-        $.each(msgs, function(index, msg) {
-            $this.renderMessage(msg);
-        });
+    addAll(msgs: readonly PrimeType.FacesMessage[]): void {
+        for (const msg of msgs ?? []) {
+            this.renderMessage(msg);
+        }
     }
 
     /**
      * Displays the given messages in the growl window represented by this growl widget.
      *
-     * @param {PrimeFaces.FacesMessage[]} msgs Messages to display in this growl
+     * @param msgs Messages to display in this growl
      */
-    show(msgs) {
-        var $this = this;
-
+    show(msgs: PrimeType.FacesMessage[]): void {
         PrimeFaces.nextZindex(this.jq);
 
         if (!this.cfg.keepAlive) {
@@ -84,38 +95,37 @@ PrimeFaces.widget.Growl = class Growl extends PrimeFaces.widget.BaseWidget {
             this.removeAll();
         }
 
-        $.each(msgs, function(index, msg) {
-            $this.renderMessage(msg);
-        });
+        for (const msg of msgs ?? []) {
+            this.renderMessage(msg);
+        }
     }
 
     /**
      * Removes all growl messages that are currently displayed.
      */
-    removeAll() {
+    removeAll(): void {
         this.jq.children('div.ui-growl-item-container').remove();
     }
 
     /**
      * Creates the HTML elements for the given faces message, and adds it to the DOM.
-     * @private
-     * @param {PrimeFaces.FacesMessage} msg A message to translate into an HTML element.
+     * @param msg A message to translate into an HTML element.
      */
-    renderMessage(msg) {
-        var markup = '<div class="ui-growl-item-container ui-state-highlight ui-helper-hidden ui-shadow ui-growl-' + msg.severity + '">';
+    private renderMessage(msg: PrimeType.FacesMessage): void {
+        let markup = '<div class="ui-growl-item-container ui-state-highlight ui-helper-hidden ui-shadow ui-growl-' + msg.severity + '">';
         markup += '<div role="alert" class="ui-growl-item">';
         markup += '<div class="ui-growl-icon-close ui-icon ui-icon-closethick" style="display:none"></div>';
         markup += '<span class="ui-growl-image ui-growl-image-' + msg.severity + '" ></span>';
         // GitHub #5153 for screen readers
-        markup += '<span class="ui-growl-severity ui-helper-hidden-accessible">' + this.getAriaLabel('messages.' + msg.severity.toUpperCase()) + '</span>';
+        markup += '<span class="ui-growl-severity ui-helper-hidden-accessible">' + this.getAriaLabel(`messages.${PrimeFaces.utils.toRootUpperCase(msg.severity)}`) + '</span>';
         markup += '<div class="ui-growl-message">';
         markup += '<span class="ui-growl-title"></span>';
         markup += '<p></p>';
         markup += '</div><div style="clear: both;"></div></div></div>';
 
-        var message = $(markup),
-            summaryEL = message.find('span.ui-growl-title'),
-            detailEL = summaryEL.next();
+        const message = $(markup);
+        const summaryEL = message.find('span.ui-growl-title');
+        const detailEL = summaryEL.next();
 
         if (this.cfg.escape) {
             summaryEL.text(msg.summary);
@@ -133,10 +143,9 @@ PrimeFaces.widget.Growl = class Growl extends PrimeFaces.widget.BaseWidget {
 
     /**
      * Sets up all event listeners for the given message, such as for closing the message when the close icon clicked.
-     * @private
-     * @param {JQuery} message The message for which to set up the event listeners
+     * @param message The message for which to set up the event listeners
      */
-    bindEvents(message) {
+    private bindEvents(message: JQuery): void {
         var $this = this,
             sticky = this.cfg.sticky;
 
@@ -164,7 +173,7 @@ PrimeFaces.widget.Growl = class Growl extends PrimeFaces.widget.BaseWidget {
             });
 
         //remove message on click of close icon
-        var closeIcon = message.find('div.ui-growl-icon-close');
+        const closeIcon = message.find('div.ui-growl-icon-close');
         PrimeFaces.skinCloseAction(closeIcon);
         closeIcon.on("click", function() {
             $this.removeMessage(message);
@@ -183,11 +192,11 @@ PrimeFaces.widget.Growl = class Growl extends PrimeFaces.widget.BaseWidget {
 
     /**
      * Removes the given message from the screen, if it is currently displayed.
-     * @param {JQuery} message The message to remove, an HTML element with the class `ui-growl-item-container`.
+     * @param message The message to remove, an HTML element with the class `ui-growl-item-container`.
      */
-    removeMessage(message) {
-        message.fadeTo('normal', 0, function() {
-            message.slideUp('normal', 'easeInOutCirc', function() {
+    removeMessage(message: JQuery): void {
+        message.fadeTo(400, 0, function() {
+            message.slideUp(400, 'easeInOutCirc', function() {
                 message.remove();
             });
         });
@@ -196,16 +205,10 @@ PrimeFaces.widget.Growl = class Growl extends PrimeFaces.widget.BaseWidget {
     /**
      * Starts a timeout that removes the given message after a certain delay (as defined by this widget's
      * configuration).
-     * @private
-     * @param {JQuery} message The message to remove, an HTML element with the class `ui-growl-item-container`.
+     * @param message The message to remove, an HTML element with the class `ui-growl-item-container`.
      */
-    setRemovalTimeout(message) {
-        var $this = this;
-
-        var timeout = PrimeFaces.queueTask(function() {
-            $this.removeMessage(message);
-        }, this.cfg.life);
-
-        message.data('timeout', timeout);
+    private setRemovalTimeout(message: JQuery): void {
+        const timeout = PrimeFaces.queueTask(() => this.removeMessage(message), this.cfg.life);
+        message.data('timeout', timeout ?? "");
     }
 }

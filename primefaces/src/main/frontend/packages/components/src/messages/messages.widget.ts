@@ -1,22 +1,26 @@
 /**
+ * The configuration for the {@link  Messages} widget.
+ * 
+ * You can access this configuration via {@link Messages.cfg | cfg}. Please note that this
+ * configuration is usually meant to be read-only and should not be modified.
+ */
+export interface MessagesCfg extends PrimeType.widget.BaseWidgetCfg {
+}
+
+/**
  * __PrimeFaces Messages Widget__
  * 
  * Messages is a pre-skinned extended version of the standard Jakarta Faces messages component.
  * 
- * @prop {JQuery} closer The DOM element for the icon that closes this panel.
- * @interface {PrimeFaces.widget.MessagesCfg} cfg The configuration for the {@link  Messages| Messages widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
+ * @typeParam Cfg Type of the configuration object.
  */
-PrimeFaces.widget.Messages = class Messages extends PrimeFaces.widget.BaseWidget {
-
+export class Messages<Cfg extends MessagesCfg = MessagesCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
     /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
+     * The DOM element for the icon that closes this panel.
      */
-    init(cfg) {
+    closer: JQuery = $();
+
+    override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);
         this.closer = $('.ui-messages-close');
         PrimeFaces.skinCloseAction(this.closer);
@@ -24,12 +28,12 @@ PrimeFaces.widget.Messages = class Messages extends PrimeFaces.widget.BaseWidget
 
     /**
      * Creates the HTML elements for the given faces message, and adds it to the DOM.
-     * @param {PrimeFaces.FacesMessage} msg A message to translate into an HTML element.
+     * @param msg A message to translate into an HTML element.
      */
-    appendMessage(msg) {
-        var closeLabel = this.getAriaLabel('close');
+    appendMessage(msg: PrimeType.FacesMessage): void {
+        const closeLabel = this.getAriaLabel('close');
 
-        var severityContainer =  this.jq.children('div.ui-messages-' + msg.severity);
+        let severityContainer =  this.jq.children('div.ui-messages-' + msg.severity);
         if (severityContainer.length === 0) {
             severityContainer = this.jq.append(
                  '<div class="ui-messages-' + msg.severity + '">' +
@@ -53,7 +57,7 @@ PrimeFaces.widget.Messages = class Messages extends PrimeFaces.widget.BaseWidget
     /**
      * Clears all current messages from the DOM.
      */
-    clearMessages() {
+    clearMessages(): void {
         this.jq.children().remove();
     }
 }

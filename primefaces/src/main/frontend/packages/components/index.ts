@@ -39,6 +39,11 @@ import { TieredMenu } from "./src/menu/menu.tieredmenu.widget.js";
 import { dialog, registerDialogFeaturesFeature, type Dialogs, type DialogHandler as _DialogHandler } from "./src/core.dialog.js";
 import { ConfirmDialog, Dialog as _Dialog, DynamicDialog } from "./src/dialog/dialog.widget.js";
 
+import { Growl } from "./src/growl/growl.widget.js";
+import { Message } from "./src/message/message.widget.js";
+import { Messages } from "./src/messages/messages.widget.js";
+import { StaticMessage } from "./src/staticmessage/staticmessage.widget.js";
+
 import "./src/accordion/accordion.widget.js";
 import "./src/autocomplete/autocomplete.widget.js";
 import "./src/blockui/blockui.widget.js";
@@ -55,10 +60,7 @@ import "./src/datatable/datatable.frozen.widget.js";
 import "./src/dragdrop/dragdrop.widget.js";
 import "./src/effect/effect.widget.js";
 import "./src/fieldset/fieldset.widget.js";
-import "./src/growl/growl.widget.js";
 import "./src/inplace/inplace.widget.js";
-import "./src/message/message.widget.js";
-import "./src/messages/messages.widget.js";
 import "./src/notificationbar/notificationbar.widget.js";
 import "./src/panel/panel.widget.js";
 import "./src/orderlist/orderlist.widget.js";
@@ -74,7 +76,6 @@ import "./src/spinner/spinner.widget.js";
 import "./src/splitter/splitter.widget.js";
 import { Spotlight } from "./src/spotlight/spotlight.widget.js";
 import "./src/speeddial/speeddial.widget.js";
-import "./src/staticmessage/staticmessage.widget.js";
 import "./src/sticky/sticky.widget.js";
 import "./src/tabview/tabview.widget.js";
 import "./src/tagcloud/tagcloud.widget.js";
@@ -120,6 +121,9 @@ function exposeToGlobalScope() {
     PrimeFaces.widget.CommandButton = CommandButton;
     PrimeFaces.widget.SplitButton = SplitButton;
 
+    // src/growl
+    PrimeFaces.widget.Growl = Growl;
+
     // src/menu
     PrimeFaces.widget.BreadCrumb = BreadCrumb;
     PrimeFaces.widget.MegaMenu = MegaMenu;
@@ -133,8 +137,15 @@ function exposeToGlobalScope() {
     PrimeFaces.widget.TabMenu = TabMenu;
     PrimeFaces.widget.TieredMenu = TieredMenu;
 
+    // src/message(s)
+    PrimeFaces.widget.Message = Message;
+    PrimeFaces.widget.Messages = Messages;
+
     // src/spotlight
     PrimeFaces.widget.Spotlight = Spotlight;
+
+    // src/staticmessage
+    PrimeFaces.widget.StaticMessage = StaticMessage;
 
     // Core features contributes by this "components" module
     registerDialogFeaturesFeature();
@@ -304,6 +315,18 @@ declare global {
     }
 }
 
+// Types (src/growl)
+declare global {
+    namespace PrimeType {
+        export interface WidgetRegistry {
+            Growl: typeof Growl;
+        }
+    }
+    namespace PrimeType.widget {
+        export type GrowlCfg = import("./src/growl/growl.widget.js").GrowlCfg;
+    }
+}
+
 // Types (src/menu)
 declare global {
     namespace PrimeType {
@@ -374,7 +397,22 @@ declare global {
     }
 }
 
-// src/spotlight
+// Types (src/message(s))
+declare global {
+    namespace PrimeType {
+        export interface WidgetRegistry {
+            Message: typeof Message;
+            Messages: typeof Messages;
+        }
+    }
+    namespace PrimeType.widget {
+        export type Message = import("./src/message/message.widget.js").Message;
+        export type Messages = import("./src/messages/messages.widget.js").Messages;
+    }
+}
+
+
+// Types (src/spotlight)
 declare global {
     namespace PrimeType {
         export interface WidgetRegistry {
@@ -383,5 +421,17 @@ declare global {
     }
     namespace PrimeType.widget {
         export type SpotlightCfg = import("./src/spotlight/spotlight.widget.js").SpotlightCfg;
+    }
+}
+
+// Types (src/staticmessage)
+declare global {
+    namespace PrimeType {
+        export interface WidgetRegistry {
+            StaticMessage: typeof StaticMessage;
+        }
+    }
+    namespace PrimeType.widget {
+        export type StaticMessageCfg = import("./src/staticmessage/staticmessage.widget.js").StaticMessageCfg;
     }
 }

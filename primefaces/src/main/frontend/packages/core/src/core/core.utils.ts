@@ -1,8 +1,7 @@
 import { ajax } from "./core.ajax.js";
 import { env } from "./core.env.js";
 import { expressions } from "./core.expressions.js";
-import { BaseWidget, DynamicOverlayWidget, type BaseWidgetCfg } from "./core.widget.js";
-import { Poll } from "../poll/poll.js";
+import { BaseWidget, DynamicOverlayWidget } from "./core.widget.js";
 import { core } from "./core.js";
 
 /**
@@ -1028,6 +1027,26 @@ export class Utils {
             this.TEXT_ENCODER = new TextEncoder();
         }
         return this.TEXT_ENCODER.encode(text).length;
+    }
+
+    /**
+     * Converts a string to its uppercase form, using the root locale.
+     * @typeParam S Type of the string to convert.
+     * @param value String to convert.
+     * @returns The string in its upper case form.
+     */
+    toRootUpperCase<S extends string>(value: S): Uppercase<S> {
+        return value.toUpperCase() as Uppercase<S>;
+    }
+
+    /**
+     * Converts a string to its lowercase form, using the root locale.
+     * @typeParam S Type of the string to convert.
+     * @param value String to convert.
+     * @returns The string in its upper case form.
+     */
+    toRootLowerCase<S extends string>(value: S): Lowercase<S> {
+        return value.toLowerCase() as Lowercase<S>;
     }
 
     /**
