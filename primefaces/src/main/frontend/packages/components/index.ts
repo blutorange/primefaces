@@ -132,6 +132,7 @@ function exposeToGlobalScope() {
 
     // src/menu
     PrimeFaces.widget.BreadCrumb = BreadCrumb;
+    PrimeFaces.widget.ContextMenu = ContextMenu;
     PrimeFaces.widget.MegaMenu = MegaMenu;
     PrimeFaces.widget.Menu = Menu;
     PrimeFaces.widget.MenuButton = MenuButton;
@@ -335,6 +336,7 @@ declare global {
     namespace PrimeType {
         export interface WidgetRegistry {
             BreadCrumb: typeof BreadCrumb;
+            ContextMenu: typeof ContextMenu;
             MegaMenu: typeof MegaMenu;
             Menu: typeof Menu;
             Menubar: typeof Menubar;
