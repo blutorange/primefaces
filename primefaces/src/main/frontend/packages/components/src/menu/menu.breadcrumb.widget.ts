@@ -18,7 +18,7 @@ export interface BreadCrumbCfg extends PrimeType.widget.BaseWidgetCfg {
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class BreadCrumb<Cfg extends BreadCrumbCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
+export class BreadCrumb<Cfg extends BreadCrumbCfg = BreadCrumbCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
     seoScript: JQuery | undefined = undefined;
 
     override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {

@@ -21,7 +21,7 @@ export interface CommandButtonCfg extends PrimeType.widget.BaseWidgetCfg {
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class CommandButton<Cfg extends CommandButtonCfg> extends PrimeFaces.widget.BaseWidget {
+export class CommandButton<Cfg extends CommandButtonCfg = CommandButtonCfg> extends PrimeFaces.widget.BaseWidget {
     /**
      * Number of concurrent active Ajax requests.
      */

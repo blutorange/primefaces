@@ -32,7 +32,7 @@ export interface MenuButtonCfg extends TieredMenuCfg {
  *
  * @typeParam Cfg Type of the configuration object.
  */
-export class MenuButton<Cfg extends MenuButtonCfg> extends TieredMenu<Cfg> {
+export class MenuButton<Cfg extends MenuButtonCfg = MenuButtonCfg> extends TieredMenu<Cfg> {
     /**
      * Number of concurrent active Ajax requests.
      */

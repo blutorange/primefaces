@@ -119,7 +119,7 @@ export interface DialogCfg extends PrimeType.widget.DynamicOverlayWidgetCfg, Pri
  *
  * @typeParam Cfg Type of the configuration object.
  */
-export class Dialog<Cfg extends DialogCfg> extends PrimeFaces.widget.DynamicOverlayWidget<Cfg> {
+export class Dialog<Cfg extends DialogCfg = DialogCfg> extends PrimeFaces.widget.DynamicOverlayWidget<Cfg> {
     /**
      * DOM element of the icon for closing this dialog, when this dialog is closable (an `x` by
      * default).
@@ -1025,7 +1025,7 @@ export interface ConfirmDialogCfg extends DialogCfg {
  *
  * @typeParam Cfg Type of the configuration object.
  */
-export class ConfirmDialog<Cfg extends ConfirmDialogCfg> extends Dialog<Cfg> {
+export class ConfirmDialog<Cfg extends ConfirmDialogCfg = ConfirmDialogCfg> extends Dialog<Cfg> {
     /**
      * DOM element of the icon displayed next to the confirmation message.
      */
@@ -1234,7 +1234,7 @@ export interface DynamicDialogCfg extends DialogCfg {
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class DynamicDialog<Cfg extends DynamicDialogCfg> extends Dialog<Cfg> {
+export class DynamicDialog<Cfg extends DynamicDialogCfg = DynamicDialogCfg> extends Dialog<Cfg> {
     override show(): void {
         if(this.jq.hasClass('ui-overlay-visible')) {
             return;

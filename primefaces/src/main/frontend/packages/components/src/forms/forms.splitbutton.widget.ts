@@ -50,7 +50,7 @@ export interface SplitButtonCfg extends PrimeType.widget.BaseWidgetCfg {
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class SplitButton<Cfg extends SplitButtonCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
+export class SplitButton<Cfg extends SplitButtonCfg = SplitButtonCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
     /**
      * Number of concurrent active Ajax requests.
      */

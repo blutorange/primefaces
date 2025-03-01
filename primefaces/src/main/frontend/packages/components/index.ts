@@ -37,7 +37,7 @@ import { TabMenu } from "./src/menu/menu.tabmenu.widget.js";
 import { TieredMenu } from "./src/menu/menu.tieredmenu.widget.js";
 
 import { dialog, registerDialogFeaturesFeature, type Dialogs, type DialogHandler as _DialogHandler } from "./src/core.dialog.js";
-import { ConfirmDialog, Dialog as _Dialog, DynamicDialog, type ConfirmDialogCfg } from "./src/dialog/dialog.widget.js";
+import { ConfirmDialog, Dialog as _Dialog, DynamicDialog } from "./src/dialog/dialog.widget.js";
 
 import "./src/accordion/accordion.widget.js";
 import "./src/autocomplete/autocomplete.widget.js";
@@ -72,7 +72,7 @@ import "./src/resizable/resizable.widget.js";
 import "./src/slider/slider.widget.js";
 import "./src/spinner/spinner.widget.js";
 import "./src/splitter/splitter.widget.js";
-import "./src/spotlight/spotlight.widget.js";
+import { Spotlight } from "./src/spotlight/spotlight.widget.js";
 import "./src/speeddial/speeddial.widget.js";
 import "./src/staticmessage/staticmessage.widget.js";
 import "./src/sticky/sticky.widget.js";
@@ -93,7 +93,6 @@ import "./src/scrolltop/scrolltop.widget.js";
 import "./src/sidebar/sidebar.widget.js";
 import "./src/dataview/dataview.widget.js";
 import "./src/toggleswitch/toggleswitch.widget.js";
-
 
 // Add widgets and dialog to the PrimeFaces global object
 exposeToGlobalScope();
@@ -133,6 +132,9 @@ function exposeToGlobalScope() {
     PrimeFaces.widget.Steps = Steps;
     PrimeFaces.widget.TabMenu = TabMenu;
     PrimeFaces.widget.TieredMenu = TieredMenu;
+
+    // src/spotlight
+    PrimeFaces.widget.Spotlight = Spotlight;
 
     // Core features contributes by this "components" module
     registerDialogFeaturesFeature();
@@ -179,7 +181,7 @@ declare global {
              * When the global feature of the confirm dialog is used, this stores the current
              * confirm dialog instance that is used as the global confirm dialog.
              */
-            confirmDialog?: ConfirmDialog<ConfirmDialogCfg> | undefined;
+            confirmDialog?: ConfirmDialog | undefined;
             /**
              * When the global feature of the confirm dialog is used, this stores
              * the source element that requested the currently open global confirm dialog.
@@ -369,5 +371,17 @@ declare global {
          * Allowed event types for toggling a tiered menu.
          */
         export type ToggleEvent = "hover" | "click";
+    }
+}
+
+// src/spotlight
+declare global {
+    namespace PrimeType {
+        export interface WidgetRegistry {
+            Spotlight: typeof Spotlight;
+        }
+    }
+    namespace PrimeType.widget {
+        export type SpotlightCfg = import("./src/spotlight/spotlight.widget.js").SpotlightCfg;
     }
 }

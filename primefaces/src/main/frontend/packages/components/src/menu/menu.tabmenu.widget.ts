@@ -16,7 +16,7 @@ export interface TabMenuCfg extends MenuCfg {
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class TabMenu<Cfg extends TabMenuCfg> extends Menu<Cfg> {
+export class TabMenu<Cfg extends TabMenuCfg = TabMenuCfg> extends Menu<Cfg> {
     /**
      * The DOM elements for the tab menu entries.
      */

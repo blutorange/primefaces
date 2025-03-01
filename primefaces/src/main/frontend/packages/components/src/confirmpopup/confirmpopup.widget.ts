@@ -37,7 +37,7 @@ export interface ConfirmPopupCfg extends PrimeType.widget.DynamicOverlayWidgetCf
  * 
  * ConfirmPopup displays a confirmation overlay displayed relatively to its target.
  */
-export class ConfirmPopup<Cfg extends ConfirmPopupCfg> extends PrimeFaces.widget.DynamicOverlayWidget<Cfg> {
+export class ConfirmPopup<Cfg extends ConfirmPopupCfg = ConfirmPopupCfg> extends PrimeFaces.widget.DynamicOverlayWidget<Cfg> {
     /**
      * The DOM element for the content of the confirm popup.
      */

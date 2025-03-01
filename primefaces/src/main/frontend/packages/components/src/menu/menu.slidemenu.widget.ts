@@ -16,7 +16,7 @@ export interface SlideMenuCfg extends MenuCfg {
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class SlideMenu<Cfg extends SlideMenuCfg> extends Menu<Cfg> {
+export class SlideMenu<Cfg extends SlideMenuCfg = SlideMenuCfg> extends Menu<Cfg> {
     /**
      * The DOM element for the link to navigate back to the previous menu page.
      */

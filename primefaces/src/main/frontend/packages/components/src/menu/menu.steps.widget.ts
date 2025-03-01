@@ -14,7 +14,7 @@ export interface StepsCfg extends PrimeType.widget.BaseWidgetCfg {
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class Steps<Cfg extends StepsCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
+export class Steps<Cfg extends StepsCfg = StepsCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
     /**
      * All enabled menu item elements.
      */

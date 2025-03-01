@@ -1,57 +1,67 @@
 /**
+ * The configuration for the {@link  Spotlight} widget.
+ * 
+ * You can access this configuration via {@link Spotlight.cfg | cfg}. Please note that this
+ * configuration is usually meant to be read-only and should not be modified.
+ */
+export interface SpotlightCfg extends PrimeType.widget.BaseWidgetCfg {
+    /**
+     * Whether the spotlight is initially turned on.
+     */
+    active: boolean;
+
+    /**
+     * `true` to block scrolling when the spotlight is turned on, or `false` otherwise.
+     */
+    blockScroll: boolean;
+
+    /**
+     * The search expression for the target component to highlight.
+     */
+    target: string;
+}
+
+/**
  * __PrimeFaces Spotlight Widget__
  * 
  * Spotlight highlights a certain component on page, drawing the user's attention to it.
- * 
- * @prop {JQuery} target The DOM element for the target component to highlight.
- * 
- * @interface {PrimeFaces.widget.SpotlightCfg} cfg The configuration for the {@link  Spotlight| Spotlight widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
- * configuration is usually meant to be read-only and should not be modified.
- * @extends {PrimeFaces.widget.BaseWidgetCfg} cfg
- * 
- * @prop {boolean} cfg.active Whether the spotlight is initially turned on.
- * @prop {boolean} cfg.blockScroll `true` to block scrolling when the spotlight is turned on, or `false` otherwise.
- * @prop {string} cfg.target The search expression for the target component to highlight.
  */
-PrimeFaces.widget.Spotlight = class Spotlight extends PrimeFaces.widget.BaseWidget {
-
+export class Spotlight<Cfg extends SpotlightCfg = SpotlightCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
     /**
-     * @override
-     * @inheritdoc
-     * @param {PrimeFaces.PartialWidgetCfg<TCfg>} cfg
+     * The DOM element for the target component to highlight.
      */
-    init(cfg) {
+    target: JQuery = $();
+
+    override init(cfg: PrimeType.widget.PartialWidgetCfg<Cfg>): void {
         super.init(cfg);
         this.target = PrimeFaces.expressions.SearchExpressionFacade.resolveComponentsAsSelector(this.jq, this.cfg.target);
 
-        if(!$(document.body).children('.ui-spotlight').length) {
+        if (!$(document.body).children('.ui-spotlight').length) {
             this.createMasks();
         }
 
-        if(this.cfg.active) {
+        if (this.cfg.active) {
             this.show();
         }
     }
 
     /**
      * Creates the mask overlay element for the spotlight effect and adds it to the DOM.
-     * @private
      */
-    createMasks() {
+    private createMasks(): void {
         $(document.body).append('<div class="ui-widget-overlay ui-spotlight ui-spotlight-top ui-helper-hidden"></div><div class="ui-widget-overlay ui-spotlight ui-spotlight-bottom ui-helper-hidden"></div>' +
-                        '<div class="ui-widget-overlay ui-spotlight ui-spotlight-left ui-helper-hidden"></div><div class="ui-widget-overlay ui-spotlight ui-spotlight-right ui-helper-hidden"></div>');
+            '<div class="ui-widget-overlay ui-spotlight ui-spotlight-left ui-helper-hidden"></div><div class="ui-widget-overlay ui-spotlight ui-spotlight-right ui-helper-hidden"></div>');
     }
 
     /**
      * Turns the spotlight on so that a certain part of the page is highlighted.
      */
-    show() {
+    show(): void {
         this.calculatePositions();
 
         this.target.attr({
             'role': 'dialog'
-            ,'aria-modal': true
+            , 'aria-modal': true
         });
         $(document.body).children('div.ui-spotlight').show();
 
@@ -60,29 +70,28 @@ PrimeFaces.widget.Spotlight = class Spotlight extends PrimeFaces.widget.BaseWidg
 
     /**
      * Computes and applies the rectangular position of the spotlight.
-     * @private
      */
-    calculatePositions() {
-        var doc = $(document),
-        documentBody = $(document.body),
-        offset = PrimeFaces.utils.calculateRelativeOffset(this.target),
-        zindex = PrimeFaces.nextZindex();
+    private calculatePositions(): void {
+        const doc = $(document);
+        const documentBody = $(document.body);
+        const offset = PrimeFaces.utils.calculateRelativeOffset(this.target);
+        const zIndex = PrimeFaces.nextZindex();
 
         documentBody.children('div.ui-spotlight-top').css({
             'left': '0px',
             'top': '0px',
             'width': documentBody.width() + 'px',
             'height': offset.top + 'px',
-            'z-index': zindex
+            'z-index': zIndex
         });
 
-        var bottomTop = offset.top + this.target.outerHeight();
+        const bottomTop = offset.top + (this.target.outerHeight() ?? 0);
         documentBody.children('div.ui-spotlight-bottom').css({
             'left': '0px',
             'top': bottomTop + 'px',
             'width': documentBody.width() + 'px',
-            'height': (doc.height() - bottomTop) + 'px',
-            'z-index': zindex
+            'height': ((doc.height() ?? 0) - bottomTop) + 'px',
+            'z-index': zIndex
         });
 
         documentBody.children('div.ui-spotlight-left').css({
@@ -90,47 +99,44 @@ PrimeFaces.widget.Spotlight = class Spotlight extends PrimeFaces.widget.BaseWidg
             'top': offset.top + 'px',
             'width': offset.left + 'px',
             'height': this.target.outerHeight() + 'px',
-            'z-index': zindex
+            'z-index': zIndex
         });
 
-        var rightLeft = offset.left + this.target.outerWidth();
+        const rightLeft = offset.left + (this.target.outerWidth() ?? 0);
         documentBody.children('div.ui-spotlight-right').css({
             'left': rightLeft + 'px',
             'top': offset.top + 'px',
-            'width': (documentBody.width() - rightLeft) + 'px',
+            'width': ((documentBody.width() ?? 0) - rightLeft) + 'px',
             'height': this.target.outerHeight() + 'px',
-            'z-index': zindex
+            'z-index': zIndex
         });
     }
 
     /**
      * Sets up all event listeners that are required by this widget.
-     * @private
      */
-    bindEvents() {
-        var $this = this;
-
-        this.target.data('zindex',this.target.zIndex()).css('z-index', PrimeFaces.nextZindex());
+    private bindEvents(): void {
+        this.target.data('zindex', this.target.zIndex()).css('z-index', PrimeFaces.nextZindex());
 
         if (this.cfg.blockScroll) {
             PrimeFaces.utils.preventScrolling();
         }
-        PrimeFaces.utils.preventTabbing(this, this.id, $this.target.zIndex(), function() {
-            return $this.target.find(':tabbable');
+
+        PrimeFaces.utils.preventTabbing(this, this.getId(), this.target.zIndex(), () => {
+            return this.target.find(':tabbable');
         });
 
-        var namespace = '.spotlight' + this.id;
-        $(window).on('resize' + namespace + ' scroll' + namespace, function() {
-            $this.calculatePositions();
+        const namespace = '.spotlight' + this.id;
+        $(window).on('resize' + namespace + ' scroll' + namespace, () => {
+            this.calculatePositions();
         });
     }
 
     /**
      * Removes the event listeners that were added when the spotlight was turned on.
-     * @private
      */
-    unbindEvents() {
-        PrimeFaces.utils.enableTabbing(this, this.id);
+    private unbindEvents(): void {
+        PrimeFaces.utils.enableTabbing(this, this.getId());
         if (this.cfg.blockScroll) {
             PrimeFaces.utils.enableScrolling();
         }
@@ -141,14 +147,13 @@ PrimeFaces.widget.Spotlight = class Spotlight extends PrimeFaces.widget.BaseWidg
     /**
      * Turns of the spotlight so that the entire page is visible normally again.
      */
-    hide() {
+    hide(): void {
         $(document.body).children('.ui-spotlight').hide();
         this.unbindEvents();
         this.target.css('z-index', String(this.target.zIndex()));
         this.target.attr({
             'role': ''
-            ,'aria-modal': false
+            , 'aria-modal': false
         });
     }
-
 }

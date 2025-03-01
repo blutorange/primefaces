@@ -25,7 +25,7 @@ export interface PlainMenuCfg extends MenuCfg {
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class PlainMenu<Cfg extends PlainMenuCfg> extends Menu<Cfg> {
+export class PlainMenu<Cfg extends PlainMenuCfg = PlainMenuCfg> extends Menu<Cfg> {
     /**
      * A list with the ID of each menu item (with children) that is collapsed.
      */

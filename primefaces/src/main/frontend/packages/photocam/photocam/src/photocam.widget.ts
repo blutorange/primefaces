@@ -80,7 +80,7 @@ const defaultErrorCallback: PrimeType.widget.PhotoCam.CameraErrorCallback = (err
  *
  * PhotoCam is used to take photos with webcam and send them to the Jakarta Faces backend model.
  */
-export class PhotoCam<Cfg extends PhotoCamCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
+export class PhotoCam<Cfg extends PhotoCamCfg = PhotoCamCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
     /**
      * Whether the camera is currently attached and can take photos.
      */

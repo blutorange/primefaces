@@ -34,7 +34,7 @@ export interface MegaMenuCfg extends PrimeType.widget.MenuCfg {
  *
  * @typeParam Cfg Type of the configuration object.
  */
-export class MegaMenu<Cfg extends MegaMenuCfg> extends Menu<Cfg> {
+export class MegaMenu<Cfg extends MegaMenuCfg = MegaMenuCfg> extends Menu<Cfg> {
     /**
      * Whether the current menu is active and displayed.
      */

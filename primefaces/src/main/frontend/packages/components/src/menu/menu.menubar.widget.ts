@@ -20,7 +20,7 @@ export interface MenubarCfg extends TieredMenuCfg {
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class Menubar<Cfg extends MenubarCfg> extends TieredMenu<Cfg> {
+export class Menubar<Cfg extends MenubarCfg = MenubarCfg> extends TieredMenu<Cfg> {
 
     override showSubmenu(menuitem: JQuery, submenu: JQuery, focus?: boolean): void {
         let pos: JQueryUI.JQueryPositionOptions | null = null;

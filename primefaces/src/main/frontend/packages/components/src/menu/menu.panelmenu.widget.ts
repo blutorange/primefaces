@@ -29,7 +29,7 @@ export interface PanelMenuCfg extends PrimeType.widget.BaseWidgetCfg {
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class PanelMenu<Cfg extends PanelMenuCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
+export class PanelMenu<Cfg extends PanelMenuCfg = PanelMenuCfg> extends PrimeFaces.widget.BaseWidget<Cfg> {
     /**
      * A list of IDs of the menu items that are currently expanded.
      */

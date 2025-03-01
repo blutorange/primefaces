@@ -57,7 +57,7 @@ export interface ContextMenuCfg extends TieredMenuCfg, PrimeType.widget.ContextM
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class ContextMenu<Cfg extends ContextMenuCfg> extends TieredMenu<Cfg> implements PrimeType.widget.ContextMenuLikeWidget {
+export class ContextMenu<Cfg extends ContextMenuCfg = ContextMenuCfg> extends TieredMenu<Cfg> implements PrimeType.widget.ContextMenuLikeWidget {
     /**
      * Target element of this context menu. A right click on the target brings up this context menu.
      */

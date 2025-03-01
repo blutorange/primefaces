@@ -51,7 +51,7 @@ export interface MenuCfg extends PrimeType.widget.BaseWidgetCfg {
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class Menu<Cfg extends MenuCfg>  extends PrimeFaces.widget.BaseWidget<Cfg> {
+export class Menu<Cfg extends MenuCfg = MenuCfg>  extends PrimeFaces.widget.BaseWidget<Cfg> {
     /**
      * Unbind callback for the hide overlay handler.
      */

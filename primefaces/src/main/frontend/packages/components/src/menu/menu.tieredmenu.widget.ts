@@ -33,7 +33,7 @@ export interface TieredMenuCfg extends MenuCfg {
  * 
  * @typeParam Cfg Type of the configuration object.
  */
-export class TieredMenu<Cfg extends TieredMenuCfg> extends Menu<Cfg> {
+export class TieredMenu<Cfg extends TieredMenuCfg = TieredMenuCfg> extends Menu<Cfg> {
     /**
      * Whether the menu is currently active.
      */

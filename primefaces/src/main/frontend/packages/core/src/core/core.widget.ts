@@ -17,20 +17,35 @@ export interface BaseWidgetCfg {
      * invoked when the behavior is called.
      */
     behaviors: Record<string, PrimeType.widget.Behavior>;
+
+    /**
+     * `true` to block scrolling when a certain condition is satisfied, or `false` otherwise.
+     */
+    blockScroll?: boolean;
+
     /**
      * Whether the widget was disabled on the server-side, usually via the `disabled` attribute on the Faces component.
      */
     disabled: boolean;
+
     /**
      * ID of the form to use for AJAX requests.
      */
     formId?: string;
+
     /**
      * The client-side ID of the widget, with all parent naming containers, such as
      * `myForm:myWidget`. This is also the ID of the container HTML element for this widget. In case the widget needs
      * multiple container elements (such as {@link Paginator}), this may also be an array if IDs.
      */
     id: string | string[];
+
+    /**
+     * Optional reference to an iframe, e.g. the iframe inside which to
+     * place the widget.
+     */
+    iframe?: JQuery<HTMLIFrameElement>;
+
     /**
      * List of localized labels for the widget. Labels are normally rendered server-side. This property is set by the
      * server when e.g. the client needs to change the label dynamically. The key is the ID of the label, the value the
@@ -40,6 +55,7 @@ export interface BaseWidgetCfg {
         aria: Record<string, string>;
         [key: string]: string | Record<string, string>;
     };
+
     /**
      * An optional callback that is invoked
      * before the widget is created, at the start of the {@link BaseWidget.init | init} method. This is
@@ -47,6 +63,7 @@ export interface BaseWidgetCfg {
      * during a `refresh` (AJAX update).
      */
     preConstruct: PrimeType.widget.PreConstructCallback;
+
     /**
      * An optional callback that is invoked
      * after this widget was created successfully, at the end of the {@link BaseWidget.init | init} method. This is
@@ -54,12 +71,14 @@ export interface BaseWidgetCfg {
      * during a `refresh` (AJAX update).
      */
     postConstruct: PrimeType.widget.PostConstructCallback;
+
     /**
      * An optional callback that is invoked after
      * this widget was refreshed after an AJAX update, at the end of the {@link BaseWidget.refresh | refresh} method.
      * This is usually specified via the `widgetPostRefresh` attribute on the Faces component.
      */
     postRefresh: PrimeType.widget.PostRefreshCallback;
+
     /**
      * An optional callback that is invoked before
      * this widget is about to be destroyed, e.g., when the component was removed at the end of an AJAX update. This is
@@ -67,10 +86,12 @@ export interface BaseWidgetCfg {
      * `widgetPreDestroy` attribute on the Faces component.
      */
     preDestroy: PrimeType.widget.PreDestroyCallback;
+
     /**
      * Whether the widget supports touch devices (usually via pointer events etc.).
      */
     touchable: boolean;
+
     /**
      * The name of the widget variables of this widget. The widget variable can be used to
      * access a widget instance by calling `PF("myWidgetVar")`.
@@ -651,7 +672,7 @@ export class DynamicOverlayWidget<Cfg extends DynamicOverlayWidgetCfg = DynamicO
      * @param overlay The target overlay, if not given defaults to {@link jq}.
      */
     enableModality(overlay?: JQuery | null): void {
-        var target = overlay||this.jq;
+        const target = overlay||this.jq;
         this.modalOverlay = utils.addModal(this, target, () => this.getModalTabbables() ?? $());
     }
 

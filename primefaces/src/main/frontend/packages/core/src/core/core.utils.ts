@@ -1,7 +1,7 @@
 import { ajax } from "./core.ajax.js";
 import { env } from "./core.env.js";
 import { expressions } from "./core.expressions.js";
-import { BaseWidget, DynamicOverlayWidget } from "./core.widget.js";
+import { BaseWidget, DynamicOverlayWidget, type BaseWidgetCfg } from "./core.widget.js";
 import { Poll } from "../poll/poll.js";
 import { core } from "./core.js";
 
@@ -197,7 +197,7 @@ export class Utils {
      */
     preventTabbing(widget: BaseWidget, id: string, zIndex: number, tabbablesCallback: () => JQuery): void {
         //Disable tabbing out of modal and stop events from targets outside of the overlay element
-        var $documentInIframe = widget.cfg && widget.cfg.iframe ? widget.cfg.iframe.get(0).contentWindow.document : undefined;
+        var $documentInIframe = widget.cfg && widget.cfg.iframe ? widget.cfg.iframe.get(0)?.contentWindow?.document : undefined;
         var $document = $($documentInIframe ? [document, $documentInIframe] : document);
         $document.on('focus.' + id + ' mousedown.' + id + ' mouseup.' + id, (event) => {
             var target = $(event.target);
@@ -257,8 +257,8 @@ export class Utils {
      * @param overlay The modal overlay element should be a DIV.
      */
     removeModal(widget: BaseWidget, overlay?: JQuery | null): void {
-        var id = widget.id;
-        var modalId = id + '_modal';
+        const id = widget.getId();
+        const modalId = id + '_modal';
 
         if (overlay) {
             overlay.attr({
@@ -277,6 +277,7 @@ export class Utils {
         if (widget.cfg.blockScroll) {
             this.enableScrolling();
         }
+
         this.enableTabbing(widget, id);
     }
 
@@ -287,7 +288,7 @@ export class Utils {
      * @param id ID of a modal overlay, usually the widget ID.
      */
     enableTabbing(widget: BaseWidget, id: string): void {
-        var $documentInIframe = widget.cfg && widget.cfg.iframe ? widget.cfg.iframe.get(0).contentWindow.document : undefined;
+        var $documentInIframe = widget.cfg && widget.cfg.iframe ? widget.cfg.iframe.get(0)?.contentWindow?.document : undefined;
         var $document = $($documentInIframe ? [document, $documentInIframe] : document);
 
         $document.off('focus.' + id + ' mousedown.' + id + ' mouseup.' + id + ' keydown.' + id);
