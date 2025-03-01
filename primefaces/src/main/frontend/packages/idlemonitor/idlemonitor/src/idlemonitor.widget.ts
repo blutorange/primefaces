@@ -51,14 +51,14 @@ export class IdleMonitor<Cfg extends IdleMonitorCfg = IdleMonitorCfg> extends Pr
                 this.cfg.onidle.call(this);
             }
 
-            this.callBehavior('idle');
+            this.callBehavior('idle', undefined, false);
         })
             .on("active.idleTimer" + this.cfg.id, () => {
                 if (this.cfg.onactive) {
                     this.cfg.onactive.call(this);
                 }
 
-                this.callBehavior('active');
+                this.callBehavior('active', undefined, false);
             });
 
         $.idleTimer(this.cfg.timeout ?? 300_000, document, this.getId());

@@ -459,13 +459,14 @@ export class BaseWidget<Cfg extends BaseWidgetCfg = BaseWidgetCfg> {
      *
      * @param event The name of an event to call.
      * @param ext Additional configuration that is passed to the AJAX request for the server-side callback.
+     * @param fallbackToDomEvent Whether to fallback to the DOM event if no behavior is defined.
      * @since 7.0
      */
-    callBehavior(event: string, ext?: Partial<PrimeType.ajax.ConfigurationExtender>): void {
+    callBehavior(event: string, ext?: Partial<PrimeType.ajax.ConfigurationExtender>, fallbackToDomEvent = true): void {
         if (this.hasBehavior(event)) {
             this.cfg.behaviors?.[event]?.call(this, ext);
         }
-        else if (this.cfg.behaviors === undefined && this.jq.length > 0) {
+        else if (fallbackToDomEvent && this.cfg.behaviors === undefined && this.jq.length > 0) {
             // #12887 if no behavior is defined, try to call the DOM event
             this.jq.trigger(event, ext);
         }
