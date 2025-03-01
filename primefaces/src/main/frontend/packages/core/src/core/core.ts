@@ -356,7 +356,19 @@ export class Core {
      */
     logger: PrimeType.Logger | undefined;
 
-    settings: PrimeType.PFSettings = {};
+    /**
+     * Settings provided by the server. Uses defaults when the core instance is
+     * initialized, should have been changed to the settings from the server
+     * before the document is ready.
+     */
+    settings: PrimeType.PFSettings = {
+        considerEmptyStringNull: false,
+        contextPath: "/",
+        cookiesSecure: false,
+        locale: "en",
+        validateEmptyFields: false,
+        viewId: "",
+    };
 
     /**
      * The object with functionality related to sending and receiving AJAX requests that are made by PrimeFaces. Each
@@ -1901,8 +1913,8 @@ export class Core {
 
     /**
      * Finds the current locale with the i18n keys and the associated translations. Uses the current language key
-     * as specified by `PrimeFaces.settings.locale`. When no locale was found for the given locale, falls back to
-     * the default English locale.
+     * as specified by {@link PrimeType.PFSettings.locale | PrimeFaces.settings.locale}. When no locale was found for
+     * the given locale, falls back to the default English locale.
      * @param cfgLocale Optional configuration locale from the widget
      * @return The current locale with the key-value pairs.
      */

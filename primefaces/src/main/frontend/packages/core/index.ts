@@ -63,6 +63,18 @@ declare global {
         export type ThemeKind = "light" | "dark";
 
         /**
+         * These string constants represent the current state of the running Faces application in a typical product
+         * development lifecycle. The value of this state may be queried at any time after application startup by
+         * calling {@link PFSettings.projectStage}.
+         * - `Development` - This value indicates the currently running application is right now, at this moment, being
+         * developed.
+         * - `UnitTest` - This value indicates the currently running application is undergoing unit testing.
+         * - `SystemTest` - This value indicates the currently running application is undergoing system testing.
+         * - `Production` - This value indicates the currently running application is deployed in production.
+         */
+        export type ProjectStage = "Development" | "UnitTest" | "SystemTest" | "Production";
+
+        /**
          * A callback that is invoked when the user clicks on an element outside
          * an overlay widget.
          */
@@ -302,7 +314,7 @@ declare global {
             /**
              * If AJAX post params are evaluated early.
              */
-            earlyPostParamEvaluation: boolean;
+            earlyPostParamEvaluation?: boolean;
 
             /**
              * Contains the error pages that may be shown when an error occurs.
@@ -320,12 +332,12 @@ declare global {
             /**
              * If AJAX partial-submit is enabled.
              */
-            partialSubmit: boolean;
+            partialSubmit?: boolean;
 
             /**
              * The Faces project stage.
              */
-            projectStage: string;
+            projectStage?: ProjectStage;
 
             /**
              * `true` if empty (input etc.) fields should be validated, or `false` otherwise.
