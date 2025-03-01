@@ -1395,7 +1395,9 @@ export class AjaxResponse {
     destroyDetachedWidgets(): void {
         // destroy detached widgets
         for (const widgetVar of core.detachedWidgets) {
-            const widget = PF(widgetVar);
+            // Do not use PF() which logs an error when the widget is missing
+            // Since the widget is detached, it may already be gone.
+            const widget = core.widgets[widgetVar];
             if (widget && widget.isDetached() === true) {
                 try {
                     widget.destroy();
