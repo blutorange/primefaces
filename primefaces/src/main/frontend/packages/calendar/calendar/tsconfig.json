@@ -8,7 +8,7 @@
 			"../../types/dist",
 			"../../jquery/jquery/dist",
 			"../../jquery/jquery-plugins/dist",
-			"../../inputmask/inputmask",
+			"../../inputmask/inputmask/dist",
 			"../../core/dist"
 		],
 	},

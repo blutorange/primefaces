@@ -59,6 +59,14 @@ to separate the individual packages from each other. The `references` section of
 `tsconfig.json` contains the (implicit) dependencies of each package, mirroring the
 `@ResourceDependency` annotations on each Java widget class.
 
+# Type checking
+
+Types are checked during the Maven build. To do it manually, run:
+
+```sh
+yarn run tsc -b
+```
+
 # Building
 
 __TL;DR__ Just use `mvn package ...`, or `yarn run build` if you ever need.

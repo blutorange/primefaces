@@ -6,7 +6,7 @@
 		"outDir": "dist",
 		"types": [
 			"../../types/dist",
-			"../../raphael/dist",
+			"../../raphael/raphael/dist",
 			"../../jquery/jquery/dist",
 			"../../core/dist",
 			"../../components/dist"
