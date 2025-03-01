@@ -43,7 +43,7 @@ import "./src/accordion/accordion.widget.js";
 import "./src/autocomplete/autocomplete.widget.js";
 import "./src/blockui/blockui.widget.js";
 import "./src/carousel/carousel.widget.js";
-import "./src/confirmpopup/confirmpopup.widget.js";
+import { ConfirmPopup } from "./src/confirmpopup/confirmpopup.widget.js";
 import "./src/columntoggler/columntoggler.widget.js";
 import "./src/dashboard/dashboard.widget.js";
 import "./src/datagrid/datagrid.widget.js";
@@ -108,6 +108,9 @@ function exposeToGlobalScope() {
 
     // Expose widgets to the global scope
 
+    // src/confirmpopup
+    PrimeFaces.widget.ConfirmPopup = ConfirmPopup;
+
     // src/dialog
     PrimeFaces.dialog = dialog;
     PrimeFaces.widget.ConfirmDialog = ConfirmDialog;
@@ -138,6 +141,29 @@ declare global {
         interface WindowExtensions {
             autosize: typeof autosize;
         }
+    }
+}
+
+// src/confirmpopup
+declare global {
+    namespace PrimeType {
+        export interface WidgetRegistry {
+            ConfirmPopup: typeof ConfirmPopup;
+        }
+        export interface PrimeFaces {
+            confirmPopup?: ConfirmPopup<widget.ConfirmPopupCfg>;
+            confirmPopupSource?: JQuery | null;
+        }
+    }
+    namespace PrimeType.widget {
+        export type ConfirmPopupCfg = import("./src/confirmpopup/confirmpopup.widget.js").ConfirmPopupCfg;
+    }
+
+    namespace PrimeType.widget.ConfirmPopup {
+        /**
+         * Callback invoked after the popup is hidden.
+         */
+        export type HideCallback = () => void;
     }
 }
 
@@ -280,7 +306,7 @@ declare global {
              * If `true`, the message is escaped for HTML. If `false`, the message is
              * interpreted as an HTML string.
              */
-            escape: boolean;
+            escape?: boolean;
             /**
              * Header of the dialog message.
              */

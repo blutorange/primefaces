@@ -580,7 +580,7 @@ export class Utils {
      * @param scrollNamespace A scroll event with a namespace, such as `scroll.widgetId`.
      * @param element A DOM element used to find scrollable parents.
      * @param scrollCallback A callback that is invoked when a scroll event occurs on the widget.
-     * @return Unbind callback handler
+     * @return Unbind function to remove the registered handler.
      */
     registerConnectedOverlayScrollHandler(
         widget: BaseWidget,

@@ -2,7 +2,8 @@ import { BaseWidget, type BaseWidgetCfg } from "../core/core.widget.js";
 
 /**
  * The configuration for the {@link  Poll| Poll widget}.
- * You can access this configuration via {@link PrimeFaces.widget.BaseWidget.cfg|BaseWidget.cfg}. Please note that this
+ * 
+ * You can access this configuration via {@link Poll.cfg | cfg}. Please note that this
  * configuration is usually meant to be read-only and should not be modified.
  */
 export interface PollCfg extends BaseWidgetCfg {
