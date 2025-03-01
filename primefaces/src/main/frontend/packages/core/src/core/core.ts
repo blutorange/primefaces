@@ -1313,14 +1313,14 @@ export class Core {
      * @typeParam WidgetName Name of the widget class, as registered in {@link PrimeType.WidgetRegistry}
      * @param widgetName Name of the widget class, as registered in {@link widget | PrimeFaces.widget}
      * @param widgetVar Widget variable of the widget
-     * @param cfg Configuration for the widget
+     * @param cfg Configuration for the widget, without the `widgetVar` property.
      */
     createWidget<WidgetName extends keyof PrimeType.WidgetRegistry>(
         widgetName: WidgetName,
         widgetVar: string,
-        cfg: PrimeType.widget.PartialCreateWidgetCfg<PrimeType.widget.WidgetCfg<PrimeType.WidgetRegistry[WidgetName]>>
+        partialCfg: PrimeType.widget.PartialCreateWidgetCfg<PrimeType.widget.WidgetCfg<PrimeType.WidgetRegistry[WidgetName]>>
     ): void {
-        cfg.widgetVar = widgetVar;
+        const cfg = Object.assign(partialCfg, { widgetVar });
 
         const widgetType = this.widget[widgetName] as PrimeType.Newable<[], InstanceType<PrimeType.WidgetRegistry[WidgetName]>> | undefined;
         if(widgetType) {
