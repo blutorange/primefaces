@@ -4,26 +4,6 @@
 
 import type { Dialog, DialogCfg } from "./dialog/dialog.widget.js";
 
-/**
- * Registers a confirm feature with the core. Redirects the emitted messages
- * either to the ConfirmPopup widget if available and the message's
- * {@link PrimeType.feature.confirm.ExtendedConfirmMessage.type | type} is
- * `popup`; or to the {@link DialogHandler | PrimeFaces.dialog.DialogHandler}
- * otherwise.
- */
-export function registerConfirmFeature(): void {
-    PrimeFaces.registerFeature("confirm", {
-        handleMessage: message => {
-            if (message.type === 'popup' && PrimeFaces.confirmPopup) {
-                PrimeFaces.confirmPopup.showMessage(message);
-            }
-            else {
-                dialog.DialogHandler.confirm(message);
-            }
-        },
-    });
-}
-
 // Note: Named "Dialogs" to avoid name collision with the "Dialog" widget class
 export class Dialogs {
     DialogHandler: DialogHandler = new DialogHandler();
@@ -404,7 +384,7 @@ export class DialogHandler {
      * Displays a message in the messages dialog.
      * @param msg Details of the message to show.
      */
-    showMessageInDialog(msg: PrimeType.dialog.ServerDialogMessageData): void {
+    showMessageInDialog(msg: PrimeType.feature.messageInDialog.DialogMessageData): void {
         if (!this.messageDialog) {
             $('<div id="primefacesmessagedlg" class="ui-message-dialog ui-dialog ui-widget ui-widget-content ui-shadow ui-hidden-container"></div>')
                 .append('<div class="ui-dialog-titlebar ui-widget-header ui-helper-clearfix"><span class="ui-dialog-title"></span>' +
@@ -468,6 +448,39 @@ export class DialogHandler {
 
         return w;
     }
+}
+
+/**
+ * Registers dialog related features with the core. In particular:
+ * 
+ * - `confirm` feature: Redirects the emitted messages
+ * either to the ConfirmPopup widget if available and the message's
+ * {@link PrimeType.feature.confirm.ExtendedConfirmMessage.type | type} is
+ * `popup`; or to the {@link DialogHandler | PrimeFaces.dialog.DialogHandler}
+ * otherwise.
+ * - `messageInDialog` feature: Shows messages via the
+ * {@link DialogHandler | PrimeFaces.dialog.DialogHandler}.
+ */
+export function registerDialogFeaturesFeature(): void {
+    PrimeFaces.registerFeature("confirm", {
+        handleMessage: message => {
+            if (message.type === 'popup' && PrimeFaces.confirmPopup) {
+                PrimeFaces.confirmPopup.showMessage(message);
+                return true;
+            }
+            else {
+                dialog.DialogHandler.confirm(message);
+                return true;
+            }
+        },
+    });
+
+    PrimeFaces.registerFeature("messageInDialog", {
+        showMessage: message => {
+            PrimeFaces.dialog.DialogHandler.showMessageInDialog(message);
+            return true;
+        },
+    });
 }
 
 /**

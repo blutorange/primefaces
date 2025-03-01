@@ -349,9 +349,73 @@ declare global {
     }
 
     namespace PrimeType.feature {
+        /**
+         * The confirm feature that lets external scripts subscribe to emitted
+         * confirmation messages. Implementations usually make use of this
+         * feature to show confirmation messages, such as in a confirm popup
+         * or a confirm dialog.
+         */
         export interface Confirm {
-            handleMessage: (message: confirm.ExtendedConfirmMessage) => void;
+            /**
+             * Handles an emitted confirmation message, such as by showing it
+             * to the user.
+             * @param message Message to handle.
+             * @returns Whether the message was handled. If true, subsequent
+             * registered implementations will not be called anymore.
+             */
+            handleMessage: (message: confirm.ExtendedConfirmMessage) => boolean;
         }
+        /**
+         * The message-in-dialog feature that lets external scripts subscribe
+         * to requests to the core for showing messages within a dialog.
+         */
+        export interface MessageInDialog {
+            /**
+             * Shows the given message in a dialog.
+             * @param message Message to show.
+             * @returns Whether the message was handled. If true, subsequent
+             * registered implementations will not be called anymore.
+             */
+            showMessage: (message: PrimeType.feature.messageInDialog.DialogMessageData) => boolean;
+        }
+    }
+
+    namespace PrimeType.feature.messageInDialog {
+        /**
+         * Interface for a message received from the server that is to be shown
+         * in a dialog, via the dialog framework.
+         */
+        export interface DialogMessageData {
+            /**
+             * If `true`, the message is escaped for HTML. If `false`, the message is
+             * interpreted as an HTML string.
+             */
+            escape: boolean;
+
+            /**
+             * A short summary of the message.
+             */
+            summary: string;
+
+            /**
+             * In-depth details of the message.
+             */
+            detail: string;
+
+            /**
+             * The severity of this message, i.e. whether it is an information message, a warning message, or an error
+             * message.
+             * 
+             * This is the stringified representation of a FacesMessage's severity, with
+             * the severity level's name and its ordinal value, i.e.:
+             * - `INFO 0`
+             * - `WARN 1`
+             * - `ERROR 2`
+             * - `FATAL 3` 
+             */
+            severity: string;
+        }
+
     }
 
     namespace PrimeType.feature.confirm {
@@ -1947,7 +2011,19 @@ declare global {
 
         // Extend core feature registry
         export interface CoreFeatureRegistry {
+            /**
+             * The confirm feature that lets external scripts subscribe to emitted
+             * confirmation messages. Implementations usually make use of this
+             * feature to show confirmation messages, such as in a confirm popup
+             * or a confirm dialog.
+             */
             confirm: feature.Confirm;
+
+            /**
+             * The message-in-dialog feature that lets external scripts subscribe
+             * to requests to the core for showing messages within a dialog.
+             */
+            messageInDialog: feature.MessageInDialog;
         }
     }
 

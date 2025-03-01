@@ -36,7 +36,7 @@ import { Steps } from "./src/menu/menu.steps.widget.js";
 import { TabMenu } from "./src/menu/menu.tabmenu.widget.js";
 import { TieredMenu } from "./src/menu/menu.tieredmenu.widget.js";
 
-import { dialog, registerConfirmFeature, type Dialogs, type DialogHandler as _DialogHandler } from "./src/core.dialog.js";
+import { dialog, registerDialogFeaturesFeature, type Dialogs, type DialogHandler as _DialogHandler } from "./src/core.dialog.js";
 import { ConfirmDialog, Dialog as _Dialog, DynamicDialog, type ConfirmDialogCfg } from "./src/dialog/dialog.widget.js";
 
 import "./src/accordion/accordion.widget.js";
@@ -135,7 +135,7 @@ function exposeToGlobalScope() {
     PrimeFaces.widget.TieredMenu = TieredMenu;
 
     // Core features contributes by this "components" module
-    registerConfirmFeature();
+    registerDialogFeaturesFeature();
 }
 
 // Global extensions
@@ -204,19 +204,22 @@ declare global {
     }
     namespace PrimeType.dialog {
         /**
-         * Interface of the dialog
-         * configuration object for a dialog of the dialog framework. Used by `PrimeFaces.dialog.DialogHandlerCfg`. This is
-         * mainly just the `PrimeFaces.widget.DialogCfg`, but adds a few more properties.
+         * Interface of the dialog configuration object for a dialog of the
+         * dialog framework. Used by `PrimeFaces.dialog.DialogHandlerCfg`. This
+         * is mainly just the `PrimeFaces.widget.DialogCfg`, but adds a few more
+         * properties.
          */
         export interface DialogHandlerCfgOptions extends widget.DialogCfg {
             /**
              * Height of the IFRAME in pixels.
              */
             contentHeight: number;
+
             /**
              * Width of the IFRAME in pixels.
              */
             contentWidth: number;
+
             /**
              * ID of the header element of the dialog.
              */
@@ -248,41 +251,6 @@ declare global {
              * Source URL for the IFRAME element with the dialog.
              */
             url: string;
-        }
-
-        /**
-         * Interface for a message received from the server that is to be shown
-         * in a dialog, via the dialog framework.
-         */
-        export interface ServerDialogMessageData {
-            /**
-             * If `true`, the message is escaped for HTML. If `false`, the message is
-             * interpreted as an HTML string.
-             */
-            escape: boolean;
-
-            /**
-             * A short summary of the message.
-             */
-            summary: string;
-
-            /**
-             * In-depth details of the message.
-             */
-            detail: string;
-
-            /**
-             * The severity of this message, i.e. whether it is an information message, a warning message, or an error
-             * message.
-             * 
-             * This is the stringified representation of a FacesMessage's severity, with
-             * the severity level's name and its ordinal value, i.e.:
-             * - `INFO 0`
-             * - `WARN 1`
-             * - `ERROR 2`
-             * - `FATAL 3` 
-             */
-            severity: string;
         }
     }
     namespace PrimeType.widget.Dialog {

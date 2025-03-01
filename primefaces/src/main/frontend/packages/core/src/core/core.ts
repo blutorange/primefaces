@@ -1693,12 +1693,14 @@ export class Core {
 
     /**
      * Shows the given message inside a dialog.
-     * @deprecated Deprecated, use `PrimeFaces.dialog.DialogHandler.showMessageInDialog` instead.
      * @param msg Message to show in a dialog.
      */
-    showMessageInDialog(msg: PrimeFaces.widget.ConfirmDialog.ConfirmDialogMessage): void {
-        if (this.dialog) {
-            this.dialog.DialogHandler.showMessageInDialog(msg);
+    showMessageInDialog(msg: PrimeType.feature.messageInDialog.DialogMessageData): void {
+        for (const messageInDialogFeature of this.features.messageInDialog ?? []) {
+            const handled = messageInDialogFeature.showMessage(msg);
+            if (handled) {
+                return;
+            }
         }
     }
 
@@ -1708,7 +1710,10 @@ export class Core {
      */
     confirm(msg: PrimeType.feature.confirm.ExtendedConfirmMessage): void {
         for (const confirmFeature of this.features.confirm ?? []) {
-            confirmFeature.handleMessage(msg);
+            const handled = confirmFeature.handleMessage(msg);
+            if (handled) {
+                return;
+            }
         }
     }
 
@@ -1736,7 +1741,7 @@ export class Core {
      * previously registered via {@link registerFeature}.
      * 
      * @typeParam Feature Type of the the feature name to register.
-     * @param name Name of the feature to register.
+     * @param name Name of the feature to unregister.
      * @param feature Feature implementation to register.
      */
     unregisterFeature<Feature extends keyof PrimeType.CoreFeatureRegistry>(
@@ -1744,6 +1749,30 @@ export class Core {
         feature: PrimeType.CoreFeatureRegistry[Feature]
     ): void {
         this.features[name]?.delete(feature);
+    }
+
+    /**
+     * Removes all implementation for the given feature that were registered via
+     * {@link registerFeature}.
+     * @typeParam Feature Type of the the feature name to register.
+     * @param name Name of the feature to unregister.
+     */
+    clearFeature<Feature extends keyof PrimeType.CoreFeatureRegistry>(name: Feature): void {
+        this.features[name] = undefined;
+    }
+
+    /**
+     * Removes all implementation for the given feature that were registered via
+     * {@link registerFeature}. The returned array is mutable, but mutations
+     * will not have any effect. Use {@link registerFeature} and
+     * {@link unregisterFeature} to modify the registered implementations.
+     * @typeParam Feature Type of the the feature name to register.
+     * @param name Name of the feature to unregister.
+     */
+    getFeature<Feature extends keyof PrimeType.CoreFeatureRegistry>(
+        name: Feature
+    ): PrimeType.CoreFeatureRegistry[Feature][] {
+        return [...this.features[name] ?? []];
     }
 
     /**
