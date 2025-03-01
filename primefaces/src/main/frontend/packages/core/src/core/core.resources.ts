@@ -7,19 +7,19 @@ export class Resources {
     /**
      * Base URL for PrimeFaces resources.
      */
-    SCRIPT_URI: string = "";
+    SCRIPT_URI: string | undefined = undefined;
 
     /**
      * Whether the Faces resources handler uses the extension mapping. When enabled,
      * Faces resource URLs get the `.xhtml` ending.
      */
-    IS_EXTENSION_MAPPING: boolean = false;
+    IS_EXTENSION_MAPPING: boolean | undefined = undefined;
 
     /**
      * When {@link IS_EXTENSION_MAPPING | extension mapping} is enabled, the extension for resource URLs,
      * e.g. `.xhtml`.
      */
-    RESOURCE_URL_EXTENSION: string = "";
+    RESOURCE_URL_EXTENSION: string | undefined = undefined;
 
     /**
     * Builds a Faces resource URL for given resource.
@@ -83,7 +83,7 @@ export class Resources {
     * @return `true` if the FacesServlet is mapped with an extension mapping, `false` otherwise.
     */
     isExtensionMapping(): boolean {
-        if (!this.IS_EXTENSION_MAPPING) {
+        if (this.IS_EXTENSION_MAPPING === undefined) {
             var scriptURI = this.getResourceScriptURI();
             var scriptName = this.getResourceScriptName(scriptURI);
             this.IS_EXTENSION_MAPPING = scriptURI.charAt(scriptURI.indexOf(scriptName) + scriptName.length) === '.';
@@ -100,7 +100,7 @@ export class Resources {
     * @return The URL extension.
     */
     getResourceUrlExtension(): string {
-        if (!this.RESOURCE_URL_EXTENSION) {
+        if (this.RESOURCE_URL_EXTENSION === undefined) {
             var scriptURI = this.getResourceScriptURI();
             var scriptName = this.getResourceScriptName(scriptURI);
             this.RESOURCE_URL_EXTENSION = RegExp(scriptName + '.([^?]*)').exec(scriptURI)?.[1] ?? "";
@@ -127,7 +127,7 @@ export class Resources {
     * @return The first JavasScript resource URI.
     */
     getResourceScriptURI(): string {
-        if (!this.SCRIPT_URI) {
+        if (this.SCRIPT_URI === undefined) {
             const findScriptWithVersionParam = (scripts: JQuery) => {
                 for (const script of scripts) {
                     var src = $(script).attr('src');
@@ -145,7 +145,12 @@ export class Resources {
             if (!this.SCRIPT_URI) {
                 findScriptWithVersionParam($('script[src*="' + core.RESOURCE_IDENTIFIER + '="]'));
             }
+
+            if (!this.SCRIPT_URI) {
+                this.SCRIPT_URI = "";
+            }
         }
+
         return this.SCRIPT_URI;
     }
 }
