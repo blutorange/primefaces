@@ -25,7 +25,6 @@ package org.primefaces.component.imagecropper;
 
 import jakarta.faces.application.ResourceDependency;
 
-@ResourceDependency(library = "primefaces", name = "imagecropper/imagecropper.css")
 @ResourceDependency(library = "primefaces", name = "jquery/jquery.js")
 @ResourceDependency(library = "primefaces", name = "core.js")
 @ResourceDependency(library = "primefaces", name = "components.js")

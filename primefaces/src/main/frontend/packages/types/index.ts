@@ -54,8 +54,8 @@ declare global {
          * An object that allows binding (enabling) and unbinding (disabling) a
          * feature.
          */
-        export interface Controllable extends Bindable, Unbindable {}
-        
+        export interface Controllable extends Bindable, Unbindable { }
+
         /**
          * Constructs a new type by renaming the properties in `Base` according to the `RenameMap`.
          *
@@ -81,8 +81,29 @@ declare global {
          * ```
          */
         export type InvertRecord<Base> = {
-            [P in keyof Base as Base[P] extends string ? Base[P]  :never]: P;
+            [P in keyof Base as Base[P] extends string ? Base[P] : never]: P;
         };
+
+        /**
+         * Constructs a new type that is the intersection of all property names in `Base` whose type is assignable to
+         * `Condition`:
+         * ```typescript
+         * interface User {
+         *   name: string;
+         *   mail: string;
+         *   active: boolean;
+         * }
+         *
+         * type UserStringKeys = MatchingKeys<User, string>;
+         * // type UserStringKeys = "name" | "mail";
+         * ```
+         * @typeParam Base Type from which to pick some properties.
+         * @typeParam Condition Type which the properties in the base type have to match.
+         * @return A string intersection type of property names from the base type that match the condition.
+         */
+        export type MatchingKeys<Base, Condition> = {
+            [Key in keyof Base]: Base[Key] extends Condition ? Key : never;
+        }[keyof Base];
 
         /**
          * Extensions to the global `window` scope added by PrimeFaces.
@@ -96,7 +117,7 @@ declare global {
         }
     }
 
-    interface Window extends PrimeType.WindowExtensions {}
+    interface Window extends PrimeType.WindowExtensions { }
 
     // Type declarations for the Faces core, see for example
     // https://docs.oracle.com/javaee/7/javaserver-faces-2-2/jsdocs/symbols/jsf.html
@@ -288,7 +309,7 @@ declare global {
         /**
          * Data for the callback when an AJAX request fails, see {@link addOnError}.
          */
-        export type OnErrorCallbackData = OnErrorCallbackDataEmptyResponse | OnErrorCallbackDataHttpError | OnErrorCallbackDataMalformedXml| OnErrorCallbackDataServerError;
+        export type OnErrorCallbackData = OnErrorCallbackDataEmptyResponse | OnErrorCallbackDataHttpError | OnErrorCallbackDataMalformedXml | OnErrorCallbackDataServerError;
         /**
          * Data for the callback when an AJAX request succeeds, see {@link addOnEvent}.
          */
@@ -773,4 +794,4 @@ declare global {
 
 }
 
-export {}
+export { }
